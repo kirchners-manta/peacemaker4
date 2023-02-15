@@ -1,4 +1,9 @@
-# Peacemaker setup
+# Peacemaker 4
+---
+
+**This project is under development and not yet ready for use.**
+
+# Setup for (old) Peacemaker 3
 
 Peacemaker program for Quantum Cluster Equilibrium calculations
 ## Compiling Peacemaker
