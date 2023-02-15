@@ -1,0 +1,14 @@
+--------------------------------------------------------------------------------
+This directory contains tools that help preparing Peacemaker input. These tools
+are primarily written in python3 and awk. This file contains short descriptions
+of each tool.
+--------------------------------------------------------------------------------
+
+cluster_info.py:
+    Provides basic information about a cluster, such as the vdW volume volume using the old, sum-of-spheres approach.
+
+hess2flist.awk:
+    Converts an Orca Hessian file to a frequency list file.
+
+vibspectrum2flist.awk:
+    Converts a Turbomole vibspectrum file to a frequency list file.
