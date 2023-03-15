@@ -91,11 +91,11 @@ with open(toml_input_file, 'w') as f_new:
                     # create the toml line
                     toml_line = '  ' + key + ' = ' + str(args_list).replace("'", '"') + '#' + comment
 
-                    # write the toml line to the new PM input file
+                    # write the toml line to the new toml-format input file
                     f_new.write(toml_line + '\n')
             
-            # if there is no comment in the line and the line is a section, write it to the  write it 
-            # to the new toml-format file without changing it
+            # if there is no comment in the line and the line is a section, write it  to the new toml-format 
+            # file without changing it
             elif line.startswith('['):
                 f_new.write(line + '\n')
             
