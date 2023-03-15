@@ -124,5 +124,5 @@ with open(toml_input_file, 'w') as f_new:
 
 # close the old PM input file
 f_old.close()
-# close the new oml-format input file
+# close the new toml-format input file
 f_new.close()
