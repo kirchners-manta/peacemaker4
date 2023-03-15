@@ -30,7 +30,7 @@ of toml format.
 
 The script is called from the command line with the following arguments:
 
-        python input2toml.py old_input_file toml_input_file
+        python input2toml.py [old_input_file] [toml_format_file]
 '''
 
 import sys
