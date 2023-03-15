@@ -67,7 +67,7 @@ with open(toml_input_file, 'w') as f_new:
                 # if the line is a section, write it to the new toml input file
                 # without changing it
                 if line_without_comment.startswith('['):
-                    f_new.write(line_without_comment + '#' + comment + '\n')
+                    f_new.write(line_without_comment + ' #' + comment + '\n')
 
                 # if the line is a key, change it to toml format and  write it to the new 
                 # toml-format file
@@ -88,8 +88,12 @@ with open(toml_input_file, 'w') as f_new:
                             except ValueError:
                                 args_list.append(str(arg))
 
+                    # if the args_lsit contains only one element, remove the brackets from the list
+                    if len(args_list) == 1: 
+                        args_list = str(args_list).replace("'", '"').replace('[', '').replace(']', '')
+
                     # create the toml line
-                    toml_line = '  ' + key + ' = ' + str(args_list).replace("'", '"') + '#' + comment
+                    toml_line = '  ' + key + ' = ' + str(args_list).replace("'", '"') + ' #' + comment
 
                     # write the toml line to the new toml-format input file
                     f_new.write(toml_line + '\n')
@@ -116,6 +120,10 @@ with open(toml_input_file, 'w') as f_new:
                             args_list.append(float(arg))
                         except ValueError:
                             args_list.append(str(arg))
+
+                # if the args_lsit contains only one element, remove the brackets from the list
+                if len(args_list) == 1: 
+                    args_list = str(args_list).replace("'", '"').replace('[', '').replace(']', '')
 
                 # create the toml line
                 toml_line = '  ' + key + ' = ' + str(args_list).replace("'", '"')
