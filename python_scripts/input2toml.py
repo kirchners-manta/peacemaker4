@@ -119,10 +119,10 @@ with open(toml_input_file, 'w') as f_new:
 
                 # create the toml line
                 toml_line = '  ' + key + ' = ' + str(args_list).replace("'", '"')
-                # write the toml line to the new PM input file
+                # write the toml line to the new toml-format input file
                 f_new.write(toml_line + '\n')
 
 # close the old PM input file
 f_old.close()
-# close the new PM input file
+# close the new oml-format input file
 f_new.close()
