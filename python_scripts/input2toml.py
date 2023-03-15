@@ -35,6 +35,16 @@ The script is called from the command line with the following arguments:
 
 import sys
 
+# function to print the usage of the script
+def usage():
+    print('Usage: python input2toml.py [old_input_file] [toml_format_file]')
+
+# check if the number of arguments is correct, otherwise print the usage
+if len(sys.argv) != 3:
+    usage()
+    sys.exit()
+
+
 old_input_file = sys.argv[1]
 toml_input_file = sys.argv[2]
 
@@ -88,12 +98,12 @@ with open(toml_input_file, 'w') as f_new:
                             except ValueError:
                                 args_list.append(str(arg))
 
-                    # if the args_lsit contains only one element, remove the brackets from the list
+                    # if the args_list contains only one element, remove the brackets from the list
                     if len(args_list) == 1: 
                         args_list = str(args_list).replace("'", '"').replace('[', '').replace(']', '')
 
                     # create the toml line
-                    toml_line = '  ' + key + ' = ' + str(args_list).replace("'", '"') + ' #' + comment
+                    toml_line = '  ' + key + ' = ' + str(args_list) + ' #' + comment
 
                     # write the toml line to the new toml-format input file
                     f_new.write(toml_line + '\n')
@@ -110,7 +120,7 @@ with open(toml_input_file, 'w') as f_new:
                 key = line.split()[0]
                 args = line.split()[1:]
 
-                # convert the arguments to a list, depending on the type of the argument
+                # add arguments to a list, depending on the type of the argument
                 args_list = []
                 for arg in args:
                     try:
@@ -126,7 +136,8 @@ with open(toml_input_file, 'w') as f_new:
                     args_list = str(args_list).replace("'", '"').replace('[', '').replace(']', '')
 
                 # create the toml line
-                toml_line = '  ' + key + ' = ' + str(args_list).replace("'", '"')
+                toml_line = '  ' + key + ' = ' + str(args_list)
+                
                 # write the toml line to the new toml-format input file
                 f_new.write(toml_line + '\n')
 
