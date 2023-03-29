@@ -1,0 +1,66 @@
+[nmf1]
+    monomer
+    composition 1 0
+    sigma 1
+    energy 0.0
+    volume 107.66
+    coordinates ../../cluster/nmf/xyz/nmf1.xyz
+    frequencies ../../cluster/nmf/flist/nmf1.flist
+
+[w1]
+    monomer
+    composition 0 1
+    sigma 2
+    energy 0.0
+    volume 29.1876
+    coordinates ../../cluster/water/xyz/w1.xyz
+    frequencies ../../cluster/water/flist/w1.flist
+
+[nmf2]
+    composition 2 0
+    sigma 1
+    energy -31.75
+    coordinates ../../cluster/nmf/xyz/nmf2.xyz
+    frequencies ../../cluster/nmf/flist/nmf2.flist
+
+[nmf3]
+    composition 3 0
+    sigma 1
+    energy -88.81
+    coordinates ../../cluster/nmf/xyz/nmf3.xyz
+    frequencies ../../cluster/nmf/flist/nmf3.flist
+
+[w2]
+    composition 0 2
+    sigma 1
+    energy -22.12
+    coordinates ../../cluster/water/xyz/w2.xyz
+    frequencies ../../cluster/water/flist/w2.flist
+
+[w3]
+    composition 0 3
+    sigma 1
+    energy -70.49
+    coordinates ../../cluster/water/xyz/w3.xyz
+    frequencies ../../cluster/water/flist/w3.flist
+
+[nmf1w1]
+    composition 1 1
+    sigma 1
+    energy -31.95
+    coordinates ../../cluster/mixed/xyz/nmf1w1.xyz
+    frequencies ../../cluster/mixed/flist/nmf1w1.flist
+
+[nmf1w2]
+    composition 1 2
+    sigma 1
+    energy -68.80
+    coordinates ../../cluster/mixed/xyz/nmf1w2.xyz
+    frequencies ../../cluster/mixed/flist/nmf1w2.flist
+
+[nmf2w1]
+    composition 2 1
+    sigma 1
+    energy -74.89
+    coordinates ../../cluster/mixed/xyz/nmf2w1.xyz
+    frequencies ../../cluster/mixed/flist/nmf2w1.flist
