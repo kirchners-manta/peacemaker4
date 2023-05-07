@@ -1,4 +1,4 @@
-project('pm_meson', 'fortran',
+project('peacemaker', 'fortran',
   version : '0.1',
   default_options : ['warning_level=3'])
 
@@ -22,7 +22,7 @@ sources = files(
     'main.f90'
 )
 
-exe = executable('pm_meson', sources, 
+exe = executable('peacemaker', sources, 
                  fortran_args : ['-cpp'],
                  link_args: ['-fopenmp'],
                 install : true)
