@@ -65,8 +65,8 @@ module input
         integer :: components
 
         ! Input read from the [ensemble] section.
-        !type(range_t) :: temperature
-        real(dp), dimension(:), allocatable :: temperature
+        type(range_t) :: temperature
+        real(dp), dimension(:), allocatable :: temperature_helper
         real(dp) :: pressure
         real(dp), dimension(:), allocatable :: monomer_amounts
 
@@ -287,12 +287,12 @@ module input
 
           !> temperature
           call get_value(child, "temperature", array)
-          allocate(input%temperature(len(array)))
-          do ival = 1, size(input%temperature)
-            call get_value(array, ival, input%temperature(ival))
+          allocate(input%temperature_helper(len(array)))
+          do ival = 1, size(input%temperature_helper)
+            call get_value(array, ival, input%temperature_helper(ival))
           end do
           call get_value(child, "reverse", reverse, .false.)
-          if (reverse) input%temperature(:) = input%temperature(size(input%temperature):1:-1)
+          if (reverse) input%temperature_helper(:) = input%temperature_helper(size(input%temperature_helper):1:-1)
 
           !> pressure
           call get_value(child, "pressure", input%pressure)
@@ -404,10 +404,14 @@ module input
           end if
         end do
         input%ref_isobar_file = trim(input%ref_isobar_file_helper)
+
+        input%temperature%first = input%temperature_helper(1)
+        input%temperature%last = input%temperature_helper(2)
+        input%temperature%delta = input%temperature_helper(3)
     end subroutine convert_helpers
 
 
-
+        !=================================================================================
         ! Performs sanity checks on the input.
         subroutine check_input()
             ! Check amf.
