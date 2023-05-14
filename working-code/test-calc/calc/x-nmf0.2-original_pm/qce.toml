@@ -9,6 +9,11 @@
   optimizer = 11
   rotor_cutoff = 100
   imode = true
+  iterations = 100
+  grid_iterations = 1
+  newton_iterations = 500
+  max_deviation = 1.0e-9
+  volume_damping_factor = 0.01
 
 [ensemble]
   temperature = [280.0, 550.0, 271] # K
@@ -25,4 +30,4 @@
   internal_contributions = false
   entropy_contributions = false
   cv_contributions = false
-  progress_bar = false
+  progress_bar = true

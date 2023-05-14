@@ -57,6 +57,8 @@ module input
     public :: check_input
     public :: print_input
     public :: input_data
+    public :: table
+    public :: toml_parse
     !=====================================================================================
     ! The input_t data type.
     ! Input type for toml input
@@ -130,8 +132,11 @@ module input
     contains
         !=================================================================================
         ! Processes the input from the input configuration file.
-        subroutine process_input(cfg)
-            type(config_t), intent(inout) :: cfg
+        subroutine process_input(table, input_file)
+            type(toml_table), allocatable, intent(inout) :: table
+            character(len=*), intent(in) :: input_file
+            integer :: open_unit, ios
+            type(toml_error), allocatable :: error
 
             ! Set default values. Make sure that these defaults are consistent.
 
@@ -159,10 +164,11 @@ module input
             pmk_input%imode = .false.
 
             ! Defaults for the [reference] section.
-            pmk_input%compare = .false.
+            ! Changed to .true. for testing purposes.
+            pmk_input%compare = .true.
             pmk_input%compare_isobar = .false.
-            pmk_input%compare_density = .false.
-            pmk_input%compare_phase_transition = .false.
+            pmk_input%compare_density = .true.
+            pmk_input%compare_phase_transition = .true.
             pmk_input%ref_isobar_weight = 1.0_dp
             pmk_input%ref_density_weight = 1.0_dp
             pmk_input%ref_phase_transition_weight = 1.0_dp
@@ -174,6 +180,18 @@ module input
             pmk_input%entropy_contrib = .false.
             pmk_input%cv_contrib = .false.
             pmk_input%progress_bar = .true.
+
+            ! Open the QCE input file.
+            block
+                open(newunit=open_unit, file=input_file, status="old", iostat=ios)
+                if (ios /= 0) call pmk_error("could not open '" // trim(input_file) // "'")   
+                call toml_parse(table, open_unit, error)
+                close(ios)
+                if (allocated(error)) then
+                  print '(a)', "Error: "//error%message
+                  stop 1
+                end if
+            end block
 
             ! Overwrite the default values with user-specified values.
             call read_data(table, pmk_input)
@@ -200,6 +218,8 @@ module input
           type(toml_array), pointer :: array
           logical :: reverse
           integer :: ival
+
+          write(*,*) "ananas"
 
           ! The default values are set at the end of each get_value call
           !------------------------------------------------------------------------
