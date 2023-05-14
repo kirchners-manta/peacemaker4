@@ -368,8 +368,8 @@ module input
           end if
 
           !> reference isobar 
-          call get_value(child, "isobar_file", input%ref_isobar_file_helper)
-          call get_value(child, "isobar_weight", input%ref_isobar_weight)
+          !call get_value(child, "isobar_file", input%ref_isobar_file_helper)
+          !call get_value(child, "isobar_weight", input%ref_isobar_weight)
 
 
           !------------------------------------------------------------------------
@@ -418,12 +418,12 @@ module input
         input%bxv_temp%last = input%bxv_temp_helper(2)
         input%bxv_temp%delta = input%bxv_temp_helper(3)
 
-        do i = 1, len(input%ref_isobar_file_helper)
-          if (input%ref_isobar_file_helper(i:i) == ' ') then
-            input%ref_isobar_file_helper(i:i) = '_'
-          end if
-        end do
-        input%ref_isobar_file = trim(input%ref_isobar_file_helper)
+        !do i = 1, len(input%ref_isobar_file_helper)
+        !  if (input%ref_isobar_file_helper(i:i) == ' ') then
+        !    input%ref_isobar_file_helper(i:i) = '_'
+        !  end if
+        !end do
+        !input%ref_isobar_file = trim(input%ref_isobar_file_helper)
 
         input%temperature%first = input%temperature_helper(1)
         input%temperature%last = input%temperature_helper(2)

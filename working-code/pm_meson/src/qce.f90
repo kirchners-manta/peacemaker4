@@ -71,6 +71,7 @@ module qce
         subroutine qce_prepare()
             ! Use of input data is only legit inside this subroutine.
             use input
+            write(*,*) "bei qce preparation angekommen"
     
             ! Assign global data.
             global_data%press = pmk_input%pressure*1.0e5_dp ! Conversion to Pa
@@ -88,8 +89,12 @@ module qce
             global_data%bxv_temp = pmk_input%bxv_temp
             global_data%temp = pmk_input%temperature
             global_data%progress_bar = pmk_input%progress_bar
+
+            write(*,*) "hinter global data"
+            write(*,*) "qce_iterations: ", global_data%qce_iterations
     
             allocate(global_data%monomer_amounts(size(monomer)))
+            write(*,*) "hinter allocate"
             global_data%monomer_amounts = pmk_input%monomer_amounts
             call initialize_conserved_quantities()
 
@@ -100,17 +105,20 @@ module qce
     
             ! Assign reference data.
             reference%compare = pmk_input%compare
+            write(*,*) "hinter reference compare"
     
             reference%compare_isobar = pmk_input%compare_isobar
-            if (reference%compare_isobar) then
-                reference%isobar_weight = pmk_input%ref_isobar_weight
-                allocate(reference%isobar_temperature( &
-                    size(pmk_input%ref_isobar_temperature)))
-                reference%isobar_temperature = pmk_input%ref_isobar_temperature
-                allocate(reference%isobar_volume( &
-                    size(pmk_input%ref_isobar_volume)))
-                reference%isobar_volume = 1.0e-3_dp*pmk_input%ref_isobar_volume
-            end if
+            write(*,*) "hinter reference compare isobar"
+            !if (reference%compare_isobar) then
+            !    write(*,*) "komisch"
+            !    reference%isobar_weight = pmk_input%ref_isobar_weight
+            !    allocate(reference%isobar_temperature( &
+            !        size(pmk_input%ref_isobar_temperature)))
+            !    reference%isobar_temperature = pmk_input%ref_isobar_temperature
+            !    allocate(reference%isobar_volume( &
+            !        size(pmk_input%ref_isobar_volume)))
+            !    reference%isobar_volume = 1.0e-3_dp*pmk_input%ref_isobar_volume
+            !end if
     
             reference%compare_density = pmk_input%compare_density
             if (reference%compare_density) then
@@ -118,6 +126,7 @@ module qce
                 reference%density = pmk_input%ref_density
                 reference%density_temperature = pmk_input%ref_density_temperature
             end if
+            write(*,*) "hinter reference density"
     
             reference%compare_phase_transition = pmk_input%compare_phase_transition
             if (reference%compare_phase_transition) then
@@ -187,6 +196,7 @@ module qce
             
             ! Outer loop that decreases the grid size in each iteration
             do igrid = 1, global_data%grid_iterations
+                write(*,*) "hinter igrid"
 
                 !$OMP PARALLEL DEFAULT(none), &
                 !$OMP& PRIVATE(ib, iamf, ibxv, iamf_temp, ibxv_temp, itemp), &
@@ -206,6 +216,7 @@ module qce
                                 allocate(ib%solution(global_data%temp%num))
                                 allocate(ib%lnq(global_data%temp%num, size(clusterset)))
                                 allocate(ib%populations(global_data%temp%num, size(clusterset)))
+                                write(*,*) "hinter allocate"
                         
                                 ib%amf = global_data%amf%first + (iamf-1)*global_data%amf%delta
                                 ib%amf = ib%amf/avogadro**2
@@ -219,8 +230,10 @@ module qce
                                     ib%temp(itemp) = global_data%temp%first &
                                         + (itemp-1)*global_data%temp%delta
                                 end do
-                        
+                                
+                                write(*,*) "vor qce_main"                        
                                 call qce_main(ib)
+                                write(*,*) "nach qce_main"
                         
                                 !$OMP CRITICAL
                                 global_data%nconverged = global_data%nconverged + count(ib%converged)
@@ -270,6 +283,7 @@ module qce
                                          global_data%bxv_temp%delta*(global_data%bxv_temp%num-1)/2.0_dp
             
             end do
+            write(*,*) "hinter parallel"
             
 
             ! Start interface mode if specified in input file.
@@ -754,6 +768,7 @@ module qce
                 ib%solution(itemp) = 1 ! Note below
                 if(converged) ib%solution(itemp) = ib%solution(itemp) + 100 ! Note below.
             end do
+            write(*,*) "hinter cycle one"
     
             ! Cycle Two
             vdamp = 1.0_dp + global_data%vdamp
@@ -795,6 +810,7 @@ module qce
                     end if
                 end if
             end do
+            write(*,*) "hinter cycle two"
     
             ! Determine isobar quality, if necessary.
             ib%error = 0.0_dp
@@ -803,7 +819,9 @@ module qce
                     reference%density, error)
                 ib%error = ib%error + reference%density_weight*error
             end if
+            ! wenn man hier auskommentiert ist man in einer endlosschleife
             if (reference%compare_isobar) then
+                write(*,*) "hinter compare_isobar- hier gibts ein problem"
                 call compare_isobar(ib, reference%isobar_temperature, &
                     reference%isobar_volume, error)
                 ib%error = ib%error + reference%isobar_weight*error

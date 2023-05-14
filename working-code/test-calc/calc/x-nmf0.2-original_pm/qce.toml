@@ -21,8 +21,8 @@
   monomer_amounts = [0.2, 0.8] # mol
 
 [reference]
-  density = [298.15, 1.014852]
-  phase_transition = [378.15, 3.0]
+  density = [298.15, 1.014852, 1.0]
+  phase_transition = [378.15, 1.0]
 
 [output]
   contributions = true
