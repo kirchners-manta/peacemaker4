@@ -334,7 +334,7 @@ module input
             !> Read [reference] section
             !------------------------------------------------------------------------
             ! The reference section is optional
-            call get_value(table, "reference", child)
+            call get_value(table, "reference", child, requested=.false.)
             if (associated(child)) then
                 write(*,*) "Reading reference section"
           
