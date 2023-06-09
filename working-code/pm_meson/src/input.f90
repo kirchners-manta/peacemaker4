@@ -253,13 +253,15 @@ module input
             if (reverse) input%amf_helper(:) = input%amf_helper(size(input%amf_helper):1:-1)
         
             !> amf_temp
-            call get_value(child, "amf_temp", array)
-            allocate(input%amf_temp_helper(len(array)))
-            do ival = 1, size(input%amf_temp_helper)
-              call get_value(array, ival, input%amf_temp_helper(ival))
-            end do
-            call get_value(child, "reverse", reverse, .false.)
-            if (reverse) input%amf_temp_helper(:) = input%amf_temp_helper(size(input%amf_temp_helper):1:-1)
+            call get_value(child, "amf_temp", array, requested=.false.)
+            if (associated(array)) then
+                allocate(input%amf_temp_helper(len(array)))
+                do ival = 1, size(input%amf_temp_helper)
+                  call get_value(array, ival, input%amf_temp_helper(ival))
+                end do
+                call get_value(child, "reverse", reverse, .false.)
+                if (reverse) input%amf_temp_helper(:) = input%amf_temp_helper(size(input%amf_temp_helper):1:-1)
+            end if
           
             !> bxv
             call get_value(child, "bxv", array)
@@ -345,15 +347,16 @@ module input
                 call get_value(child, "phase_transition", array, requested=.false.)
                 if (associated(array)) then
                     print *, "phase_transition associated"
+                    input%compare = .true.
+                    input%compare_phase_transition = .true.
                   do ival = 1, len(array)
                     if (ival == 1) then
                       call get_value(array, ival, input%ref_phase_transition)
                     else if (ival == 2) then
                       call get_value(array, ival, input%ref_phase_transition_weight)
                     end if
-                  end do
-                else 
-                  call get_value(child, "phase_transition", input%ref_phase_transition)      
+                end do
+
                 end if
             
                 !> reference density
@@ -363,6 +366,8 @@ module input
                 call get_value(child, "density", array, requested=.false.)
                 if (associated(array)) then
                     print *, "density associated"
+                    input%compare = .true.
+                    input%compare_density = .true.
                   do ival = 1, len(array)
                     if (ival == 1) then
                       call get_value(array, ival, input%ref_density_temperature)
@@ -381,8 +386,8 @@ module input
                 call get_value(child, "isobar", array, requested=.false.)
                 if (associated(array)) then
                     print *, "isobar associated"
-                    input%compare_isobar = .true.
                     input%compare = .true.
+                    input%compare_isobar = .true.
                     do ival = 1, len(array)
                         if (ival == 1) then
                             call get_value(array, ival, input%ref_isobar_file_helper)
