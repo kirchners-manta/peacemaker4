@@ -393,6 +393,7 @@ module input
                 else
                     write(*,*) "isobar not associated"
                     !input%compare_isobar = .false.
+                    input%ref_isobar_weight = 1.0_dp
                 end if
 
             else 
