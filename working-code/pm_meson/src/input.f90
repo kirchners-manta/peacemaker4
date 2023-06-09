@@ -342,8 +342,9 @@ module input
                 !  if only one value is given, it's stored in ref_phase_transition
                 !  if two values are given, the first is stored in ref_phase_transition, the second in 
                 !  ref_phase_transition_weight
-                call get_value(child, "phase_transition", array)
+                call get_value(child, "phase_transition", array, requested=.false.)
                 if (associated(array)) then
+                    print *, "phase_transition associated"
                   do ival = 1, len(array)
                     if (ival == 1) then
                       call get_value(array, ival, input%ref_phase_transition)
@@ -359,8 +360,9 @@ module input
                 !  if two values are given, the first is stored in ref_density_temperature, the second in ref_density
                 !  if three values are given, the first is stored in ref_density_temperature, the second in ref_density 
                 !  and the third in ref_density_weight
-                call get_value(child, "density", array)
+                call get_value(child, "density", array, requested=.false.)
                 if (associated(array)) then
+                    print *, "density associated"
                   do ival = 1, len(array)
                     if (ival == 1) then
                       call get_value(array, ival, input%ref_density_temperature)
@@ -371,14 +373,14 @@ module input
                     end if
                   end do
                 else 
-                  ! error catching     
+                  write(*,*) "density not associated"    
                 end if
             
                 !> reference isobar 
                 ! if reference isobar is given, compare_isobar is set to true
-                call get_value(child, "isobar", array)
+                call get_value(child, "isobar", array, requested=.false.)
                 if (associated(array)) then
-                    write(*,*) "associated"
+                    print *, "isobar associated"
                     input%compare_isobar = .true.
                     input%compare = .true.
                     do ival = 1, len(array)
@@ -389,8 +391,10 @@ module input
                         end if
                     end do
                 else
-                    input%compare_isobar = .false.
+                    write(*,*) "isobar not associated"
+                    !input%compare_isobar = .false.
                 end if
+
             else 
                 write(*,*) "no reference section found"
 
