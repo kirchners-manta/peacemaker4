@@ -315,16 +315,21 @@ module input
                 !  ref_phase_transition_weight
                 call get_value(child, "phase_transition", array, requested=.false.)
                 if (associated(array)) then
-                    print *, "phase_transition associated"
                     input%compare = .true.
                     input%compare_phase_transition = .true.
-                    do ival = 1, len(array)
-                        if (ival == 1) then
-                          call get_value(array, ival, input%ref_phase_transition)
-                        else if (ival == 2) then
-                          call get_value(array, ival, input%ref_phase_transition_weight)
-                        end if
-                    end do
+                    if (len(array) == 1) then
+                        call get_value(array, 1, input%ref_phase_transition)
+                        input%ref_phase_transition_weight = 1.0_dp
+                    else if (len(array) == 2) then
+                        call get_value(array, 1, input%ref_phase_transition)
+                        call get_value(array, 2, input%ref_phase_transition_weight)
+                    else
+                        call pmk_argument_count_error("phase_transition", "reference")
+                    end if
+                else
+                    input%compare = .false.
+                    pmk_input%compare_phase_transition = .false.
+                    pmk_input%ref_phase_transition_weight = 1.0_dp
                 end if
             
                 !> reference density
@@ -336,41 +341,39 @@ module input
                     print *, "density associated"
                     input%compare = .true.
                     input%compare_density = .true.
-                  do ival = 1, len(array)
-                    if (ival == 1) then
-                      call get_value(array, ival, input%ref_density_temperature)
-                    else if (ival == 2) then
-                      call get_value(array, ival, input%ref_density)
-                    else if (ival == 3) then
-                      call get_value(array, ival, input%ref_density_weight)
-                    end if
-                  end do
+                    if (len(array) == 2) then 
+                        call get_value(array, 1, input%ref_density_temperature)
+                        call get_value(array, 2, input%ref_density)
+                    else if (len(array) == 3) then
+                        call get_value(array, 1, input%ref_density_temperature)
+                        call get_value(array, 2, input%ref_density)
+                        call get_value(array, 3, input%ref_density_weight)
+                    else
+                        call pmk_argument_count_error("density", "reference")
+                    end if  
                 else 
-                  write(*,*) "density not associated"    
+                    pmk_input%compare_density = .false.
+                    pmk_input%ref_density_weight = 1.0_dp
                 end if
             
                 !> reference isobar 
                 ! if reference isobar is given, compare_isobar is set to true
                 call get_value(child, "isobar", array, requested=.false.)
                 if (associated(array)) then
-                    print *, "isobar associated"
                     input%compare = .true.
                     input%compare_isobar = .true.
-                    do ival = 1, len(array)
-                        if (ival == 1) then
-                            call get_value(array, ival, input%ref_isobar_file_helper)
-                        else if (ival == 2) then
-                            call get_value(array, ival, input%ref_isobar_weight)
-                        end if
-                    end do
+                    if (len(array) == 1) then 
+                        call get_value(array, 1, input%ref_isobar_file_helper)
+                    else if (len(array) == 2) then
+                        call get_value(array, 1, input%ref_isobar_file_helper)
+                        call get_value(array, 2, input%ref_isobar_weight)
+                    else
+                        call pmk_argument_count_error("isobar", "reference")
+                    end if
                 else
-                    write(*,*) "isobar not associated"
-                    !input%compare_isobar = .false.
+                    input%compare_isobar = .false.
                     input%ref_isobar_weight = 1.0_dp
                 end if
-
-            else 
-                write(*,*) "no reference section found"
 
             end if
               
@@ -381,22 +384,22 @@ module input
             call get_value(table, "output", child)
               
             !> cortribuion
-            call get_value(child, "contributions", input%contrib)
+            call get_value(child, "contributions", input%contrib, .false.)
               
             !> helmholtz contribution
-            call get_value(child, "helmholtz_contributions", input%helmholtz_contrib)
+            call get_value(child, "helmholtz_contributions", input%helmholtz_contrib, .false.)
               
             !> internal contributions
-            call get_value(child, "internal_contributions", input%internal_contrib)
+            call get_value(child, "internal_contributions", input%internal_contrib, .false.)
               
             !> entropy contributions
-            call get_value(child, "entropy_contributions", input%entropy_contrib)
+            call get_value(child, "entropy_contributions", input%entropy_contrib, .false.)
               
             !> cv contributions
-            call get_value(child, "cv_contributions", input%cv_contrib)
+            call get_value(child, "cv_contributions", input%cv_contrib, .false.)
               
             ! progress bar
-            call get_value(child, "progress_bar", input%progress_bar)
+            call get_value(child, "progress_bar", input%progress_bar, .false.)
               
         end subroutine read_data
         
