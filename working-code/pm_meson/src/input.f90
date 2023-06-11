@@ -97,37 +97,6 @@ module input
     type(toml_table), allocatable :: table
     type(input_data) :: pmk_input
 
-    !type :: input_t
-    !    ! Input read fromt the [system] section.
-    !    integer :: components
-!
-    !    ! Input read from the [ensemble] section.
-    !    type(range_t) :: temperature
-    !    real(dp) :: pressure
-    !    real(dp), dimension(:), allocatable :: monomer_amounts
-!
-    !    ! Input read from the [qce] section.
-    !    type(range_t) :: amf, bxv
-    !    type(range_t) :: amf_temp, bxv_temp
-    !    real(dp) :: max_deviation, volume_damping_factor, rotor_cutoff
-    !    integer :: qce_iterations, newton_iterations, grid_iterations, optimizer
-!
-    !    ! Input read from the [reference] section.
-    !    logical :: compare, compare_density, compare_isobar, compare_phase_transition
-    !    real(dp) :: ref_phase_transition, ref_density, ref_density_temperature
-    !    real(dp) :: ref_phase_transition_weight, ref_density_weight, ref_isobar_weight
-    !    real(dp), dimension(:), allocatable :: ref_isobar_temperature, ref_isobar_volume
-    !    type(varying_string) :: ref_isobar_file
-!
-    !    ! Input read from the [output] section.
-    !    logical :: contrib, helmholtz_contrib, internal_contrib, entropy_contrib, &
-    !        cv_contrib, imode
-    !    logical :: progress_bar
-    !end type input_t
-    !=====================================================================================
-    ! The only instantiation of the input_t data type. This one is available throughout
-    ! the whole program.
-    !type(input_t) :: pmk_input
     !=====================================================================================
     contains
         !=================================================================================
@@ -195,18 +164,7 @@ module input
 
             ! Overwrite the default values with user-specified values.
             call read_data(table, pmk_input)
-            ! Check default values.
-            write(*,*) "compare_isobar: ", pmk_input%compare_isobar
             call convert_helpers(pmk_input)
-            !call read_system_section(cfg)
-            !call read_qce_section(cfg)
-            !call read_ensemble_section(cfg)
-            !if (cfg%has_section("reference")) then
-            !    call read_reference_section(cfg)
-            !end if
-            !if (cfg%has_section("output")) then
-            !    call read_output_section(cfg)
-            !end if
         end subroutine process_input
 
         !=================================================================================
@@ -223,8 +181,6 @@ module input
             logical :: reverse
             integer :: ival
         
-            write(*,*) "ananas"
-        
             ! The default values are set at the end of each get_value call
             !------------------------------------------------------------------------
             !> Read [system] section
@@ -232,7 +188,7 @@ module input
             call get_value(table, "system", child)
         
             !> components
-            call get_value(child, "components", input%components)
+            call get_value(child, "components", input%components, 1)
         
             !------------------------------------------------------------------------
             !> Read [qce] section
@@ -244,17 +200,20 @@ module input
             end if
         
             !> amf
-            call get_value(child, "amf", array)
-            allocate(input%amf_helper(len(array)))
-            do ival = 1, size(input%amf_helper)
-              call get_value(array, ival, input%amf_helper(ival))
-            end do
-            call get_value(child, "reverse", reverse, .false.)
-            if (reverse) input%amf_helper(:) = input%amf_helper(size(input%amf_helper):1:-1)
+            call get_value(child, "amf", array, requested=.false.)
+            if (associated(array)) then
+                allocate(input%amf_helper(len(array)))
+                do ival = 1, size(input%amf_helper)
+                  call get_value(array, ival, input%amf_helper(ival))
+                end do
+                call get_value(child, "reverse", reverse, .false.)
+                if (reverse) input%amf_helper(:) = input%amf_helper(size(input%amf_helper):1:-1)
+            end if
         
             !> amf_temp
             call get_value(child, "amf_temp", array, requested=.false.)
             if (associated(array)) then
+                write(*,*) "amf_temp found"
                 allocate(input%amf_temp_helper(len(array)))
                 do ival = 1, size(input%amf_temp_helper)
                   call get_value(array, ival, input%amf_temp_helper(ival))
@@ -262,49 +221,54 @@ module input
                 call get_value(child, "reverse", reverse, .false.)
                 if (reverse) input%amf_temp_helper(:) = input%amf_temp_helper(size(input%amf_temp_helper):1:-1)
             end if
-          
+
             !> bxv
-            call get_value(child, "bxv", array)
-            allocate(input%bxv_helper(len(array)))
-            do ival = 1, size(input%bxv_helper)
-              call get_value(array, ival, input%bxv_helper(ival))
-            end do
-            call get_value(child, "reverse", reverse, .false.)
-            if (reverse) input%bxv_helper(:) = input%bxv_helper(size(input%bxv_helper):1:-1)
+            call get_value(child, "bxv", array, requested=.false.)
+            if (associated(array)) then 
+                allocate(input%bxv_helper(len(array)))
+                do ival = 1, size(input%bxv_helper)
+                  call get_value(array, ival, input%bxv_helper(ival))
+                end do
+                call get_value(child, "reverse", reverse, .false.)
+                if (reverse) input%bxv_helper(:) = input%bxv_helper(size(input%bxv_helper):1:-1)
+            end if
+
           
             !> bxv_temp
-            call get_value(child, "bxv_temp", array)
-            allocate(input%bxv_temp_helper(len(array)))
-            do ival = 1, size(input%bxv_temp_helper)
-              call get_value(array, ival, input%bxv_temp_helper(ival))
-            end do
-            call get_value(child, "reverse", reverse, .false.)
-            if (reverse) input%bxv_temp_helper(:) = input%bxv_temp_helper(size(input%bxv_temp_helper):1:-1)
+            call get_value(child, "bxv_temp", array, requested=.false.)
+            if (associated(array)) then               
+                allocate(input%bxv_temp_helper(len(array)))
+                do ival = 1, size(input%bxv_temp_helper)
+                  call get_value(array, ival, input%bxv_temp_helper(ival))
+                end do
+                call get_value(child, "reverse", reverse, .false.)
+                if (reverse) input%bxv_temp_helper(:) = input%bxv_temp_helper(size(input%bxv_temp_helper):1:-1)
+            end if
           
             !> qce iterations
-            call get_value(child, "iterations", input%qce_iterations)
+            call get_value(child, "iterations", input%qce_iterations, 100)
           
             !> newton iterations
-            call get_value(child, "newton_iterations", input%newton_iterations)
+            call get_value(child, "newton_iterations", input%newton_iterations, 500)
           
             !> grid iterations
-            call get_value(child, "grid_iterations", input%grid_iterations)
+            call get_value(child, "grid_iterations", input%grid_iterations, 1)
           
             !> optimizer
-            call get_value(child, "optimizer", input%optimizer)
+            call get_value(child, "optimizer", input%optimizer, 0)
           
             !> interface mode (imode, logical)
             !  if imode = true, then the interface is used
-            call get_value(child, "imode", input%imode)
+            call get_value(child, "imode", input%imode, .false.)
         
             !> maximum relative deviation
-            call get_value(child, "max_deviation", input%max_deviation)
+            call get_value(child, "max_deviation", input%max_deviation, 1.0e-9_dp)
         
             !> volume damping factor
-            call get_value(child, "volume_damping_factor", input%volume_damping_factor)
+            call get_value(child, "volume_damping_factor", input%volume_damping_factor, 0.01_dp)
         
             !> Read value from entry "rotor_cutoff"
-            call get_value(child, "rotor_cutoff", input%rotor_cutoff)
+            call get_value(child, "rotor_cutoff", input%rotor_cutoff, 0.00_dp)
         
             !------------------------------------------------------------------------
             !> Read [ensemble] section
@@ -313,24 +277,30 @@ module input
         
             !> temperature
             call get_value(child, "temperature", array)
-            allocate(input%temperature_helper(len(array)))
-            do ival = 1, size(input%temperature_helper)
-              call get_value(array, ival, input%temperature_helper(ival))
-            end do
-            call get_value(child, "reverse", reverse, .false.)
-            if (reverse) input%temperature_helper(:) = input%temperature_helper(size(input%temperature_helper):1:-1)
-        
+            if (associated(array)) then
+                allocate(input%temperature_helper(len(array)))
+                do ival = 1, size(input%temperature_helper)
+                  call get_value(array, ival, input%temperature_helper(ival))
+                end do
+                call get_value(child, "reverse", reverse, .false.)
+                if (reverse) input%temperature_helper(:) = input%temperature_helper(size(input%temperature_helper):1:-1)
+            end if
+
             !> pressure
-            call get_value(child, "pressure", input%pressure)
+            call get_value(child, "pressure", input%pressure, 1.013250_dp)
         
             ! monomer_amounts
             call get_value(child, "monomer_amounts", array)
-            allocate(input%monomer_amounts(len(array)))
-            do ival = 1, size(input%monomer_amounts)
-              call get_value(array, ival, input%monomer_amounts(ival))
-            end do
-            call get_value(child, "reverse", reverse, .false.)
-            if (reverse) input%monomer_amounts(:) = input%monomer_amounts(size(input%monomer_amounts):1:-1)
+            if (associated(array)) then
+                allocate(input%monomer_amounts(len(array)))
+                do ival = 1, size(input%monomer_amounts)
+                  call get_value(array, ival, input%monomer_amounts(ival))
+                end do
+                call get_value(child, "reverse", reverse, .false.)
+                if (reverse) input%monomer_amounts(:) = input%monomer_amounts(size(input%monomer_amounts):1:-1)
+            else
+                pmk_input%monomer_amounts = 1.0_dp/real(pmk_input%components, dp) ! in mol
+            end if
           
             !------------------------------------------------------------------------
             !> Read [reference] section
@@ -338,7 +308,6 @@ module input
             ! The reference section is optional
             call get_value(table, "reference", child, requested=.false.)
             if (associated(child)) then
-                write(*,*) "Reading reference section"
           
                 !> reference temperature of phase transition
                 !  if only one value is given, it's stored in ref_phase_transition
@@ -349,14 +318,13 @@ module input
                     print *, "phase_transition associated"
                     input%compare = .true.
                     input%compare_phase_transition = .true.
-                  do ival = 1, len(array)
-                    if (ival == 1) then
-                      call get_value(array, ival, input%ref_phase_transition)
-                    else if (ival == 2) then
-                      call get_value(array, ival, input%ref_phase_transition_weight)
-                    end if
-                end do
-
+                    do ival = 1, len(array)
+                        if (ival == 1) then
+                          call get_value(array, ival, input%ref_phase_transition)
+                        else if (ival == 2) then
+                          call get_value(array, ival, input%ref_phase_transition_weight)
+                        end if
+                    end do
                 end if
             
                 !> reference density
@@ -437,21 +405,40 @@ module input
             type(input_data), intent(inout) :: input
             integer :: i
 
-            input%amf%first = input%amf_helper(1)
-            input%amf%last = input%amf_helper(2)
-            input%amf%delta = input%amf_helper(3)
+            if (allocated(input%amf_helper)) then
+                input%amf%first = input%amf_helper(1)
+                input%amf%last = input%amf_helper(2)
+                input%amf%delta = input%amf_helper(3)
+            else
+                !> Default values
+                call set_range(pmk_input%amf, 0.0_dp, 0.0_dp, 1) ! in Jm^3/mol^2
+            end if
 
-            input%bxv%first = input%bxv_helper(1)
-            input%bxv%last = input%bxv_helper(2)
-            input%bxv%delta = input%bxv_helper(3)
+            if (allocated(input%bxv_helper)) then
+                input%bxv%first = input%bxv_helper(1)
+                input%bxv%last = input%bxv_helper(2)
+                input%bxv%delta = input%bxv_helper(3)
+            else
+                call set_range(pmk_input%bxv, 1.0_dp, 1.0_dp, 1) ! in 1/K
+            end if
 
-            input%amf_temp%first = input%amf_temp_helper(1)
-            input%amf_temp%last = input%amf_temp_helper(2)
-            input%amf_temp%delta = input%amf_temp_helper(3)
+            if (allocated(input%amf_temp_helper)) then
+                input%amf_temp%first = input%amf_temp_helper(1)
+                input%amf_temp%last = input%amf_temp_helper(2)
+                input%amf_temp%delta = input%amf_temp_helper(3)
+            else
+                !> Default values
+                call set_range(pmk_input%amf_temp, 0.0_dp, 0.0_dp, 1) ! in Jm^3/(K mol^2)
+            end if
 
-            input%bxv_temp%first = input%bxv_temp_helper(1)
-            input%bxv_temp%last = input%bxv_temp_helper(2)
-            input%bxv_temp%delta = input%bxv_temp_helper(3)
+            if (allocated(input%bxv_temp_helper)) then
+                input%bxv_temp%first = input%bxv_temp_helper(1)
+                input%bxv_temp%last = input%bxv_temp_helper(2)
+                input%bxv_temp%delta = input%bxv_temp_helper(3)
+            else 
+                !> Default vaues
+                call set_range(pmk_input%bxv_temp, 0.0_dp, 0.0_dp, 1) ! in 1/K
+            end if
 
             !do i = 1, len(input%ref_isobar_file_helper)
             !  if (input%ref_isobar_file_helper(i:i) == ' ') then
@@ -459,10 +446,14 @@ module input
             !  end if
             !end do
             !input%ref_isobar_file = trim(input%ref_isobar_file_helper)
+            if (allocated(input%temperature_helper)) then
+                input%temperature%first = input%temperature_helper(1)
+                input%temperature%last = input%temperature_helper(2)
+                input%temperature%delta = input%temperature_helper(3)
+            else
+                call set_range(pmk_input%temperature, 298.15_dp, 298.15_dp, 1) ! in K
+            end if
 
-            input%temperature%first = input%temperature_helper(1)
-            input%temperature%last = input%temperature_helper(2)
-            input%temperature%delta = input%temperature_helper(3)
         end subroutine convert_helpers
 
 
