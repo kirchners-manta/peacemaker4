@@ -75,7 +75,7 @@ program main
     !=====================================================================================
     ! Process input, perform sanity checks and print the processed input.
     call process_input(table, input_file)
-    !call check_input()
+    call check_input()
     call print_input()
     !=====================================================================================
     ! Setup clusterset, perform sanity check and print the processed input.

@@ -68,14 +68,12 @@ module input
 
         ! Input read from the [ensemble] section.
         type(range_t) :: temperature
-        real(dp), dimension(:), allocatable :: temperature_helper
         real(dp) :: pressure
         real(dp), dimension(:), allocatable :: monomer_amounts
 
         ! Input read from the [qce] section.
         type(range_t) :: amf, bxv
         type(range_t) :: amf_temp, bxv_temp
-        real(dp), dimension(:), allocatable :: amf_helper, bxv_helper, amf_temp_helper, bxv_temp_helper
         real(dp) :: max_deviation, volume_damping_factor, rotor_cutoff
         integer :: qce_iterations, newton_iterations, grid_iterations, optimizer
 
@@ -202,47 +200,66 @@ module input
             !> amf
             call get_value(child, "amf", array, requested=.false.)
             if (associated(array)) then
-                allocate(input%amf_helper(len(array)))
-                do ival = 1, size(input%amf_helper)
-                  call get_value(array, ival, input%amf_helper(ival))
-                end do
-                call get_value(child, "reverse", reverse, .false.)
-                if (reverse) input%amf_helper(:) = input%amf_helper(size(input%amf_helper):1:-1)
+                if (len(array) == 1) then 
+                    call get_value(array, 1, input%amf%first)
+                else if (len(array) == 3) then
+                    call get_value(array, 1, input%amf%first)
+                    call get_value(array, 2, input%amf%last)
+                    call get_value(array, 3, input%amf%num)
+                else
+                    call pmk_argument_error("amf", "qce")
+                end if  
+            else 
+                call set_range(pmk_input%amf, 0.0_dp, 0.0_dp, 1) ! in Jm^3/mol^2
             end if
         
             !> amf_temp
             call get_value(child, "amf_temp", array, requested=.false.)
             if (associated(array)) then
-                write(*,*) "amf_temp found"
-                allocate(input%amf_temp_helper(len(array)))
-                do ival = 1, size(input%amf_temp_helper)
-                  call get_value(array, ival, input%amf_temp_helper(ival))
-                end do
-                call get_value(child, "reverse", reverse, .false.)
-                if (reverse) input%amf_temp_helper(:) = input%amf_temp_helper(size(input%amf_temp_helper):1:-1)
+                if (len(array) == 1) then 
+                    call get_value(array, 1, input%amf_temp%first)
+                else if (len(array) == 3) then
+                    call get_value(array, 1, input%amf_temp%first)
+                    call get_value(array, 2, input%amf_temp%last)
+                    call get_value(array, 3, input%amf_temp%num)
+                else
+                    call pmk_argument_error("amf_temp", "qce")
+                end if  
+            else 
+                call set_range(pmk_input%amf_temp, 0.0_dp, 0.0_dp, 1) ! in Jm^3/(K mol^2)
             end if
 
             !> bxv
             call get_value(child, "bxv", array, requested=.false.)
-            if (associated(array)) then 
-                allocate(input%bxv_helper(len(array)))
-                do ival = 1, size(input%bxv_helper)
-                  call get_value(array, ival, input%bxv_helper(ival))
-                end do
-                call get_value(child, "reverse", reverse, .false.)
-                if (reverse) input%bxv_helper(:) = input%bxv_helper(size(input%bxv_helper):1:-1)
+            if (associated(array)) then
+                if (len(array) == 1) then 
+                    call get_value(array, 1, input%bxv%first)
+                else if (len(array) == 3) then
+                    call get_value(array, 1, input%bxv%first)
+                    call get_value(array, 2, input%bxv%last)
+                    call get_value(array, 3, input%bxv%num)
+                else
+                    call pmk_argument_error("bxv", "qce")
+                end if  
+            else 
+                call set_range(pmk_input%bxv, 1.0_dp, 1.0_dp, 1)
             end if
 
           
             !> bxv_temp
-            call get_value(child, "bxv_temp", array, requested=.false.)
-            if (associated(array)) then               
-                allocate(input%bxv_temp_helper(len(array)))
-                do ival = 1, size(input%bxv_temp_helper)
-                  call get_value(array, ival, input%bxv_temp_helper(ival))
-                end do
-                call get_value(child, "reverse", reverse, .false.)
-                if (reverse) input%bxv_temp_helper(:) = input%bxv_temp_helper(size(input%bxv_temp_helper):1:-1)
+            call get_value(child, "bxv", array, requested=.false.)
+            if (associated(array)) then
+                if (len(array) == 1) then 
+                    call get_value(array, 1, input%bxv_temp%first)
+                else if (len(array) == 3) then
+                    call get_value(array, 1, input%bxv_temp%first)
+                    call get_value(array, 2, input%bxv_temp%last)
+                    call get_value(array, 3, input%bxv_temp%num)
+                else
+                    call pmk_argument_error("bxv_temp", "qce")
+                end if  
+            else 
+                call set_range(pmk_input%bxv_temp, 0.0_dp, 0.0_dp, 1) ! in 1/K
             end if
           
             !> qce iterations
@@ -276,14 +293,19 @@ module input
             call get_value(table, "ensemble", child)
         
             !> temperature
-            call get_value(child, "temperature", array)
+            call get_value(child, "temperature", array, requested=.false.)
             if (associated(array)) then
-                allocate(input%temperature_helper(len(array)))
-                do ival = 1, size(input%temperature_helper)
-                  call get_value(array, ival, input%temperature_helper(ival))
-                end do
-                call get_value(child, "reverse", reverse, .false.)
-                if (reverse) input%temperature_helper(:) = input%temperature_helper(size(input%temperature_helper):1:-1)
+                if (len(array) == 1) then 
+                    call get_value(array, 1, input%temperature%first)
+                else if (len(array) == 3) then
+                    call get_value(array, 1, input%temperature%first)
+                    call get_value(array, 2, input%temperature%last)
+                    call get_value(array, 3, input%temperature%num)
+                else
+                    call pmk_argument_error("temperature", "ensemble")
+                end if  
+            else 
+                call set_range(pmk_input%temperature, 298.15_dp, 298.15_dp, 1) ! in K
             end if
 
             !> pressure
@@ -328,8 +350,8 @@ module input
                     end if
                 else
                     input%compare = .false.
-                    pmk_input%compare_phase_transition = .false.
-                    pmk_input%ref_phase_transition_weight = 1.0_dp
+                    input%compare_phase_transition = .false.
+                    input%ref_phase_transition_weight = 1.0_dp
                 end if
             
                 !> reference density
@@ -344,6 +366,7 @@ module input
                     if (len(array) == 2) then 
                         call get_value(array, 1, input%ref_density_temperature)
                         call get_value(array, 2, input%ref_density)
+                        input%ref_density_weight = 1.0_dp
                     else if (len(array) == 3) then
                         call get_value(array, 1, input%ref_density_temperature)
                         call get_value(array, 2, input%ref_density)
@@ -352,8 +375,8 @@ module input
                         call pmk_argument_count_error("density", "reference")
                     end if  
                 else 
-                    pmk_input%compare_density = .false.
-                    pmk_input%ref_density_weight = 1.0_dp
+                    input%compare_density = .false.
+                    input%ref_density_weight = 1.0_dp
                 end if
             
                 !> reference isobar 
@@ -375,8 +398,16 @@ module input
                     input%ref_isobar_weight = 1.0_dp
                 end if
 
-            end if
-              
+            else 
+            ! Defaults for the [reference] section.
+                input%compare = .false.
+                input%compare_isobar = .false.
+                input%compare_density = .false.
+                input%compare_phase_transition = .false.
+                input%ref_isobar_weight = 1.0_dp
+                input%ref_density_weight = 1.0_dp
+                input%ref_phase_transition_weight = 1.0_dp
+            end if             
               
             !------------------------------------------------------------------------
             !> Read [output] section
@@ -408,54 +439,14 @@ module input
             type(input_data), intent(inout) :: input
             integer :: i
 
-            if (allocated(input%amf_helper)) then
-                input%amf%first = input%amf_helper(1)
-                input%amf%last = input%amf_helper(2)
-                input%amf%delta = input%amf_helper(3)
-            else
-                !> Default values
-                call set_range(pmk_input%amf, 0.0_dp, 0.0_dp, 1) ! in Jm^3/mol^2
+            if (allocated(input%ref_isobar_file_helper)) then
+                do i = 1, len(input%ref_isobar_file_helper)
+                    if (input%ref_isobar_file_helper(i:i) == ' ') then
+                      input%ref_isobar_file_helper(i:i) = '_'
+                    end if
+                end do
             end if
-
-            if (allocated(input%bxv_helper)) then
-                input%bxv%first = input%bxv_helper(1)
-                input%bxv%last = input%bxv_helper(2)
-                input%bxv%delta = input%bxv_helper(3)
-            else
-                call set_range(pmk_input%bxv, 1.0_dp, 1.0_dp, 1) ! in 1/K
-            end if
-
-            if (allocated(input%amf_temp_helper)) then
-                input%amf_temp%first = input%amf_temp_helper(1)
-                input%amf_temp%last = input%amf_temp_helper(2)
-                input%amf_temp%delta = input%amf_temp_helper(3)
-            else
-                !> Default values
-                call set_range(pmk_input%amf_temp, 0.0_dp, 0.0_dp, 1) ! in Jm^3/(K mol^2)
-            end if
-
-            if (allocated(input%bxv_temp_helper)) then
-                input%bxv_temp%first = input%bxv_temp_helper(1)
-                input%bxv_temp%last = input%bxv_temp_helper(2)
-                input%bxv_temp%delta = input%bxv_temp_helper(3)
-            else 
-                !> Default vaues
-                call set_range(pmk_input%bxv_temp, 0.0_dp, 0.0_dp, 1) ! in 1/K
-            end if
-
-            !do i = 1, len(input%ref_isobar_file_helper)
-            !  if (input%ref_isobar_file_helper(i:i) == ' ') then
-            !    input%ref_isobar_file_helper(i:i) = '_'
-            !  end if
-            !end do
-            !input%ref_isobar_file = trim(input%ref_isobar_file_helper)
-            if (allocated(input%temperature_helper)) then
-                input%temperature%first = input%temperature_helper(1)
-                input%temperature%last = input%temperature_helper(2)
-                input%temperature%delta = input%temperature_helper(3)
-            else
-                call set_range(pmk_input%temperature, 298.15_dp, 298.15_dp, 1) ! in K
-            end if
+            input%ref_isobar_file = trim(input%ref_isobar_file_helper)
 
         end subroutine convert_helpers
 
@@ -463,6 +454,7 @@ module input
         !=================================================================================
         ! Performs sanity checks on the input.
         subroutine check_input()
+            write(*,*) "Checking input..."
             ! Check amf.
             if (pmk_input%amf%first < 0.0_dp) &
                 call pmk_unphysical_argument_error("amf", "qce")
@@ -567,6 +559,7 @@ module input
                     any(pmk_input%ref_isobar_temperature > pmk_input%temperature%last)) &
                     call pmk_error("reference isobar temperatures must be within " // &
                     "the investigated temperature range")
+
             end if
         end subroutine check_input
         !=================================================================================
