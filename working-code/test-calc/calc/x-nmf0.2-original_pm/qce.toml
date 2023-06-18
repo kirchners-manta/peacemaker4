@@ -9,7 +9,7 @@
 
 [ensemble]
   temperature = [280.0, 550.0, 271] # K
-  pressure = 1.01325 # bar
+  pressure = [1.01325] # bar
   monomer_amounts = [0.2, 0.8] # mol
 
 [reference]

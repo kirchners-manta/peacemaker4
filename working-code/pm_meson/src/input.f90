@@ -211,10 +211,12 @@ module input
             if (associated(array)) then
                 if (len(array) == 1) then 
                     call get_value(array, 1, input%amf%first)
+                    call set_range(input%amf, input%amf%first, input%amf%first, 1)
                 else if (len(array) == 3) then
                     call get_value(array, 1, input%amf%first)
                     call get_value(array, 2, input%amf%last)
                     call get_value(array, 3, input%amf%num)
+                    call set_range(input%amf, input%amf%first, input%amf%last, input%amf%num)
                 else
                     call pmk_argument_error("amf", "qce")
                 end if  
@@ -227,10 +229,12 @@ module input
             if (associated(array)) then
                 if (len(array) == 1) then 
                     call get_value(array, 1, input%amf_temp%first)
+                    call set_range(input%amf_temp, input%amf_temp%first, input%amf_temp%first, 1)
                 else if (len(array) == 3) then
                     call get_value(array, 1, input%amf_temp%first)
                     call get_value(array, 2, input%amf_temp%last)
                     call get_value(array, 3, input%amf_temp%num)
+                    call set_range(input%amf_temp, input%amf_temp%first, input%amf_temp%last, input%amf_temp%num)
                 else
                     call pmk_argument_error("amf_temp", "qce")
                 end if  
@@ -243,10 +247,12 @@ module input
             if (associated(array)) then
                 if (len(array) == 1) then 
                     call get_value(array, 1, input%bxv%first)
+                    call set_range(input%bxv, input%bxv%first, input%bxv%first, 1)
                 else if (len(array) == 3) then
                     call get_value(array, 1, input%bxv%first)
                     call get_value(array, 2, input%bxv%last)
                     call get_value(array, 3, input%bxv%num)
+                    call set_range(input%bxv, input%bxv%first, input%bxv%last, input%bxv%num)
                 else
                     call pmk_argument_error("bxv", "qce")
                 end if  
@@ -256,14 +262,16 @@ module input
 
           
             !> bxv_temp
-            call get_value(child, "bxv", array, requested=.false.)
+            call get_value(child, "bxv_temp", array, requested=.false.)
             if (associated(array)) then
                 if (len(array) == 1) then 
                     call get_value(array, 1, input%bxv_temp%first)
+                    call set_range(input%bxv_temp, input%bxv_temp%first, input%bxv_temp%first, 1)
                 else if (len(array) == 3) then
                     call get_value(array, 1, input%bxv_temp%first)
                     call get_value(array, 2, input%bxv_temp%last)
                     call get_value(array, 3, input%bxv_temp%num)
+                    call set_range(input%bxv_temp, input%bxv_temp%first, input%bxv_temp%last, input%bxv_temp%num)
                 else
                     call pmk_argument_error("bxv_temp", "qce")
                 end if  
@@ -374,10 +382,12 @@ module input
             if (associated(array)) then
                 if (len(array) == 1) then 
                     call get_value(array, 1, input%temperature%first)
+                    call set_range(input%temperature, input%temperature%first, input%temperature%first, 1)
                 else if (len(array) == 3) then
                     call get_value(array, 1, input%temperature%first)
                     call get_value(array, 2, input%temperature%last)
                     call get_value(array, 3, input%temperature%num)
+                    call set_range(input%temperature, input%temperature%first, input%temperature%last, input%temperature%num)
                 else
                     call pmk_argument_error("temperature", "ensemble")
                 end if  
@@ -386,7 +396,16 @@ module input
             end if
 
             !> pressure
-            call get_value(child, "pressure", input%pressure, 1.013250_dp)
+            call get_value(child, "pressure", array, requested=.false.)
+            if (associated(array)) then
+                if (len(array)==1) then
+                    call get_value(array, 1, input%pressure)
+                else 
+                    call pmk_argument_count_error("pressure", "ensemble")
+                end if
+            else 
+                input%pressure = 1.013250_dp
+            end if
         
             ! monomer_amounts
             call get_value(child, "monomer_amounts", array)
