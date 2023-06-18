@@ -186,7 +186,16 @@ module input
             call get_value(table, "system", child)
         
             !> components
-            call get_value(child, "components", input%components, 1)
+            call get_value(child, "components", array, requested=.false.)
+            if (associated(array)) then
+                if (len(array)==1) then
+                    call get_value(array, 1, input%components)
+                else 
+                    call pmk_argument_count_error("components", "system")
+                end if
+            else 
+                input%components = 1
+            end if
         
             !------------------------------------------------------------------------
             !> Read [qce] section
@@ -263,29 +272,97 @@ module input
             end if
           
             !> qce iterations
-            call get_value(child, "iterations", input%qce_iterations, 100)
+            call get_value(child, "iterations", array, requested=.false.)
+            if (associated(array)) then
+                if (len(array)==1) then
+                    call get_value(array, 1, input%qce_iterations)
+                else 
+                    call pmk_argument_count_error("qce_iterations", "qce")
+                end if
+            else 
+                input%qce_iterations = 100
+            end if
           
             !> newton iterations
-            call get_value(child, "newton_iterations", input%newton_iterations, 500)
+            call get_value(child, "newton_iterations", array, requested=.false.)
+            if (associated(array)) then
+                if (len(array)==1) then
+                    call get_value(array, 1, input%newton_iterations)
+                else 
+                    call pmk_argument_count_error("newton_iterations", "qce")
+                end if
+            else 
+                input%newton_iterations = 500
+            end if
           
             !> grid iterations
-            call get_value(child, "grid_iterations", input%grid_iterations, 1)
+            call get_value(child, "grid_iterations", array, requested=.false.)
+            if (associated(array)) then
+                if (len(array)==1) then
+                    call get_value(array, 1, input%grid_iterations)
+                else 
+                    call pmk_argument_count_error("grid_iterations", "qce")
+                end if
+            else 
+                input%grid_iterations = 1
+            end if
+            
           
             !> optimizer
-            call get_value(child, "optimizer", input%optimizer, 0)
+            call get_value(child, "optimizer", array, requested=.false.)
+            if (associated(array)) then
+                if (len(array)==1) then
+                    call get_value(array, 1, input%optimizer)
+                else 
+                    call pmk_argument_count_error("optimizer", "qce")
+                end if
+            else 
+                input%optimizer = 0
+            end if
           
-            !> interface mode (imode, logical)
-            !  if imode = true, then the interface is used
-            call get_value(child, "imode", input%imode, .false.)
+            !> interface mode
+            call get_value(child, "imode", array, requested=.false.)
+            if (associated(array)) then
+                input%imode = .true.
+            else 
+                input%imode = .false.
+            end if
         
             !> maximum relative deviation
-            call get_value(child, "max_deviation", input%max_deviation, 1.0e-9_dp)
+            call get_value(child, "max_deviation", array, requested=.false.)
+            if (associated(array)) then
+                if (len(array)==1) then
+                    call get_value(array, 1, input%max_deviation)
+                else 
+                    call pmk_argument_count_error("max_deviation", "qce")
+                end if
+            else 
+                input%max_deviation = 1.0e-9_dp
+            end if
         
             !> volume damping factor
-            call get_value(child, "volume_damping_factor", input%volume_damping_factor, 0.01_dp)
+            call get_value(child, "volume_damping_factor", array, requested=.false.)
+            if (associated(array)) then
+                if (len(array)==1) then
+                    call get_value(array, 1, input%volume_damping_factor)
+                else 
+                    call pmk_argument_count_error("volume_damping_factor", "qce")
+                end if
+            else 
+                input%volume_damping_factor = 0.01_dp
+            end if
         
             !> Read value from entry "rotor_cutoff"
-            call get_value(child, "rotor_cutoff", input%rotor_cutoff, 0.00_dp)
+            call get_value(child, "rotor_cutoff", array, requested=.false.)
+            if (associated(array)) then
+                if (len(array)==1) then
+                    call get_value(array, 1, input%rotor_cutoff)
+                else 
+                    call pmk_argument_count_error("rotor_cutoff", "qce")
+                end if
+            else 
+                input%rotor_cutoff = 0.00_dp
+            end if
         
             !------------------------------------------------------------------------
             !> Read [ensemble] section

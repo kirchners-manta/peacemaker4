@@ -1,5 +1,5 @@
 [system]
-  components = 2
+  components = [2]
 
 [qce]
   amf = [0.0, 2.0, 21] # J*m^3/mol
