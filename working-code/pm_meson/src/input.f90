@@ -392,7 +392,7 @@ module input
                     call pmk_argument_error("temperature", "ensemble")
                 end if  
             else 
-                call set_range(pmk_input%temperature, 298.15_dp, 298.15_dp, 1) ! in K
+                call set_range(input%temperature, 298.15_dp, 298.15_dp, 1) ! in K
             end if
 
             !> pressure
@@ -417,7 +417,7 @@ module input
                 call get_value(child, "reverse", reverse, .false.)
                 if (reverse) input%monomer_amounts(:) = input%monomer_amounts(size(input%monomer_amounts):1:-1)
             else
-                pmk_input%monomer_amounts = 1.0_dp/real(pmk_input%components, dp) ! in mol
+                input%monomer_amounts = 1.0_dp/real(pmk_input%components, dp) ! in mol
             end if
           
             !------------------------------------------------------------------------
@@ -456,7 +456,6 @@ module input
                 !  and the third in ref_density_weight
                 call get_value(child, "density", array, requested=.false.)
                 if (associated(array)) then
-                    print *, "density associated"
                     input%compare = .true.
                     input%compare_density = .true.
                     if (len(array) == 2) then 

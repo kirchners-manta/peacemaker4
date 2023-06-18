@@ -92,11 +92,8 @@ program main
     !=====================================================================================
     ! Perform QCE calculations.
     call qce_prepare()
-    write(*,*) "Starting QCE calculations..."
     call qce_start()
-    write(*,*) "QCE calculations finished."
     call qce_finalize()
-    write(*,*) "QCE calculations finalized."
     !=====================================================================================
     ! Stop time measurement and report.
     call system_clock(pmk_stop, count_rate)
