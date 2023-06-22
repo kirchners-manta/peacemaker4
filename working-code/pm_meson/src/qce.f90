@@ -220,7 +220,6 @@ module qce
                                         + (itemp-1)*global_data%temp%delta
                                 end do
                                                      
-                                write(*,*) iamf
                                 call qce_main(ib)
                               
                         

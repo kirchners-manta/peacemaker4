@@ -163,6 +163,7 @@ module input
             ! Overwrite the default values with user-specified values.
             call read_data(table, pmk_input)
             call convert_helpers(pmk_input)
+            write(*,*) pmk_input%progress_bar
         end subroutine process_input
 
         !=================================================================================
@@ -525,7 +526,7 @@ module input
             call get_value(child, "cv_contributions", input%cv_contrib, .false.)
               
             ! progress bar
-            call get_value(child, "progress_bar", input%progress_bar, .false.)
+            call get_value(child, "progress_bar", input%progress_bar, .true.)
               
         end subroutine read_data
         
