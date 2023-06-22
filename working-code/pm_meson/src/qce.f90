@@ -220,7 +220,9 @@ module qce
                                         + (itemp-1)*global_data%temp%delta
                                 end do
                                                      
+                                write(*,*) iamf
                                 call qce_main(ib)
+                              
                         
                                 !$OMP CRITICAL
                                 global_data%nconverged = global_data%nconverged + count(ib%converged)
