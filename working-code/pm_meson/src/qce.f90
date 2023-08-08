@@ -240,7 +240,6 @@ module qce
                                 !$OMP END ATOMIC
                 
 #ifdef _OPENMP
-                                write(*,*) "hallo"
                                 if (omp_get_thread_num() == 0) then
                                     call progress_bar(nr_isobars_computed, nr_isobars_total, global_data%progress_bar)
                                 end if

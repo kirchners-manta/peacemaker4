@@ -32,7 +32,7 @@ tomlf_dep = dependency(
 )
 
 exe = executable('peacemaker', sources, 
-                 fortran_args : ['-cpp'],
+                 fortran_args : ['-cpp', '-fopenmp'],
                  link_args: ['-fopenmp'],
                  dependencies : [tomlf_dep],
                 install : true)
