@@ -91,13 +91,29 @@ program main
     !=====================================================================================
     ! Perform QCE calculations.
     call qce_prepare()
-    call qce_start()
-    call qce_finalize()
-    !=====================================================================================
+
     ! Stop time measurement and report.
     call system_clock(pmk_stop, count_rate)
     write(*,'(4X,A,1X,G0.2,1X,A)') &
-        "Elapsed time:", real(pmk_stop-pmk_start) / real(count_rate), "seconds"
+        "Elapsed time - prepare:", real(pmk_stop-pmk_start) / real(count_rate), "seconds"
+    write(*,*)
+    call system_clock(pmk_start)
+
+    call qce_start()
+
+    ! Stop time measurement and report.
+    call system_clock(pmk_stop, count_rate)
+    write(*,'(4X,A,1X,G0.2,1X,A)') &
+        "Elapsed time - start:", real(pmk_stop-pmk_start) / real(count_rate), "seconds"
+    write(*,*)
+    call system_clock(pmk_start)
+
+    call qce_finalize()
+    
+    ! Stop time measurement and report.
+    call system_clock(pmk_stop, count_rate)
+    write(*,'(4X,A,1X,G0.2,1X,A)') &
+        "Elapsed time - finalize:", real(pmk_stop-pmk_start) / real(count_rate), "seconds"
     write(*,*)
     !=====================================================================================
     ! Print citations.
