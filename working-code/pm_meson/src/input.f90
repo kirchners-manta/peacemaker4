@@ -106,6 +106,8 @@ module input
             type(toml_error), allocatable :: error
 
             ! Set default values. Make sure that these defaults are consistent.
+            !> Using toml, we don't need this anymore. Defaults are set in the read_data subroutine.
+            !> It's still here for clarity.
 
             ! Defaults for the [system] section.
             pmk_input%components = 1
@@ -163,7 +165,7 @@ module input
             ! Overwrite the default values with user-specified values.
             call read_data(table, pmk_input)
             call convert_helpers(pmk_input)
-            write(*,*) pmk_input%progress_bar
+
         end subroutine process_input
 
         !=================================================================================
@@ -180,7 +182,7 @@ module input
             logical :: reverse
             integer :: ival
         
-            ! The default values are set at the end of each get_value call
+            ! The default values are set as via else statements in the following.
             !------------------------------------------------------------------------
             !> Read [system] section
             !------------------------------------------------------------------------
@@ -550,7 +552,7 @@ module input
         !=================================================================================
         ! Performs sanity checks on the input.
         subroutine check_input()
-            write(*,*) "Checking input..."
+            
             ! Check amf.
             if (pmk_input%amf%first < 0.0_dp) &
                 call pmk_unphysical_argument_error("amf", "qce")
