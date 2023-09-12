@@ -30,7 +30,6 @@
     qce@thch.uni-bonn.de. This will help us reaching out to you in case of   
     critical bug fixes or new releases.                                      [0m
 
- Checking input...
     Using the following input:
 
         [system]
@@ -147,7 +146,7 @@
     Calculated phase transition: 378.150 K
     Calculated density: 1.01485 g/cm^3
 
-    Elapsed time: 17. seconds
+    Elapsed time: 16. seconds
 
 [1m    Please always cite:
 
