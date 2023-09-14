@@ -219,9 +219,9 @@ module qce
                                     ib%temp(itemp) = global_data%temp%first &
                                         + (itemp-1)*global_data%temp%delta
                                 end do
-                        
+                                                     
                                 call qce_main(ib)
-                        
+                                                      
                                 !$OMP CRITICAL
                                 global_data%nconverged = global_data%nconverged + count(ib%converged)
                                 if (ib%error < best_ib%error) best_ib = ib
@@ -243,8 +243,8 @@ module qce
                                 if (omp_get_thread_num() == 0) then
                                     call progress_bar(nr_isobars_computed, nr_isobars_total, global_data%progress_bar)
                                 end if
-#else           
-                                    call progress_bar(nr_isobars_computed, nr_isobars_total, global_data%progress_bar)
+#else                              
+                                   call progress_bar(nr_isobars_computed, nr_isobars_total, global_data%progress_bar)
 #endif          
                             end do
                         end do
@@ -803,6 +803,7 @@ module qce
                     reference%density, error)
                 ib%error = ib%error + reference%density_weight*error
             end if
+            ! wenn man hier auskommentiert ist man in einer endlosschleife
             if (reference%compare_isobar) then
                 call compare_isobar(ib, reference%isobar_temperature, &
                     reference%isobar_volume, error)

@@ -43,6 +43,11 @@ module input
     use error
     use auxiliary
     use constants
+
+    ! for readin toml
+    !use reader, only : read_data, convert_helpers
+    use tomlf, only : toml_table, toml_parse, toml_error, toml_array, get_value, len, toml_key
+
     implicit none
     private
     !=====================================================================================
@@ -51,9 +56,13 @@ module input
     public :: process_input
     public :: check_input
     public :: print_input
+    public :: input_data
+    public :: table
+    public :: toml_parse
     !=====================================================================================
     ! The input_t data type.
-    type :: input_t
+    ! Input type for toml input
+    type :: input_data
         ! Input read fromt the [system] section.
         integer :: components
 
@@ -73,25 +82,32 @@ module input
         real(dp) :: ref_phase_transition, ref_density, ref_density_temperature
         real(dp) :: ref_phase_transition_weight, ref_density_weight, ref_isobar_weight
         real(dp), dimension(:), allocatable :: ref_isobar_temperature, ref_isobar_volume
+        character(len=:), allocatable :: ref_isobar_file_helper
         type(varying_string) :: ref_isobar_file
 
         ! Input read from the [output] section.
         logical :: contrib, helmholtz_contrib, internal_contrib, entropy_contrib, &
             cv_contrib, imode
         logical :: progress_bar
-    end type input_t
-    !=====================================================================================
-    ! The only instantiation of the input_t data type. This one is available throughout
-    ! the whole program.
-    type(input_t) :: pmk_input
+    end type input_data
+
+      
+    type(toml_table), allocatable :: table
+    type(input_data) :: pmk_input
+
     !=====================================================================================
     contains
         !=================================================================================
         ! Processes the input from the input configuration file.
-        subroutine process_input(cfg)
-            type(config_t), intent(inout) :: cfg
+        subroutine process_input(table, input_file)
+            type(toml_table), allocatable, intent(inout) :: table
+            character(len=*), intent(in) :: input_file
+            integer :: open_unit, ios
+            type(toml_error), allocatable :: error
 
             ! Set default values. Make sure that these defaults are consistent.
+            !> Using toml, we don't need this anymore. Defaults are set in the read_data subroutine.
+            !> It's still here for clarity.
 
             ! Defaults for the [system] section.
             pmk_input%components = 1
@@ -117,10 +133,11 @@ module input
             pmk_input%imode = .false.
 
             ! Defaults for the [reference] section.
-            pmk_input%compare = .false.
+            ! Changed to .true. for testing purposes.
+            pmk_input%compare = .true.
             pmk_input%compare_isobar = .false.
-            pmk_input%compare_density = .false.
-            pmk_input%compare_phase_transition = .false.
+            pmk_input%compare_density = .true.
+            pmk_input%compare_phase_transition = .true.
             pmk_input%ref_isobar_weight = 1.0_dp
             pmk_input%ref_density_weight = 1.0_dp
             pmk_input%ref_phase_transition_weight = 1.0_dp
@@ -133,20 +150,409 @@ module input
             pmk_input%cv_contrib = .false.
             pmk_input%progress_bar = .true.
 
+            ! Open the QCE input file.
+            block
+                open(newunit=open_unit, file=input_file, status="old", iostat=ios)
+                if (ios /= 0) call pmk_error("could not open '" // trim(input_file) // "'")   
+                call toml_parse(table, open_unit, error)
+                close(ios)
+                if (allocated(error)) then
+                  print '(a)', "Error: "//error%message
+                  stop 1
+                end if
+            end block
+
             ! Overwrite the default values with user-specified values.
-            call read_system_section(cfg)
-            call read_qce_section(cfg)
-            call read_ensemble_section(cfg)
-            if (cfg%has_section("reference")) then
-                call read_reference_section(cfg)
-            end if
-            if (cfg%has_section("output")) then
-                call read_output_section(cfg)
-            end if
+            call read_data(table, pmk_input)
+            call convert_helpers(pmk_input)
+
         end subroutine process_input
+
+        !=================================================================================
+
+        !------------------------------------------------------------------------
+        !> Read input data from TOML file
+        !------------------------------------------------------------------------
+        subroutine read_data(table, input)
+
+            type(toml_table), intent(inout) :: table
+            type(input_data), intent(out) :: input
+            type(toml_table), pointer :: child
+            type(toml_array), pointer :: array
+            logical :: reverse
+            integer :: ival
+        
+            ! The default values are set as via else statements in the following.
+            !------------------------------------------------------------------------
+            !> Read [system] section
+            !------------------------------------------------------------------------
+            call get_value(table, "system", child)
+        
+            !> components
+            call get_value(child, "components", array, requested=.false.)
+            if (associated(array)) then
+                if (len(array)==1) then
+                    call get_value(array, 1, input%components)
+                else 
+                    call pmk_argument_count_error("components", "system")
+                end if
+            else 
+                input%components = 1
+            end if
+        
+            !------------------------------------------------------------------------
+            !> Read [qce] section
+            !------------------------------------------------------------------------
+            call get_value(table, "qce", child)
+            if (.not.associated(child)) then
+              write(*,*) "Error: No [qce] section found in input file"
+              stop
+            end if
+        
+            !> amf
+            call get_value(child, "amf", array, requested=.false.)
+            if (associated(array)) then
+                if (len(array) == 1) then 
+                    call get_value(array, 1, input%amf%first)
+                    call set_range(input%amf, input%amf%first, input%amf%first, 1)
+                else if (len(array) == 3) then
+                    call get_value(array, 1, input%amf%first)
+                    call get_value(array, 2, input%amf%last)
+                    call get_value(array, 3, input%amf%num)
+                    call set_range(input%amf, input%amf%first, input%amf%last, input%amf%num)
+                else
+                    call pmk_argument_error("amf", "qce")
+                end if  
+            else 
+                call set_range(pmk_input%amf, 0.0_dp, 0.0_dp, 1) ! in Jm^3/mol^2
+            end if
+        
+            !> amf_temp
+            call get_value(child, "amf_temp", array, requested=.false.)
+            if (associated(array)) then
+                if (len(array) == 1) then 
+                    call get_value(array, 1, input%amf_temp%first)
+                    call set_range(input%amf_temp, input%amf_temp%first, input%amf_temp%first, 1)
+                else if (len(array) == 3) then
+                    call get_value(array, 1, input%amf_temp%first)
+                    call get_value(array, 2, input%amf_temp%last)
+                    call get_value(array, 3, input%amf_temp%num)
+                    call set_range(input%amf_temp, input%amf_temp%first, input%amf_temp%last, input%amf_temp%num)
+                else
+                    call pmk_argument_error("amf_temp", "qce")
+                end if  
+            else 
+                call set_range(pmk_input%amf_temp, 0.0_dp, 0.0_dp, 1) ! in Jm^3/(K mol^2)
+            end if
+
+            !> bxv
+            call get_value(child, "bxv", array, requested=.false.)
+            if (associated(array)) then
+                if (len(array) == 1) then 
+                    call get_value(array, 1, input%bxv%first)
+                    call set_range(input%bxv, input%bxv%first, input%bxv%first, 1)
+                else if (len(array) == 3) then
+                    call get_value(array, 1, input%bxv%first)
+                    call get_value(array, 2, input%bxv%last)
+                    call get_value(array, 3, input%bxv%num)
+                    call set_range(input%bxv, input%bxv%first, input%bxv%last, input%bxv%num)
+                else
+                    call pmk_argument_error("bxv", "qce")
+                end if  
+            else 
+                call set_range(pmk_input%bxv, 1.0_dp, 1.0_dp, 1)
+            end if
+
+          
+            !> bxv_temp
+            call get_value(child, "bxv_temp", array, requested=.false.)
+            if (associated(array)) then
+                if (len(array) == 1) then 
+                    call get_value(array, 1, input%bxv_temp%first)
+                    call set_range(input%bxv_temp, input%bxv_temp%first, input%bxv_temp%first, 1)
+                else if (len(array) == 3) then
+                    call get_value(array, 1, input%bxv_temp%first)
+                    call get_value(array, 2, input%bxv_temp%last)
+                    call get_value(array, 3, input%bxv_temp%num)
+                    call set_range(input%bxv_temp, input%bxv_temp%first, input%bxv_temp%last, input%bxv_temp%num)
+                else
+                    call pmk_argument_error("bxv_temp", "qce")
+                end if  
+            else 
+                call set_range(pmk_input%bxv_temp, 0.0_dp, 0.0_dp, 1) ! in 1/K
+            end if
+          
+            !> qce iterations
+            call get_value(child, "iterations", array, requested=.false.)
+            if (associated(array)) then
+                if (len(array)==1) then
+                    call get_value(array, 1, input%qce_iterations)
+                else 
+                    call pmk_argument_count_error("qce_iterations", "qce")
+                end if
+            else 
+                input%qce_iterations = 100
+            end if
+          
+            !> newton iterations
+            call get_value(child, "newton_iterations", array, requested=.false.)
+            if (associated(array)) then
+                if (len(array)==1) then
+                    call get_value(array, 1, input%newton_iterations)
+                else 
+                    call pmk_argument_count_error("newton_iterations", "qce")
+                end if
+            else 
+                input%newton_iterations = 500
+            end if
+          
+            !> grid iterations
+            call get_value(child, "grid_iterations", array, requested=.false.)
+            if (associated(array)) then
+                if (len(array)==1) then
+                    call get_value(array, 1, input%grid_iterations)
+                else 
+                    call pmk_argument_count_error("grid_iterations", "qce")
+                end if
+            else 
+                input%grid_iterations = 1
+            end if
+            
+          
+            !> optimizer
+            call get_value(child, "optimizer", array, requested=.false.)
+            if (associated(array)) then
+                if (len(array)==1) then
+                    call get_value(array, 1, input%optimizer)
+                else 
+                    call pmk_argument_count_error("optimizer", "qce")
+                end if
+            else 
+                input%optimizer = 0
+            end if
+          
+            !> interface mode
+            call get_value(child, "imode", array, requested=.false.)
+            if (associated(array)) then
+                input%imode = .true.
+            else 
+                input%imode = .false.
+            end if
+        
+            !> maximum relative deviation
+            call get_value(child, "max_deviation", array, requested=.false.)
+            if (associated(array)) then
+                if (len(array)==1) then
+                    call get_value(array, 1, input%max_deviation)
+                else 
+                    call pmk_argument_count_error("max_deviation", "qce")
+                end if
+            else 
+                input%max_deviation = 1.0e-9_dp
+            end if
+        
+            !> volume damping factor
+            call get_value(child, "volume_damping_factor", array, requested=.false.)
+            if (associated(array)) then
+                if (len(array)==1) then
+                    call get_value(array, 1, input%volume_damping_factor)
+                else 
+                    call pmk_argument_count_error("volume_damping_factor", "qce")
+                end if
+            else 
+                input%volume_damping_factor = 0.01_dp
+            end if
+        
+            !> Read value from entry "rotor_cutoff"
+            call get_value(child, "rotor_cutoff", array, requested=.false.)
+            if (associated(array)) then
+                if (len(array)==1) then
+                    call get_value(array, 1, input%rotor_cutoff)
+                else 
+                    call pmk_argument_count_error("rotor_cutoff", "qce")
+                end if
+            else 
+                input%rotor_cutoff = 0.00_dp
+            end if
+        
+            !------------------------------------------------------------------------
+            !> Read [ensemble] section
+            !------------------------------------------------------------------------
+            call get_value(table, "ensemble", child)
+        
+            !> temperature
+            call get_value(child, "temperature", array, requested=.false.)
+            if (associated(array)) then
+                if (len(array) == 1) then 
+                    call get_value(array, 1, input%temperature%first)
+                    call set_range(input%temperature, input%temperature%first, input%temperature%first, 1)
+                else if (len(array) == 3) then
+                    call get_value(array, 1, input%temperature%first)
+                    call get_value(array, 2, input%temperature%last)
+                    call get_value(array, 3, input%temperature%num)
+                    call set_range(input%temperature, input%temperature%first, input%temperature%last, input%temperature%num)
+                else
+                    call pmk_argument_error("temperature", "ensemble")
+                end if  
+            else 
+                call set_range(input%temperature, 298.15_dp, 298.15_dp, 1) ! in K
+            end if
+
+            !> pressure
+            call get_value(child, "pressure", array, requested=.false.)
+            if (associated(array)) then
+                if (len(array)==1) then
+                    call get_value(array, 1, input%pressure)
+                else 
+                    call pmk_argument_count_error("pressure", "ensemble")
+                end if
+            else 
+                input%pressure = 1.013250_dp
+            end if
+        
+            ! monomer_amounts
+            call get_value(child, "monomer_amounts", array)
+            if (associated(array)) then
+                allocate(input%monomer_amounts(len(array)))
+                do ival = 1, size(input%monomer_amounts)
+                  call get_value(array, ival, input%monomer_amounts(ival))
+                end do
+                call get_value(child, "reverse", reverse, .false.)
+                if (reverse) input%monomer_amounts(:) = input%monomer_amounts(size(input%monomer_amounts):1:-1)
+            else
+                input%monomer_amounts = 1.0_dp/real(pmk_input%components, dp) ! in mol
+            end if
+          
+            !------------------------------------------------------------------------
+            !> Read [reference] section
+            !------------------------------------------------------------------------
+            ! The reference section is optional
+            call get_value(table, "reference", child, requested=.false.)
+            if (associated(child)) then
+          
+                !> reference temperature of phase transition
+                !  if only one value is given, it's stored in ref_phase_transition
+                !  if two values are given, the first is stored in ref_phase_transition, the second in 
+                !  ref_phase_transition_weight
+                call get_value(child, "phase_transition", array, requested=.false.)
+                if (associated(array)) then
+                    input%compare = .true.
+                    input%compare_phase_transition = .true.
+                    if (len(array) == 1) then
+                        call get_value(array, 1, input%ref_phase_transition)
+                        input%ref_phase_transition_weight = 1.0_dp
+                    else if (len(array) == 2) then
+                        call get_value(array, 1, input%ref_phase_transition)
+                        call get_value(array, 2, input%ref_phase_transition_weight)
+                    else
+                        call pmk_argument_count_error("phase_transition", "reference")
+                    end if
+                else
+                    input%compare = .false.
+                    input%compare_phase_transition = .false.
+                    input%ref_phase_transition_weight = 1.0_dp
+                end if
+            
+                !> reference density
+                !  if two values are given, the first is stored in ref_density_temperature, the second in ref_density
+                !  if three values are given, the first is stored in ref_density_temperature, the second in ref_density 
+                !  and the third in ref_density_weight
+                call get_value(child, "density", array, requested=.false.)
+                if (associated(array)) then
+                    input%compare = .true.
+                    input%compare_density = .true.
+                    if (len(array) == 2) then 
+                        call get_value(array, 1, input%ref_density_temperature)
+                        call get_value(array, 2, input%ref_density)
+                        input%ref_density_weight = 1.0_dp
+                    else if (len(array) == 3) then
+                        call get_value(array, 1, input%ref_density_temperature)
+                        call get_value(array, 2, input%ref_density)
+                        call get_value(array, 3, input%ref_density_weight)
+                    else
+                        call pmk_argument_count_error("density", "reference")
+                    end if  
+                else 
+                    input%compare_density = .false.
+                    input%ref_density_weight = 1.0_dp
+                end if
+            
+                !> reference isobar 
+                ! if reference isobar is given, compare_isobar is set to true
+                call get_value(child, "isobar", array, requested=.false.)
+                if (associated(array)) then
+                    input%compare = .true.
+                    input%compare_isobar = .true.
+                    if (len(array) == 1) then 
+                        call get_value(array, 1, input%ref_isobar_file_helper)
+                    else if (len(array) == 2) then
+                        call get_value(array, 1, input%ref_isobar_file_helper)
+                        call get_value(array, 2, input%ref_isobar_weight)
+                    else
+                        call pmk_argument_count_error("isobar", "reference")
+                    end if
+                else
+                    input%compare_isobar = .false.
+                    input%ref_isobar_weight = 1.0_dp
+                end if
+
+            else 
+            ! Defaults for the [reference] section.
+                input%compare = .false.
+                input%compare_isobar = .false.
+                input%compare_density = .false.
+                input%compare_phase_transition = .false.
+                input%ref_isobar_weight = 1.0_dp
+                input%ref_density_weight = 1.0_dp
+                input%ref_phase_transition_weight = 1.0_dp
+            end if             
+              
+            !------------------------------------------------------------------------
+            !> Read [output] section
+            !------------------------------------------------------------------------
+            call get_value(table, "output", child)
+              
+            !> cortribuion
+            call get_value(child, "contributions", input%contrib, .false.)
+              
+            !> helmholtz contribution
+            call get_value(child, "helmholtz_contributions", input%helmholtz_contrib, .false.)
+              
+            !> internal contributions
+            call get_value(child, "internal_contributions", input%internal_contrib, .false.)
+              
+            !> entropy contributions
+            call get_value(child, "entropy_contributions", input%entropy_contrib, .false.)
+              
+            !> cv contributions
+            call get_value(child, "cv_contributions", input%cv_contrib, .false.)
+              
+            ! progress bar
+            call get_value(child, "progress_bar", input%progress_bar, .true.)
+              
+        end subroutine read_data
+        
+        !> Subroutine to convert helpers in range_t
+        subroutine convert_helpers(input)
+            type(input_data), intent(inout) :: input
+            integer :: i
+
+            if (allocated(input%ref_isobar_file_helper)) then
+                do i = 1, len(input%ref_isobar_file_helper)
+                    if (input%ref_isobar_file_helper(i:i) == ' ') then
+                      input%ref_isobar_file_helper(i:i) = '_'
+                    end if
+                end do
+            end if
+            input%ref_isobar_file = trim(input%ref_isobar_file_helper)
+
+        end subroutine convert_helpers
+
+
         !=================================================================================
         ! Performs sanity checks on the input.
         subroutine check_input()
+            
             ! Check amf.
             if (pmk_input%amf%first < 0.0_dp) &
                 call pmk_unphysical_argument_error("amf", "qce")
@@ -251,6 +657,7 @@ module input
                     any(pmk_input%ref_isobar_temperature > pmk_input%temperature%last)) &
                     call pmk_error("reference isobar temperatures must be within " // &
                     "the investigated temperature range")
+
             end if
         end subroutine check_input
         !=================================================================================
@@ -264,7 +671,7 @@ module input
 
             ! Print input.
             write(*, '(4X,A)') 'Using the following input:'
-            write(*, *)
+            write(*, *) 
 
             ! Print [system] section.
             write(*, '(8X,A)') "[system]"

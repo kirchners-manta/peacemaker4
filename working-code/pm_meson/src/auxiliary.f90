@@ -240,18 +240,18 @@ module auxiliary
 
             nbars = int(real(current*100, dp) / total)
 
-            write(error_unit, '(A1, 4X, "[")', advance = 'no') achar(13)
+            write(*, '(A1, 4X, "[")', advance = 'no') achar(13)
             do i = 1, nbars - 1
-                write(error_unit, '("=")', advance = 'no')
+                write(*, '("=")', advance = 'no')
             end do
-            write(error_unit, '(">")', advance = 'no')
+            write(*, '(">")', advance = 'no')
             do i = nbars + 1, 100
-                write(error_unit, '(" ")', advance = 'no')
+                write(*, '(" ")', advance = 'no')
             end do
-            write(error_unit, '("]", 2X, I3, "% ")', advance = 'no') nbars
+            write(*, '("]", 2X, I3, "% ")', advance = 'no') nbars
             if (present(newline)) then
                 if (newline) then
-                    write(error_unit, *)
+                    write(*, *)
                 end if
             end if
         end subroutine progress_bar

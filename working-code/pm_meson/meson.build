@@ -19,6 +19,7 @@ sources = files(
     'src/partition_functions.f90',
     'src/thermo.f90',
     'src/qce.f90',
+    'src/reader.f90',
     'main.f90'
 )
 
@@ -31,8 +32,9 @@ tomlf_dep = dependency(
 )
 
 exe = executable('peacemaker', sources, 
-                 fortran_args : ['-cpp'],
-                 link_args: ['-fopenmp'],
+                 fortran_args : ['-cpp', '-fopenmp', '-flto', '-O3'],
+                 link_args: ['-fopenmp', '-flto', '-O3'],
+                 dependencies : [tomlf_dep],
                 install : true)
 
 test('basic', exe)
