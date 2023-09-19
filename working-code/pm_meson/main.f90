@@ -48,7 +48,7 @@ program main
     character(path_len):: input_file
     character(path_len):: clusterset_file
     !type(config_t):: input_cfg
-    type(config_t):: clusterset_cfg
+    !type(config_t):: clusterset_cfg
     !=====================================================================================
     ! Time measurement
     integer:: pmk_start
@@ -71,7 +71,7 @@ program main
     call get_command_argument(1, input_file)
     call get_command_argument(2, clusterset_file)
     !call input_cfg%parse(input_file)
-    call clusterset_cfg%parse(clusterset_file)
+    !call clusterset_cfg%parse(clusterset_file)
     !=====================================================================================
     ! Process input, perform sanity checks and print the processed input.
     call process_input(table, input_file)
@@ -79,13 +79,14 @@ program main
     call print_input()
     !=====================================================================================
     ! Setup clusterset, perform sanity check and print the processed input.
-    call setup_clusterset(clusterset_cfg)
+    !call setup_clusterset(clusterset_cfg)
+    call process_clusterset(cluster_table, clusterset_file)
     call check_clusterset()
     call print_clusterset()
     !=====================================================================================
     ! Warn user about unread input/clusterset entries.
     !call input_cfg%check()
-    call clusterset_cfg%check()
+    !call clusterset_cfg%check()
     !=====================================================================================
     ! Start time measurement.
     call system_clock(pmk_start)
