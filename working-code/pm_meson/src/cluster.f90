@@ -36,15 +36,22 @@ module cluster
     use input
     use auxiliary
     use constants
+
+    !> TOML
+    use tomlf, only : toml_table, toml_parse, toml_error, toml_array, get_value, len, toml_key
+
     implicit none
     private
     !=====================================================================================
     ! Public entities.
     public :: clusterset
     public :: monomer
+    public :: process_clusterset
     public :: setup_clusterset
     public :: print_clusterset
     public :: check_clusterset
+    public :: cluster_table
+    public :: toml_parse
     !=====================================================================================
     ! The cluster_t data type, which represents a cluster. Reasonable defaults should be
     ! set here, if there are any.
@@ -74,15 +81,66 @@ module cluster
         ! Cluster label.
         type(varying_string) :: label
     end type cluster_t
+
+    type(toml_table), allocatable :: cluster_table
+
     !=====================================================================================
     ! The clusterset array and monomer array. The clusterset array is the central quantity
     ! in Peacemaker. It contains all the static information about all the clusters. The
     ! monomer array contains the indices of monomers in the cluster set array.
     type(cluster_t), dimension(:), allocatable, target :: clusterset
     integer, dimension(:), allocatable :: monomer
+
     !=====================================================================================
     contains
         !=================================================================================
+        !> Subroutine reading in the clusterset data from the TOML configuration file.
+        subroutine process_clusterset(cluster_table, clusterset_file)
+            type(toml_table), allocatable, intent(inout) :: cluster_table
+            character(len=*), intent(in) :: clusterset_file
+            integer :: open_unit, ios
+            type(toml_error), allocatable :: error
+
+            !< Open the clusterset file.
+            block
+                open(newunit=open_unit, file=clusterset_file, status="old", iostat=ios)
+                if (ios /= 0) call pmk_error("could not open '" // trim(clusterset_file) // "'")   
+                call toml_parse(cluster_table, open_unit, error)
+                close(ios)
+                if (allocated(error)) then
+                  print '(a)', "Error: "//error%message
+                  stop 1
+                end if
+            end block
+
+            !> Read the clusterset data.
+            call read_data(cluster_table, clusterset, monomer)
+
+        end subroutine process_clusterset
+
+        !=================================================================================
+
+        !------------------------------------------------------------------------
+        !> Read clusterset data from TOML file
+        !------------------------------------------------------------------------
+
+        subroutine read_data(cluster_table, clusterset, monomer)
+
+            type(toml_table), intent(inout) :: cluster_table
+            type(cluster_t), dimension(:), allocatable, target :: clusterset
+            integer, dimension(:), allocatable :: monomer
+            type(toml_table), pointer :: child
+            type(toml_array), pointer :: array
+            logical :: reverse
+            integer :: ival
+            ! The number of clusters
+            integer:: nr_clusters
+
+            !> Extract the names of the clusters and store them in an array.
+            
+
+        end subroutine read_data
+
         ! Given the clusterset configuration, this procedure sets up the clusterset array.
         subroutine setup_clusterset(cfg)
             ! The clusterset configuration.
