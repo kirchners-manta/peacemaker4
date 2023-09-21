@@ -96,12 +96,27 @@ module cluster
         !=================================================================================
         !> Subroutine reading in the clusterset data from the TOML configuration file.
         subroutine process_clusterset(cluster_table, clusterset_file)
+
             type(toml_table), allocatable, intent(inout) :: cluster_table
-            character(len=*), intent(in) :: clusterset_file
+            character(len=*) :: clusterset_file
             integer :: open_unit, ios
             type(toml_error), allocatable :: error
 
-            !< Open the clusterset file.
+            type(cluster_t), dimension(:), allocatable, target :: clusterset
+            integer, dimension(:), allocatable :: monomer
+            type(toml_table), pointer :: child
+            type(toml_array), pointer :: array
+            logical :: reverse
+            integer :: ival
+            integer :: nr_clusters
+
+            !> Character variables for the cluster label.
+            character(len=256) :: current_line
+            character(len=255) :: cluster_label
+
+            write(*,*) "Clusterset"
+
+            !> Open the clusterset file and parse it to the cluster_table.
             block
                 open(newunit=open_unit, file=clusterset_file, status="old", iostat=ios)
                 if (ios /= 0) call pmk_error("could not open '" // trim(clusterset_file) // "'")   
@@ -113,33 +128,68 @@ module cluster
                 end if
             end block
 
-            !> Read the clusterset data.
-            call read_data(cluster_table, clusterset, monomer)
+            !------------------------------------------------------------------------
+            !> Read clusterset data from TOML file
+            !------------------------------------------------------------------------
+
+            !> The clusterset input file is opened again, because the names of the clusters
+            !  are unknown at this point.
+
+            !>  If the line starts with a '[' and ends with a ']', it is a cluster label.
+
+            !> Count the number of clusters.
+            open(newunit=open_unit, file=clusterset_file, status="old", iostat=ios, action="read")
+            nr_clusters = 0
+            do
+                read(open_unit, '(a)', iostat=ios) current_line
+                if (ios /= 0) exit 
+                
+                if (current_line(1:1) == '[') then
+                    if (ios /= 0) exit
+                    nr_clusters = nr_clusters + 1
+                end if
+            end do
+
+            !> Allocate the clusterset array.
+            write(*,*) "Number of clusters: ", nr_clusters
+            allocate(clusterset(nr_clusters))
+
+            !> Rewind the file.
+            rewind open_unit
+
+            nr_clusters = 0
+            do
+                read(open_unit, '(a)', iostat=ios) current_line
+                if (ios /= 0) exit 
+                
+                if (current_line(1:1) == '[') then
+                    if (ios /= 0) exit
+                    nr_clusters = nr_clusters + 1
+                    if (current_line(1:1) == '[' .and. &
+                        current_line(len_trim(current_line):len_trim(current_line)) == ']') then
+                        cluster_label = current_line(2:len_trim(current_line)-1)
+
+                        !> Store the cluster in the cluster_t data type.
+                        !  Problem: Fehler muss bei doppenten clustern geworfen werden! (nachdenken)
+                        !  Vergleichen, wenn alle cluster eingelesen sind.
+                        call get_value(cluster_table, cluster_label, child)
+                        write(*,*) "Cluster: ", cluster_label
+                        
+                        !> Get the cluster label.
+                        clusterset(nr_clusters)%label = cluster_label
+
+                        !> Check for the monomer flag.
+                        call get_value(child, "isMonomer", clusterset(nr_clusters)%monomer, .false.)
+                        write(*,*) "isMonomer: ", clusterset(nr_clusters)%monomer
+
+                    end if
+                end if
+            end do
+            close(ios)
 
         end subroutine process_clusterset
 
         !=================================================================================
-
-        !------------------------------------------------------------------------
-        !> Read clusterset data from TOML file
-        !------------------------------------------------------------------------
-
-        subroutine read_data(cluster_table, clusterset, monomer)
-
-            type(toml_table), intent(inout) :: cluster_table
-            type(cluster_t), dimension(:), allocatable, target :: clusterset
-            integer, dimension(:), allocatable :: monomer
-            type(toml_table), pointer :: child
-            type(toml_array), pointer :: array
-            logical :: reverse
-            integer :: ival
-            ! The number of clusters
-            integer:: nr_clusters
-
-            !> Extract the names of the clusters and store them in an array.
-            
-
-        end subroutine read_data
 
         ! Given the clusterset configuration, this procedure sets up the clusterset array.
         subroutine setup_clusterset(cfg)
