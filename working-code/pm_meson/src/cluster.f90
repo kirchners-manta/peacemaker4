@@ -107,7 +107,7 @@ module cluster
             type(toml_table), pointer :: child
             type(toml_array), pointer :: array
             logical :: reverse
-            integer :: ival, i
+            integer :: ival, i, j
             integer :: nr_clusters
 
             !> A pointer to the current cluster.
@@ -245,10 +245,49 @@ module cluster
                         !call array_sample(c%frequencies)
                         !write(*,*) "frequencies", clusterset(nr_clusters)%frequencies
 
+                        !> Get the anharmonicity constant.
+                        call get_value(child, "anharmonicity", clusterset(nr_clusters)%anharmonicity, 0.0_dp)
+
+                        !> Get the interaction energy.
+                        call get_value(child, "energy", clusterset(nr_clusters)%energy, 0.0_dp)
+
+                        !> Get the rotational symmetry number sigma.
+                        call get_value(child, "sigma", clusterset(nr_clusters)%sigma, 1)
+                        write(*,*) "sigma", clusterset(nr_clusters)%sigma
+
                     end if
                 end if
+
             end do
-            close(ios)
+                        
+            write(*,*) "nr_clusters", nr_clusters
+            !> Set up the monomer array, assuming that everything is alright. We will check
+            !  for errors later.
+            allocate(monomer(pmk_input%components))
+            write(*,*) "pmk_input%components", pmk_input%components
+            monomer = 0
+            do i = 1, nr_clusters
+                if (clusterset(i)%monomer) then
+                    do j = 1, pmk_input%components
+                        if (clusterset(i)%composition(j) == 1) monomer(j) = i
+                    end do
+                end if
+            end do
+            write(*,*) "monomer", monomer
+
+            !> Calculate cluster volumes, assuming that everything is alright. We will
+            !  check for errors later.
+            do i = 1, nr_clusters
+                if (clusterset(i)%monomer) cycle
+                clusterset(i)%volume = 0.0_dp
+                do j = 1, pmk_input%components
+                    clusterset(i)%volume = clusterset(i)%volume + &
+                        real(clusterset(i)%composition(j), dp) * &
+                        clusterset(monomer(j))%volume
+                end do
+                write(*,*) "cluster", char(clusterset(i)%label), "volume", clusterset(i)%volume
+            end do
+            !close(ios)
 
         end subroutine process_clusterset
 
