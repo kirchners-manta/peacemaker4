@@ -110,6 +110,13 @@ module cluster
             integer :: ival
             integer :: nr_clusters
 
+            !> A pointer to the current cluster.
+            type(cluster_t), pointer :: c
+
+            !> Path helper.
+            character(len=:), allocatable :: path_string
+            type(varying_string), dimension(:), allocatable :: path
+
             !> Character variables for the cluster label.
             character(len=256) :: current_line
             character(len=255) :: cluster_label
@@ -150,8 +157,9 @@ module cluster
                 end if
             end do
 
+            if (nr_clusters == 0) call pmk_error("empty clusterset")
+
             !> Allocate the clusterset array.
-            write(*,*) "Number of clusters: ", nr_clusters
             allocate(clusterset(nr_clusters))
 
             !> Rewind the file.
@@ -173,14 +181,39 @@ module cluster
                         !  Problem: Fehler muss bei doppenten clustern geworfen werden! (nachdenken)
                         !  Vergleichen, wenn alle cluster eingelesen sind.
                         call get_value(cluster_table, cluster_label, child)
-                        write(*,*) "Cluster: ", cluster_label
                         
-                        !> Get the cluster label.
+                        !> Convert cluster_label to iso_varying_string
                         clusterset(nr_clusters)%label = cluster_label
+                        write(*,*) char(clusterset(nr_clusters)%label)
+
+                        !> Assign the c pointer.
+                        c => clusterset(nr_clusters)
 
                         !> Check for the monomer flag.
                         call get_value(child, "isMonomer", clusterset(nr_clusters)%monomer, .false.)
-                        write(*,*) "isMonomer: ", clusterset(nr_clusters)%monomer
+                        !> If the cluster is a monomer, read the volume.
+                        if (clusterset(nr_clusters)%monomer) then
+                            call get_value(child, "volume", clusterset(nr_clusters)%volume, 0.0_dp)
+                            write(*,*) "Monomer volume ", clusterset(nr_clusters)%volume
+                        end if
+
+                        !> Get moments of inertia and mass from xyz file.
+                        call get_value(child, "coordinates", path_string)
+                        if (allocated(path_string)) then
+                            allocate(path(1))
+                            path(1) = path_string
+                            write(*,*) "path", char(path(1))
+                            call process_coordinates_record(c, 1, path(1))
+                            deallocate(path)
+                        else
+                            call pmk_missing_key_error("coordinates", clusterset(nr_clusters)%label)
+                        end if
+                        write(*, '(12X,A,1X,G0.6,1X,A)') "mass:", c%mass, "[amu]"
+                        write(*,*) clusterset(nr_clusters)%mass
+                        ! Print intertia array.
+                        write(*, '(12X,A,1X,3(G0.6,1X))', advance = "no") "inertia:", &
+                        c%inertia(:)
+                        write(*, '(A)') "[amu*Angstrom^2]"
 
                     end if
                 end if
