@@ -102,8 +102,8 @@ module cluster
             integer :: open_unit, ios
             type(toml_error), allocatable :: error
 
-            type(cluster_t), dimension(:), allocatable, target :: clusterset
-            integer, dimension(:), allocatable :: monomer
+            !type(cluster_t), dimension(:), allocatable, target :: clusterset
+            !integer, dimension(:), allocatable :: monomer
             type(toml_table), pointer :: child
             type(toml_array), pointer :: array
             logical :: reverse
@@ -120,8 +120,7 @@ module cluster
             !> Character variables for the cluster label.
             character(len=256) :: current_line
             character(len=255) :: cluster_label
-
-            write(*,*) "Clusterset"
+            character(len=255), dimension(:), allocatable :: cluster_labels
 
             !> Open the clusterset file and parse it to the cluster_table.
             block
@@ -161,6 +160,8 @@ module cluster
 
             !> Allocate the clusterset array.
             allocate(clusterset(nr_clusters))
+            !> Allocare cluster_labels array.
+            allocate(cluster_labels(nr_clusters))
 
             !> Rewind the file.
             rewind open_unit
@@ -177,24 +178,33 @@ module cluster
                         current_line(len_trim(current_line):len_trim(current_line)) == ']') then
                         cluster_label = current_line(2:len_trim(current_line)-1)
 
+                        cluster_labels(nr_clusters) = cluster_label
+                    end if
+                end if 
+            end do 
+            close(open_unit)
+
+            !> Read clusterset data from TOML file
+            do i=1, nr_clusters
+
                         !> Store the cluster in the cluster_t data type.
                         !  Problem: Fehler muss bei doppenten clustern geworfen werden! (nachdenken)
                         !  Vergleichen, wenn alle cluster eingelesen sind.
-                        call get_value(cluster_table, cluster_label, child)
+                        call get_value(cluster_table, cluster_labels(i), child)
                         
                         !> Convert cluster_label to iso_varying_string
-                        clusterset(nr_clusters)%label = cluster_label
-                        write(*,*) char(clusterset(nr_clusters)%label)
+                        clusterset(i)%label = cluster_labels(i)
 
                         !> Assign the c pointer.
-                        c => clusterset(nr_clusters)
+                        c => clusterset(i)
 
                         !> Check for the monomer flag.
-                        call get_value(child, "isMonomer", clusterset(nr_clusters)%monomer, .false.)
+                        call get_value(child, "isMonomer", clusterset(i)%monomer, .false.)
+                        c%monomer = clusterset(i)%monomer
                         !> If the cluster is a monomer, read the volume.
-                        if (clusterset(nr_clusters)%monomer) then
-                            call get_value(child, "volume", clusterset(nr_clusters)%volume, 0.0_dp)
-                            write(*,*) "Monomer volume ", clusterset(nr_clusters)%volume
+                        if (clusterset(i)%monomer) then
+                            call get_value(child, "volume", clusterset(i)%volume, 0.0_dp)
+                            c%volume = clusterset(i)%volume
                         end if
 
                         !> Get moments of inertia and mass from xyz file.
@@ -202,69 +212,66 @@ module cluster
                         if (allocated(path_string)) then
                             allocate(path(1))
                             path(1) = path_string
-                            write(*,*) "path", char(path(1))
                             call process_coordinates_record(c, 1, path(1))
                             deallocate(path)
                         else
-                            call pmk_missing_key_error("coordinates", clusterset(nr_clusters)%label)
+                            call pmk_missing_key_error("coordinates", clusterset(i)%label)
                         end if
                         !write(*, '(12X,A,1X,G0.6,1X,A)') "mass:", c%mass, "[amu]"
-                        !write(*,*) clusterset(nr_clusters)%mass
+                        !write(*,*) clusterset(i)%mass
                         !! Print intertia array.
                         !write(*, '(12X,A,1X,3(G0.6,1X))', advance = "no") "inertia:", &
                         !c%inertia(:)
                         !write(*, '(A)') "[amu*Angstrom^2]"
-                        !write(*,*) clusterset(nr_clusters)%inertia
+                        !write(*,*) clusterset(i)%inertia
 
                         !> Get the cluster composition.
                         call get_value(child, "composition", array)
                         if (associated(array)) then
-                            allocate(clusterset(nr_clusters)%composition(len(array)))
-                            do i = 1, len(array)
-                                call get_value(array, i, clusterset(nr_clusters)%composition(i))
+                            allocate(clusterset(i)%composition(len(array)))
+                            do j = 1, len(array)
+                                call get_value(array, j, clusterset(i)%composition(j))
+                                c%composition(j) = clusterset(i)%composition(j)
                             end do
                         else
-                            call pmk_missing_key_error("composition", clusterset(nr_clusters)%label)
+                            call pmk_missing_key_error("composition", clusterset(i)%label)
                         end if
-                        !write(*,*) "composition", clusterset(nr_clusters)%composition
 
                         !> Get the frequency scaling factor.
-                        call get_value(child, "frequency_scale", clusterset(nr_clusters)%fscale, 1.0_dp)
+                        call get_value(child, "frequency_scale", clusterset(i)%fscale, 1.0_dp)
+                        c%fscale = clusterset(i)%fscale
 
                         !> Get the frequencies.
                         call get_value(child, "frequencies", path_string)
                         if (allocated(path_string)) then
                             allocate(path(1))
                             path(1) = path_string
-                            write(*,*) "path", char(path(1))
                             call process_frequencies_record(c, 1, path(1))
                             deallocate(path)
                         else
-                            call pmk_missing_key_error("frequencies", clusterset(nr_clusters)%label)
+                            call pmk_missing_key_error("frequencies", clusterset(i)%label)
                         end if
                         !call array_sample(c%frequencies)
-                        !write(*,*) "frequencies", clusterset(nr_clusters)%frequencies
+                        !write(*,*) "frequencies", clusterset(i)%frequencies
 
                         !> Get the anharmonicity constant.
-                        call get_value(child, "anharmonicity", clusterset(nr_clusters)%anharmonicity, 0.0_dp)
+                        call get_value(child, "anharmonicity", clusterset(i)%anharmonicity, 0.0_dp)
+                        c%anharmonicity = clusterset(i)%anharmonicity
 
                         !> Get the interaction energy.
-                        call get_value(child, "energy", clusterset(nr_clusters)%energy, 0.0_dp)
+                        call get_value(child, "energy", clusterset(i)%energy, 0.0_dp)
+                        c%energy = clusterset(i)%energy
 
                         !> Get the rotational symmetry number sigma.
-                        call get_value(child, "sigma", clusterset(nr_clusters)%sigma, 1)
-                        write(*,*) "sigma", clusterset(nr_clusters)%sigma
-
-                    end if
-                end if
+                        call get_value(child, "sigma", clusterset(i)%sigma, 1)
+                        c%sigma = clusterset(i)%sigma
 
             end do
-                        
+                                    
             write(*,*) "nr_clusters", nr_clusters
             !> Set up the monomer array, assuming that everything is alright. We will check
             !  for errors later.
             allocate(monomer(pmk_input%components))
-            write(*,*) "pmk_input%components", pmk_input%components
             monomer = 0
             do i = 1, nr_clusters
                 if (clusterset(i)%monomer) then
@@ -273,7 +280,6 @@ module cluster
                     end do
                 end if
             end do
-            write(*,*) "monomer", monomer
 
             !> Calculate cluster volumes, assuming that everything is alright. We will
             !  check for errors later.
@@ -285,10 +291,24 @@ module cluster
                         real(clusterset(i)%composition(j), dp) * &
                         clusterset(monomer(j))%volume
                 end do
-                write(*,*) "cluster", char(clusterset(i)%label), "volume", clusterset(i)%volume
             end do
-            !close(ios)
 
+            do i=1, nr_clusters
+                write(*,*) char(clusterset(i)%label)
+                write(*,*) "composition", clusterset(i)%composition
+                write(*,*) "sigma", clusterset(i)%sigma
+                write(*,*) "energy", clusterset(i)%energy
+                write(*,*) "volume", clusterset(i)%volume
+                write(*,*) "mass", clusterset(i)%mass
+                write(*,*) "inertia", clusterset(i)%inertia
+                write(*,*) "frequencies"
+                call array_sample(clusterset(i)%frequencies)
+                write(*,*)
+                write(*,*) "------------------------------------------------------------"
+            end do
+
+            write(*,*) "clusterset count", count(clusterset%monomer), pmk_input%components
+            
         end subroutine process_clusterset
 
         !=================================================================================
