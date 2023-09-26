@@ -107,7 +107,7 @@ module cluster
             type(toml_table), pointer :: child
             type(toml_array), pointer :: array
             logical :: reverse
-            integer :: ival
+            integer :: ival, i
             integer :: nr_clusters
 
             !> A pointer to the current cluster.
@@ -208,12 +208,42 @@ module cluster
                         else
                             call pmk_missing_key_error("coordinates", clusterset(nr_clusters)%label)
                         end if
-                        write(*, '(12X,A,1X,G0.6,1X,A)') "mass:", c%mass, "[amu]"
-                        write(*,*) clusterset(nr_clusters)%mass
-                        ! Print intertia array.
-                        write(*, '(12X,A,1X,3(G0.6,1X))', advance = "no") "inertia:", &
-                        c%inertia(:)
-                        write(*, '(A)') "[amu*Angstrom^2]"
+                        !write(*, '(12X,A,1X,G0.6,1X,A)') "mass:", c%mass, "[amu]"
+                        !write(*,*) clusterset(nr_clusters)%mass
+                        !! Print intertia array.
+                        !write(*, '(12X,A,1X,3(G0.6,1X))', advance = "no") "inertia:", &
+                        !c%inertia(:)
+                        !write(*, '(A)') "[amu*Angstrom^2]"
+                        !write(*,*) clusterset(nr_clusters)%inertia
+
+                        !> Get the cluster composition.
+                        call get_value(child, "composition", array)
+                        if (associated(array)) then
+                            allocate(clusterset(nr_clusters)%composition(len(array)))
+                            do i = 1, len(array)
+                                call get_value(array, i, clusterset(nr_clusters)%composition(i))
+                            end do
+                        else
+                            call pmk_missing_key_error("composition", clusterset(nr_clusters)%label)
+                        end if
+                        !write(*,*) "composition", clusterset(nr_clusters)%composition
+
+                        !> Get the frequency scaling factor.
+                        call get_value(child, "frequency_scale", clusterset(nr_clusters)%fscale, 1.0_dp)
+
+                        !> Get the frequencies.
+                        call get_value(child, "frequencies", path_string)
+                        if (allocated(path_string)) then
+                            allocate(path(1))
+                            path(1) = path_string
+                            write(*,*) "path", char(path(1))
+                            call process_frequencies_record(c, 1, path(1))
+                            deallocate(path)
+                        else
+                            call pmk_missing_key_error("frequencies", clusterset(nr_clusters)%label)
+                        end if
+                        !call array_sample(c%frequencies)
+                        !write(*,*) "frequencies", clusterset(nr_clusters)%frequencies
 
                     end if
                 end if
