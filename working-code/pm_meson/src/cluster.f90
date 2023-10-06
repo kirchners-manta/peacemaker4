@@ -343,18 +343,7 @@ module cluster
                 write(*, *)
             end do
         end subroutine print_clusterset
-        !=================================================================================
-        ! Processes the monomer record.
-        subroutine process_monomer_record(c, nr_args)
-            type(cluster_t), pointer, intent(inout) :: c
-            integer, intent(in) :: nr_args
-    
-            if (nr_args == 0) then
-                c%monomer = .true.
-            else
-                call pmk_argument_count_error("monomer", c%label)
-            end if
-        end subroutine process_monomer_record
+
         !=================================================================================
         ! Processes a coordinates record.
         subroutine process_coordinates_record(c, nr_args, args)
@@ -515,26 +504,7 @@ module cluster
                 call pmk_argument_count_error("coordinates", c%label)
             end if
         end subroutine process_coordinates_record
-        !=================================================================================
-        ! Processes a composition record.
-        subroutine process_composition_record(c, nr_args, args)
-            type(cluster_t), pointer, intent(inout) :: c
-            integer, intent(in) :: nr_args
-            type(varying_string), dimension(nr_args), intent(in) :: args
-    
-            integer:: i
-            integer:: ios
-    
-            if (nr_args == pmk_input%components) then
-                allocate(c%composition(pmk_input%components))
-                do i = 1, pmk_input%components
-                    c%composition(i) = string2int(args(i), ios)
-                    if (ios /= 0) call pmk_argument_error("composition", c%label)
-                end do
-            else
-                call pmk_argument_count_error("composition", c%label)
-            end if
-        end subroutine process_composition_record
+
         !=================================================================================
         ! Reads frequencies from a frequency file. A frequency file is similar to an
         ! xyz file. It contains the number of vibrational frequencies in the first line,
@@ -610,86 +580,7 @@ module cluster
                 call pmk_argument_count_error("frequencies", c%label)
             end if
         end subroutine process_frequencies_record
-        !=================================================================================
-        ! Processes the adiabatic interaction energy.
-        subroutine process_energy_record(c, nr_args, args)
-            type(cluster_t), pointer, intent(inout) :: c
-            integer, intent(in) :: nr_args
-            type(varying_string), dimension(nr_args), intent(in) :: args
-    
-            integer:: ios
-    
-            if (nr_args == 1) then
-                c%energy = string2real(args(1), ios)
-                if (ios /= 0) call pmk_argument_error("energy", c%label)
-            else
-                call pmk_argument_count_error("energy", c%label)
-            end if
-        end subroutine process_energy_record
-        !=================================================================================
-        ! Processes the rotational symmetry number.
-        subroutine process_sigma_record(c, nr_args, args)
-            type(cluster_t), pointer, intent(inout) :: c
-            integer, intent(in) :: nr_args
-            type(varying_string), dimension(nr_args), intent(in) :: args
-    
-            integer:: ios
-    
-            if (nr_args == 1) then
-                c%sigma = string2int(args(1), ios)
-                if (ios /= 0) call pmk_argument_error("sigma", c%label)
-            else
-                call pmk_argument_count_error("sigma", c%label)
-            end if
-        end subroutine process_sigma_record
-        !=================================================================================
-        ! Processes the volume record.
-        subroutine process_volume_record(c, nr_args, args)
-            type(cluster_t), pointer, intent(inout) :: c
-            integer, intent(in) :: nr_args
-            type(varying_string), dimension(nr_args), intent(in) :: args
-    
-            integer:: ios
-    
-            if (nr_args == 1) then
-                c%volume = string2real(args(1), ios)
-                if (ios /= 0) call pmk_argument_error("volume", c%label)
-            else
-                call pmk_argument_count_error("volume", c%label)
-            end if
-        end subroutine process_volume_record
-        !=================================================================================
-        ! Processes the frequency scaling factor record.
-        subroutine process_frequency_scale_record(c, nr_args, args)
-            type(cluster_t), pointer, intent(inout) :: c
-            integer, intent(in) :: nr_args
-            type(varying_string), dimension(nr_args), intent(in) :: args
-    
-            integer:: ios
-    
-            if (nr_args == 1) then
-                c%fscale = string2real(args(1), ios)
-                if (ios /= 0) call pmk_argument_error("frequency_scale", c%label)
-            else
-                call pmk_argument_count_error("frequency_scale", c%label)
-            end if
-        end subroutine process_frequency_scale_record
-        !=================================================================================
-        ! Processes the anharmonicity record.
-        subroutine process_anharmonicity_record(c, nr_args, args)
-            type(cluster_t), pointer, intent(inout) :: c
-            integer, intent(in) :: nr_args
-            type(varying_string), dimension(nr_args), intent(in) :: args
-    
-            integer:: ios
-    
-            if (nr_args == 1) then
-                c%anharmonicity = string2real(args(1), ios)
-                if (ios /= 0) call pmk_argument_error("anharmonicity", c%label)
-            else
-                call pmk_argument_count_error("anharmonicity", c%label)
-            end if
-        end subroutine process_anharmonicity_record
+
         !=================================================================================
         ! Performs sanity checks on the clusterset.
         subroutine check_clusterset()
