@@ -10,7 +10,6 @@ sources = files(
     'src/auxiliary.f90',
     'src/error.f90',
     'src/atomic_data.f90',
-    'src/config.f90',
     'src/input.f90',
     'src/cluster.f90',
     'src/info.f90',
@@ -19,7 +18,6 @@ sources = files(
     'src/partition_functions.f90',
     'src/thermo.f90',
     'src/qce.f90',
-    'src/reader.f90',
     'main.f90'
 )
 

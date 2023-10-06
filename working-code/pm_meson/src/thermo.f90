@@ -361,7 +361,7 @@ module thermo
             open(newunit = myunit, action = "write", status = "unknown", &
                 file = filename)
             write(myunit, '(A)') "# T/K; " // header
-            write(myunit, fmtspec) "#", "T/K", (char(labels(iclust)), iclust = 1, nclust)
+            write(myunit, fmtspec) "#", "T/K", (trim(char(labels(iclust))), iclust = 1, nclust)
             write(fmtspec, '(A,G0,A)') '(ES13.6,', nclust, '(1X,ES13.6))' 
             do itemp = 1, ntemp
                 if (converged(itemp)) write(myunit, fmtspec) temp(itemp), &
