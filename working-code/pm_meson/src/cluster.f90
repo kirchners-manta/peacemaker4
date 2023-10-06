@@ -184,12 +184,20 @@ module cluster
             end do 
             close(open_unit)
 
+            !> Check for duplicate cluster labels.
+            do i = 1, nr_clusters
+                do j = i+1, nr_clusters
+                    if (cluster_labels(i) == cluster_labels(j)) then
+                        call pmk_error("duplicate cluster label '" // trim(cluster_labels(i)) // "'")
+                        stop 1
+                    end if
+                end do
+            end do
+
             !> Read clusterset data from TOML file
             do i=1, nr_clusters
 
                         !> Store the cluster in the cluster_t data type.
-                        !  Problem: Fehler muss bei doppenten clustern geworfen werden! (nachdenken)
-                        !  Vergleichen, wenn alle cluster eingelesen sind.
                         call get_value(cluster_table, cluster_labels(i), child)
                         
                         !> Convert cluster_label to iso_varying_string
