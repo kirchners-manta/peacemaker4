@@ -255,13 +255,31 @@ module cluster
                         call get_value(child, "anharmonicity", clusterset(i)%anharmonicity, 0.0_dp)
                         c%anharmonicity = clusterset(i)%anharmonicity
 
-                        !> Get the interaction energy.
+                        !> Get the interaction energy. 
                         call get_value(child, "energy", clusterset(i)%energy, 0.0_dp)
                         c%energy = clusterset(i)%energy
+                        call get_value(child, "energy", array, requested=.false.)
+                        if (associated(array)) then
+                            if (len(array)==1) then
+                                call get_value(array, 1, clusterset(i)%energy)
+                                c%energy = clusterset(i)%energy
+                            else 
+                                call pmk_argument_count_error("energy", c%label)
+                            end if
+                        end if
 
                         !> Get the rotational symmetry number sigma.
                         call get_value(child, "sigma", clusterset(i)%sigma, 1)
                         c%sigma = clusterset(i)%sigma
+                        call get_value(child, "sigma", array, requested=.false.)
+                        if (associated(array)) then
+                            if (len(array)==1) then
+                                call get_value(array, 1, clusterset(i)%sigma)
+                                c%sigma = clusterset(i)%sigma
+                            else 
+                                call pmk_argument_count_error("sigma", c%label)
+                            end if
+                        end if
 
             end do
                                     
@@ -288,7 +306,7 @@ module cluster
                         clusterset(monomer(j))%volume
                 end do
             end do
-            
+
         end subroutine process_clusterset
 
         !=================================================================================
