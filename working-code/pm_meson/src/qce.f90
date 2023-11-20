@@ -1354,7 +1354,7 @@ module qce
             write(fmtspec, '(A,G0,A)') '(A1,A12,', nclust, '(1X,A13))' 
             open(newunit = myunit, action = "write", status = "unknown", &
                 file = "populations.dat")
-            write(myunit, fmtspec) "#", "T/K", (char(labels(iclust)), iclust = 1, nclust)
+            write(myunit, fmtspec) "#", "T/K", (trim(char(labels(iclust))), iclust = 1, nclust)
             write(fmtspec, '(A,G0,A)') '(ES13.6,', nclust, '(1X,ES13.6))' 
             do itemp = 1, ntemp
                 if (converged(itemp)) write(myunit, fmtspec) temp(itemp), &
@@ -1371,7 +1371,7 @@ module qce
             write(fmtspec, '(A,G0,A)') '(A1,A12,', nclust, '(1X,A13))' 
             open(newunit = myunit, action = "write", status = "unknown", &
                 file = "concentrations.dat")
-            write(myunit, fmtspec) "#", "T/K", (char(labels(iclust)), iclust = 1, nclust)
+            write(myunit, fmtspec) "#", "T/K", (trim(char(labels(iclust))), iclust = 1, nclust)
             write(fmtspec, '(A,G0,A)') '(ES13.6,', nclust, '(1X,ES13.6))' 
             do itemp = 1, ntemp
                 if (converged(itemp)) write(myunit, fmtspec) temp(itemp), &

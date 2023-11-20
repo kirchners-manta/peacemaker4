@@ -31,20 +31,25 @@
 module cluster
     use kinds
     use iso_varying_string
-    use config
     use error
     use input
     use auxiliary
     use constants
+
+    !> TOML
+    use tomlf, only : toml_table, toml_parse, toml_error, toml_array, get_value, len, toml_key
+
     implicit none
     private
     !=====================================================================================
     ! Public entities.
     public :: clusterset
     public :: monomer
-    public :: setup_clusterset
+    public :: process_clusterset
     public :: print_clusterset
     public :: check_clusterset
+    public :: cluster_table
+    public :: toml_parse
     !=====================================================================================
     ! The cluster_t data type, which represents a cluster. Reasonable defaults should be
     ! set here, if there are any.
@@ -74,108 +79,212 @@ module cluster
         ! Cluster label.
         type(varying_string) :: label
     end type cluster_t
+
+    type(toml_table), allocatable :: cluster_table
+
     !=====================================================================================
     ! The clusterset array and monomer array. The clusterset array is the central quantity
     ! in Peacemaker. It contains all the static information about all the clusters. The
     ! monomer array contains the indices of monomers in the cluster set array.
     type(cluster_t), dimension(:), allocatable, target :: clusterset
     integer, dimension(:), allocatable :: monomer
+
     !=====================================================================================
     contains
         !=================================================================================
-        ! Given the clusterset configuration, this procedure sets up the clusterset array.
-        subroutine setup_clusterset(cfg)
-            ! The clusterset configuration.
-            type(config_t), intent(inout) :: cfg
-    
-            ! A pointer to the current record.
-            type(record_t), pointer :: p
-            ! A pointer to the current cluster.
+        !> Subroutine reading in the clusterset data from the TOML configuration file.
+        subroutine process_clusterset(cluster_table, clusterset_file)
+
+            type(toml_table), allocatable, intent(inout) :: cluster_table
+            character(len=*) :: clusterset_file
+            integer :: open_unit, ios
+            type(toml_error), allocatable :: error
+
+            !type(cluster_t), dimension(:), allocatable, target :: clusterset
+            !integer, dimension(:), allocatable :: monomer
+            type(toml_table), pointer :: child
+            type(toml_array), pointer :: array
+            logical :: reverse
+            integer :: ival, i, j
+            integer :: nr_clusters
+
+            !> A pointer to the current cluster.
             type(cluster_t), pointer :: c
-            ! The number of clusters
-            integer:: nr_clusters
-            ! Loop and status stuff.
-            integer:: i
-            integer:: j
-            
-            nr_clusters = cfg%nr_sections()
-            if (nr_clusters == 0) call pmk_error("empty clusterset")
-            allocate(clusterset(nr_clusters))
-            do i = 1, nr_clusters
-                ! Let c point to the current cluster for convenience.
-                c => clusterset(i)
-                ! Get the cluster label.
-                c%label = cfg%get_section_label(i)
-    
-                ! Check for the monomer flag.
-                p => cfg%get_record(c%label, "monomer")
-                if (associated(p)) then
-                    call process_monomer_record(c, p%nr_args)
-                    ! Get the monomer volume.
-                    p => cfg%get_record(c%label, "volume")
-                    if (associated(p)) then
-                        call process_volume_record(c, p%nr_args, p%args)
-                    else
-                        call pmk_missing_key_error("volume", c%label)
-                    end if
+
+            !> Path helper.
+            character(len=:), allocatable :: path_string
+            type(varying_string), dimension(:), allocatable :: path
+
+            !> Character variables for the cluster label.
+            character(len=256) :: current_line
+            character(len=255) :: cluster_label
+            character(len=255), dimension(:), allocatable :: cluster_labels
+
+            !> Open the clusterset file and parse it to the cluster_table.
+            block
+                open(newunit=open_unit, file=clusterset_file, status="old", iostat=ios)
+                if (ios /= 0) call pmk_error("could not open '" // trim(clusterset_file) // "'")   
+                call toml_parse(cluster_table, open_unit, error)
+                close(ios)
+                if (allocated(error)) then
+                  print '(a)', "Error: "//error%message
+                  stop 1
                 end if
-    
-                ! Get moments of inertia and mass from xyz file.
-                p => cfg%get_record(c%label, "coordinates")
-                if (associated(p)) then
-                    call process_coordinates_record(c, p%nr_args, p%args)
-                else
-                    call pmk_missing_key_error("coordinates", c%label)
+            end block
+
+            !------------------------------------------------------------------------
+            !> Read clusterset data from TOML file
+            !------------------------------------------------------------------------
+
+            !> The clusterset input file is opened again, because the names of the clusters
+            !  are unknown at this point.
+
+            !>  If the line starts with a '[' and ends with a ']', it is a cluster label.
+
+            !> Count the number of clusters.
+            open(newunit=open_unit, file=clusterset_file, status="old", iostat=ios, action="read")
+            nr_clusters = 0
+            do
+                read(open_unit, '(a)', iostat=ios) current_line
+                if (ios /= 0) exit 
+                
+                if (current_line(1:1) == '[') then
+                    if (ios /= 0) exit
+                    nr_clusters = nr_clusters + 1
                 end if
-    
-                ! Get the cluster composition.
-                p => cfg%get_record(c%label, "composition")
-                if (associated(p)) then
-                    call process_composition_record(c, p%nr_args, p%args)
-                else
-                    call pmk_missing_key_error("composition", c%label)
-                end if
-    
-                ! Get the frequency scaling factor.
-                p => cfg%get_record(c%label, "frequency_scale")
-                if (associated(p)) then
-                    call process_frequency_scale_record(c, p%nr_args, p%args)
-                end if
-    
-                ! Get the frequencies.
-                p => cfg%get_record(c%label, "frequencies")
-                if (associated(p)) then
-                    call process_frequencies_record(c, p%nr_args, p%args)
-                else
-                    call pmk_missing_key_error("frequencies", c%label)
-                end if
-    
-                ! Get the anharmonicity constant.
-                p => cfg%get_record(c%label, "anharmonicity")
-                if (associated(p)) then
-                    call process_anharmonicity_record(c, p%nr_args, p%args)
-                end if
-    
-                ! Get the interaction energy.
-                p => cfg%get_record(c%label, "energy")
-                if (associated(p)) then
-                    call process_energy_record(c, p%nr_args, p%args)
-                else
-                    call pmk_missing_key_error("energy", c%label)
-                end if
-    
-                ! Get the rotational symmetry number sigma.
-                p => cfg%get_record(c%label, "sigma")
-                if (associated(p)) then
-                    call process_sigma_record(c, p%nr_args, p%args)
-                else
-                    call pmk_missing_key_error("sigma", c%label)
-                end if
-    
             end do
-    
-            ! Set up the monomer array, assuming that everything is alright. We will check
-            ! for errors later.
+
+            if (nr_clusters == 0) call pmk_error("empty clusterset")
+
+            !> Allocate the clusterset array.
+            allocate(clusterset(nr_clusters))
+            !> Allocare cluster_labels array.
+            allocate(cluster_labels(nr_clusters))
+
+            !> Rewind the file.
+            rewind open_unit
+
+            nr_clusters = 0
+            do
+                read(open_unit, '(a)', iostat=ios) current_line
+                if (ios /= 0) exit 
+                
+                if (current_line(1:1) == '[') then
+                    if (ios /= 0) exit
+                    nr_clusters = nr_clusters + 1
+                    if (current_line(1:1) == '[' .and. &
+                        current_line(len_trim(current_line):len_trim(current_line)) == ']') then
+                        cluster_label = current_line(2:len_trim(current_line)-1)
+
+                        cluster_labels(nr_clusters) = cluster_label
+                    end if
+                end if 
+            end do 
+            close(open_unit)
+
+            !> Check for duplicate cluster labels.
+            do i = 1, nr_clusters
+                do j = i+1, nr_clusters
+                    if (cluster_labels(i) == cluster_labels(j)) then
+                        call pmk_error("duplicate cluster label '" // trim(cluster_labels(i)) // "'")
+                        stop 1
+                    end if
+                end do
+            end do
+
+            !> Read clusterset data from TOML file.
+            do i=1, nr_clusters
+
+                        !> Store the cluster in the cluster_t data type.
+                        call get_value(cluster_table, cluster_labels(i), child)
+                        
+                        !> Convert cluster_label to iso_varying_string
+                        clusterset(i)%label = cluster_labels(i)
+
+                        !> Assign the c pointer.
+                        c => clusterset(i)
+
+                        !> Check for the monomer flag.
+                        call get_value(child, "isMonomer", clusterset(i)%monomer, .false.)
+                        c%monomer = clusterset(i)%monomer
+                        !> If the cluster is a monomer, read the volume.
+                        if (clusterset(i)%monomer) then
+                            call get_value(child, "volume", clusterset(i)%volume, 0.0_dp)
+                            c%volume = clusterset(i)%volume
+                        end if
+
+                        !> Get moments of inertia and mass from xyz file.
+                        call get_value(child, "coordinates", path_string)
+                        if (allocated(path_string)) then
+                            allocate(path(1))
+                            path(1) = path_string
+                            call process_coordinates_record(c, 1, path(1))
+                            deallocate(path)
+                        else
+                            call pmk_missing_key_error("coordinates", clusterset(i)%label)
+                        end if
+
+                        !> Get the cluster composition.
+                        call get_value(child, "composition", array)
+                        if (associated(array)) then
+                            allocate(clusterset(i)%composition(len(array)))
+                            do j = 1, len(array)
+                                call get_value(array, j, clusterset(i)%composition(j))
+                                c%composition(j) = clusterset(i)%composition(j)
+                            end do
+                        else
+                            call pmk_missing_key_error("composition", clusterset(i)%label)
+                        end if
+
+                        !> Get the frequency scaling factor.
+                        call get_value(child, "frequency_scale", clusterset(i)%fscale, 1.0_dp)
+                        c%fscale = clusterset(i)%fscale
+
+                        !> Get the frequencies.
+                        call get_value(child, "frequencies", path_string)
+                        if (allocated(path_string)) then
+                            allocate(path(1))
+                            path(1) = path_string
+                            call process_frequencies_record(c, 1, path(1))
+                            deallocate(path)
+                        else
+                            call pmk_missing_key_error("frequencies", clusterset(i)%label)
+                        end if
+
+                        !> Get the anharmonicity constant.
+                        call get_value(child, "anharmonicity", clusterset(i)%anharmonicity, 0.0_dp)
+                        c%anharmonicity = clusterset(i)%anharmonicity
+
+                        !> Get the interaction energy. 
+                        call get_value(child, "energy", clusterset(i)%energy, 0.0_dp)
+                        c%energy = clusterset(i)%energy
+                        call get_value(child, "energy", array, requested=.false.)
+                        if (associated(array)) then
+                            if (len(array)==1) then
+                                call get_value(array, 1, clusterset(i)%energy)
+                                c%energy = clusterset(i)%energy
+                            else 
+                                call pmk_argument_count_error("energy", c%label)
+                            end if
+                        end if
+
+                        !> Get the rotational symmetry number sigma.
+                        call get_value(child, "sigma", clusterset(i)%sigma, 1)
+                        c%sigma = clusterset(i)%sigma
+                        call get_value(child, "sigma", array, requested=.false.)
+                        if (associated(array)) then
+                            if (len(array)==1) then
+                                call get_value(array, 1, clusterset(i)%sigma)
+                                c%sigma = clusterset(i)%sigma
+                            else 
+                                call pmk_argument_count_error("sigma", c%label)
+                            end if
+                        end if
+
+            end do
+                                    
+            !> Set up the monomer array, assuming that everything is alright. We will check
+            !  for errors later.
             allocate(monomer(pmk_input%components))
             monomer = 0
             do i = 1, nr_clusters
@@ -185,9 +294,9 @@ module cluster
                     end do
                 end if
             end do
-    
-            ! Calculate cluster volumes, assuming that everything is alright. We will
-            ! check for errors later.
+
+            !> Calculate cluster volumes, assuming that everything is alright. We will
+            !  check for errors later.
             do i = 1, nr_clusters
                 if (clusterset(i)%monomer) cycle
                 clusterset(i)%volume = 0.0_dp
@@ -197,7 +306,9 @@ module cluster
                         clusterset(monomer(j))%volume
                 end do
             end do
-        end subroutine setup_clusterset
+
+        end subroutine process_clusterset
+
         !=================================================================================
         ! Prints information about the processed cluster set to the screen.
         subroutine print_clusterset()
@@ -212,9 +323,9 @@ module cluster
     
                 ! Print cluster label.
                 if (c%monomer) then
-                    write(*,'(8X,3A)') "[", char(c%label), "] (monomer)"
+                    write(*,'(8X,3A)') "[", trim(char(c%label)), "] (monomer)"
                 else
-                    write(*,'(8X,3A)') "[", char(c%label), "]"
+                    write(*,'(8X,3A)') "[", trim(char(c%label)), "]"
                 end if
     
                 ! Print composition.
@@ -250,18 +361,7 @@ module cluster
                 write(*, *)
             end do
         end subroutine print_clusterset
-        !=================================================================================
-        ! Processes the monomer record.
-        subroutine process_monomer_record(c, nr_args)
-            type(cluster_t), pointer, intent(inout) :: c
-            integer, intent(in) :: nr_args
-    
-            if (nr_args == 0) then
-                c%monomer = .true.
-            else
-                call pmk_argument_count_error("monomer", c%label)
-            end if
-        end subroutine process_monomer_record
+
         !=================================================================================
         ! Processes a coordinates record.
         subroutine process_coordinates_record(c, nr_args, args)
@@ -422,26 +522,7 @@ module cluster
                 call pmk_argument_count_error("coordinates", c%label)
             end if
         end subroutine process_coordinates_record
-        !=================================================================================
-        ! Processes a composition record.
-        subroutine process_composition_record(c, nr_args, args)
-            type(cluster_t), pointer, intent(inout) :: c
-            integer, intent(in) :: nr_args
-            type(varying_string), dimension(nr_args), intent(in) :: args
-    
-            integer:: i
-            integer:: ios
-    
-            if (nr_args == pmk_input%components) then
-                allocate(c%composition(pmk_input%components))
-                do i = 1, pmk_input%components
-                    c%composition(i) = string2int(args(i), ios)
-                    if (ios /= 0) call pmk_argument_error("composition", c%label)
-                end do
-            else
-                call pmk_argument_count_error("composition", c%label)
-            end if
-        end subroutine process_composition_record
+
         !=================================================================================
         ! Reads frequencies from a frequency file. A frequency file is similar to an
         ! xyz file. It contains the number of vibrational frequencies in the first line,
@@ -517,86 +598,7 @@ module cluster
                 call pmk_argument_count_error("frequencies", c%label)
             end if
         end subroutine process_frequencies_record
-        !=================================================================================
-        ! Processes the adiabatic interaction energy.
-        subroutine process_energy_record(c, nr_args, args)
-            type(cluster_t), pointer, intent(inout) :: c
-            integer, intent(in) :: nr_args
-            type(varying_string), dimension(nr_args), intent(in) :: args
-    
-            integer:: ios
-    
-            if (nr_args == 1) then
-                c%energy = string2real(args(1), ios)
-                if (ios /= 0) call pmk_argument_error("energy", c%label)
-            else
-                call pmk_argument_count_error("energy", c%label)
-            end if
-        end subroutine process_energy_record
-        !=================================================================================
-        ! Processes the rotational symmetry number.
-        subroutine process_sigma_record(c, nr_args, args)
-            type(cluster_t), pointer, intent(inout) :: c
-            integer, intent(in) :: nr_args
-            type(varying_string), dimension(nr_args), intent(in) :: args
-    
-            integer:: ios
-    
-            if (nr_args == 1) then
-                c%sigma = string2int(args(1), ios)
-                if (ios /= 0) call pmk_argument_error("sigma", c%label)
-            else
-                call pmk_argument_count_error("sigma", c%label)
-            end if
-        end subroutine process_sigma_record
-        !=================================================================================
-        ! Processes the volume record.
-        subroutine process_volume_record(c, nr_args, args)
-            type(cluster_t), pointer, intent(inout) :: c
-            integer, intent(in) :: nr_args
-            type(varying_string), dimension(nr_args), intent(in) :: args
-    
-            integer:: ios
-    
-            if (nr_args == 1) then
-                c%volume = string2real(args(1), ios)
-                if (ios /= 0) call pmk_argument_error("volume", c%label)
-            else
-                call pmk_argument_count_error("volume", c%label)
-            end if
-        end subroutine process_volume_record
-        !=================================================================================
-        ! Processes the frequency scaling factor record.
-        subroutine process_frequency_scale_record(c, nr_args, args)
-            type(cluster_t), pointer, intent(inout) :: c
-            integer, intent(in) :: nr_args
-            type(varying_string), dimension(nr_args), intent(in) :: args
-    
-            integer:: ios
-    
-            if (nr_args == 1) then
-                c%fscale = string2real(args(1), ios)
-                if (ios /= 0) call pmk_argument_error("frequency_scale", c%label)
-            else
-                call pmk_argument_count_error("frequency_scale", c%label)
-            end if
-        end subroutine process_frequency_scale_record
-        !=================================================================================
-        ! Processes the anharmonicity record.
-        subroutine process_anharmonicity_record(c, nr_args, args)
-            type(cluster_t), pointer, intent(inout) :: c
-            integer, intent(in) :: nr_args
-            type(varying_string), dimension(nr_args), intent(in) :: args
-    
-            integer:: ios
-    
-            if (nr_args == 1) then
-                c%anharmonicity = string2real(args(1), ios)
-                if (ios /= 0) call pmk_argument_error("anharmonicity", c%label)
-            else
-                call pmk_argument_count_error("anharmonicity", c%label)
-            end if
-        end subroutine process_anharmonicity_record
+
         !=================================================================================
         ! Performs sanity checks on the clusterset.
         subroutine check_clusterset()
