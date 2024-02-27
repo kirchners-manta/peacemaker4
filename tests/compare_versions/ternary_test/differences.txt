@@ -1,0 +1,6 @@
+Differences for file: concentrations.dat
+Differences for file: populations.dat
+Differences for file: thermo0.dat
+Differences for file: thermo1.dat
+Differences for file: thermo2.dat
+Differences for file: volume.dat

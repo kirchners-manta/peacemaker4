@@ -1,0 +1,135 @@
+[c1]
+  composition 1 
+  monomer
+  volume 93.5026985
+  sigma 3
+  energy 0.0
+  coordinates ../clusters/c1.xyz
+  frequencies ../clusters/c1.flist
+
+[c2-1]
+  composition 2 
+  sigma 1
+  energy -15.5475913794
+  coordinates ../clusters/c2-1.xyz
+  frequencies ../clusters/c2-1.flist
+
+[c3-4]
+  composition 3 
+  sigma 1
+  energy -38.5287486792
+  coordinates ../clusters/c3-4.xyz
+  frequencies ../clusters/c3-4.flist
+
+[c3-5]
+  composition 3 
+  sigma 1
+  energy -38.3549529768
+  coordinates ../clusters/c3-5.xyz
+  frequencies ../clusters/c3-5.flist
+
+[c3-7]
+  composition 3 
+  sigma 1
+  energy -38.2832119323
+  coordinates ../clusters/c3-7.xyz
+  frequencies ../clusters/c3-7.flist
+
+[c3-9]
+  composition 3 
+  sigma 1
+  energy -38.1005706867
+  coordinates ../clusters/c3-9.xyz
+  frequencies ../clusters/c3-9.flist
+
+[c4-1]
+  composition 4 
+  sigma 2
+  energy -65.3886199546
+  coordinates ../clusters/c4-1.xyz
+  frequencies ../clusters/c4-1.flist
+
+[c4-3]
+  composition 4 
+  sigma 1
+  energy -63.4205910431
+  coordinates ../clusters/c4-3.xyz
+  frequencies ../clusters/c4-3.flist
+
+[c4-5]
+  composition 4 
+  sigma 1
+  energy -59.9966310903
+  coordinates ../clusters/c4-5.xyz
+  frequencies ../clusters/c4-5.flist
+
+[c4-6]
+  composition 4 
+  sigma 1
+  energy -63.5838746556
+  coordinates ../clusters/c4-6.xyz
+  frequencies ../clusters/c4-6.flist
+
+[c4-7]
+  composition 4 
+  sigma 1
+  energy -62.7916703268
+  coordinates ../clusters/c4-7.xyz
+  frequencies ../clusters/c4-7.flist
+
+[c4-8]
+  composition 4 
+  sigma 1
+  energy -63.3419765866
+  coordinates ../clusters/c4-8.xyz
+  frequencies ../clusters/c4-8.flist
+
+[c4-9]
+  composition 4 
+  sigma 1
+  energy -63.549485174
+  coordinates ../clusters/c4-9.xyz
+  frequencies ../clusters/c4-9.flist
+
+[c5-1]
+  composition 5 
+  sigma 3
+  energy -99.7201261521
+  coordinates ../clusters/c5-1.xyz
+  frequencies ../clusters/c5-1.flist
+
+[c5-4]
+  composition 5 
+  sigma 1
+  energy -93.4567203769
+  coordinates ../clusters/c5-4.xyz
+  frequencies ../clusters/c5-4.flist
+
+[c5-6]
+  composition 5 
+  sigma 1
+  energy -93.4764858366
+  coordinates ../clusters/c5-6.xyz
+  frequencies ../clusters/c5-6.flist
+
+[c5-9]
+  composition 5 
+  sigma 1
+  energy -92.7853355903
+  coordinates ../clusters/c5-9.xyz
+  frequencies ../clusters/c5-9.flist
+
+[c6-2]
+  composition 6 
+  sigma 1
+  energy -125.894932665
+  coordinates ../clusters/c6-2.xyz
+  frequencies ../clusters/c6-2.flist
+
+[c6-8]
+  composition 6 
+  sigma 1
+  energy -124.279958816
+  coordinates ../clusters/c6-8.xyz
+  frequencies ../clusters/c6-8.flist
+

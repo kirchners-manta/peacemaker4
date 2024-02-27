@@ -1,0 +1,114 @@
+[w1]
+  composition 1 
+  monomer
+  volume 25.860786476
+  sigma 2
+  energy 0.0
+  coordinates ../clusters/w1.xyz
+  frequencies ../clusters/w1.flist
+
+[w2]
+  composition 2 
+  sigma 1
+  energy -20.7886230228
+  coordinates ../clusters/w2.xyz
+  frequencies ../clusters/w2.flist
+
+[w3-1]
+  composition 3 
+  sigma 1
+  energy -61.4142098751
+  coordinates ../clusters/w3-1.xyz
+  frequencies ../clusters/w3-1.flist
+
+[w3-2]
+  composition 3 
+  sigma 2
+  energy -36.7963531233
+  coordinates ../clusters/w3-2.xyz
+  frequencies ../clusters/w3-2.flist
+
+[w4-1]
+  composition 4 
+  sigma 2
+  energy -111.92450867
+  coordinates ../clusters/w4-1.xyz
+  frequencies ../clusters/w4-1.flist
+
+[w4-2]
+  composition 4 
+  sigma 1
+  energy -106.947647826
+  coordinates ../clusters/w4-2.xyz
+  frequencies ../clusters/w4-2.flist
+
+[w5-2]
+  composition 5 
+  sigma 1
+  energy -145.782425702
+  coordinates ../clusters/w5-2.xyz
+  frequencies ../clusters/w5-2.flist
+
+[w5-6]
+  composition 5 
+  sigma 1
+  energy -123.569205061
+  coordinates ../clusters/w5-6.xyz
+  frequencies ../clusters/w5-6.flist
+
+[w5-7]
+  composition 5 
+  sigma 1
+  energy -124.138858756
+  coordinates ../clusters/w5-7.xyz
+  frequencies ../clusters/w5-7.flist
+
+[w6-1]
+  composition 6 
+  sigma 1
+  energy -191.888714564
+  coordinates ../clusters/w6-1.xyz
+  frequencies ../clusters/w6-1.flist
+
+[w6-2]
+  composition 6 
+  sigma 1
+  energy -192.291996657
+  coordinates ../clusters/w6-2.xyz
+  frequencies ../clusters/w6-2.flist
+
+[w6-4]
+  composition 6 
+  sigma 1
+  energy -185.519630114
+  coordinates ../clusters/w6-4.xyz
+  frequencies ../clusters/w6-4.flist
+
+[w6-5]
+  composition 6 
+  sigma 1
+  energy -177.40728567
+  coordinates ../clusters/w6-5.xyz
+  frequencies ../clusters/w6-5.flist
+
+[w6-7]
+  composition 6 
+  sigma 1
+  energy -180.123913851
+  coordinates ../clusters/w6-7.xyz
+  frequencies ../clusters/w6-7.flist
+
+[w6-8]
+  composition 6 
+  sigma 1
+  energy -180.123992143
+  coordinates ../clusters/w6-8.xyz
+  frequencies ../clusters/w6-8.flist
+
+[w6-10]
+  composition 6 
+  sigma 1
+  energy -177.765168069
+  coordinates ../clusters/w6-10.xyz
+  frequencies ../clusters/w6-10.flist
+

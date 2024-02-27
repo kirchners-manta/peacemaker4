@@ -1,0 +1,30 @@
+[w1]
+  composition 1 
+  monomer
+  volume 25.860786476
+  sigma 2
+  energy 0.0
+  coordinates ../clusters/w1.xyz
+  frequencies ../clusters/w1.flist
+
+[w2]
+  composition 2 
+  sigma 1
+  energy -20.7886230228
+  coordinates ../clusters/w2.xyz
+  frequencies ../clusters/w2.flist
+
+[w3-1]
+  composition 3 
+  sigma 1
+  energy -61.4142098751
+  coordinates ../clusters/w3-1.xyz
+  frequencies ../clusters/w3-1.flist
+
+[w3-2]
+  composition 3 
+  sigma 2
+  energy -36.7963531233
+  coordinates ../clusters/w3-2.xyz
+  frequencies ../clusters/w3-2.flist
+
