@@ -1,31 +1,31 @@
-module test_suite1
+module test_polynomial
   use testdrive, only : new_unittest, unittest_type, error_type, check
-  use partition_functions, only : calculate_lnq
+  use polynomial, only : newton
   implicit none
   private
 
-  public :: collect_suite1
+  public :: collect_polynomial
 
 contains
 
 !> Collect all exported unit tests
-subroutine collect_suite1(testsuite)
+subroutine collect_polynomial(testsuite)
   !> Collection of tests
   type(unittest_type), allocatable, intent(out) :: testsuite(:)
 
   testsuite = [ &
-    new_unittest("test1.1", test_calc_lnq), &
+    new_unittest("test_newton", test_newton), &
     new_unittest("test1.2", test_invalid, should_fail=.true.) &
     ]
 
-end subroutine collect_suite1
+end subroutine collect_polynomial
 
-subroutine test_calc_lnq(error)
+subroutine test_newton(error)
   type(error_type), allocatable, intent(out) :: error
 
   call check(error, 1, 1)
   if (allocated(error)) return
-end subroutine test_calc_lnq
+end subroutine test_newton
 
 subroutine test_invalid(error)
   type(error_type), allocatable, intent(out) :: error
@@ -34,4 +34,4 @@ subroutine test_invalid(error)
   if (allocated(error)) return
 end subroutine test_invalid
 
-end module test_suite1
+end module test_polynomial

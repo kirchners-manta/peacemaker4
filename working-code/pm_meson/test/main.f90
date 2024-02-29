@@ -2,7 +2,7 @@ program tester
   use, intrinsic :: iso_fortran_env, only : error_unit
   use testdrive, only : run_testsuite, new_testsuite, testsuite_type
   !> > > > > >   BLOCK 1   > > > > > > > > > > >
-  use test_suite1, only : collect_suite1
+  use test_polynomial, only : collect_polynomial
   use test_suite2, only : collect_suite2
   !> ^- Hier use  test_<name>, only : collect_<name>  einfügen
 
@@ -15,7 +15,7 @@ program tester
 
   testsuites = [ &
     !> > > > > >   BLOCK 2   > > > > > > > > > >
-    new_testsuite("suite1", collect_suite1), &
+    new_testsuite("polynomial", collect_polynomial), &
     new_testsuite("suite2", collect_suite2) &
     !> ^- Hier  new_testsuite("<name>", collect_<name>), &  einfügen
     ]
