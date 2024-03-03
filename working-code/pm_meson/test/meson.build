@@ -10,15 +10,17 @@ testdrive_dep = dependency('test-drive', fallback: ['test-drive', 'testdrive_dep
 
 tests = [
   'polynomial',
+  'partition_functions',
   'suite2',
-  # ...
 ]
 
 test_srcs = files(
   'main.f90',
   'test_polynomial.f90',
+  'test_partition_functions.f90',
   'test_suite2.f90',
 )
+
 foreach t : tests
   test_srcs += files('test_@0@.f90'.format(t.underscorify()))
 endforeach

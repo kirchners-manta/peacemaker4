@@ -153,6 +153,7 @@ module qce
         end subroutine initialize_conserved_quantities
         !=================================================================================
         ! Initializes the degree of the population and mass polynomials.
+        ! Find maximum degree of the population and mass polynomials.
         subroutine initialize_degree()
             integer:: i
             integer:: j
@@ -938,6 +939,8 @@ module qce
             integer, dimension(:), allocatable :: degree
     
             allocate(degree(size(monomer)))
+            ! Degree is the maximum number of monomers of each type in a cluster.
+            ! It is increased by one, because in a polynomial of degree n, there are n+1 coefficients.
             degree(:) = global_data%degree(:) + 1
 
             ! Calculate coefficients for >> each cluster <<
@@ -965,7 +968,6 @@ module qce
 
                 end associate
             end do
-!            write(*,*) "lnq", lnq%qtot
 
             ! Calculate coefficients for >> each possible composition <<. We simulate a multi-dimensional
             ! array as a linear or one-dimensional array. n_comp is the number of possible cluster compositions

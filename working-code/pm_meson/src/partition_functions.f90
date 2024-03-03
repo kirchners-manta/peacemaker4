@@ -31,6 +31,7 @@ module partition_functions
     !=====================================================================================
     ! Public entities
     public :: calculate_lnq
+    public :: calculate_lnqtrans
     public :: update_lnq
     public :: calculate_dlnq
     public :: calculate_ddlnq
@@ -51,7 +52,7 @@ module partition_functions
             real(dp), intent(in) :: vol
             real(dp), intent(in) :: temp
     
-            call calculate_lnqtrans(lnq(:)%qtrans, bxv, temp, vol)
+            call calculate_lnqtrans(lnq(:)%qtrans, bxv, temp, vol, clusterset, global_data%vexcl)
             call calculate_lnqvib(lnq(:)%qvib, temp)
             call calculate_lnqrot(lnq(:)%qrot, temp)
             call calculate_lnqelec(lnq(:)%qelec, temp)
@@ -68,7 +69,7 @@ module partition_functions
             real(dp), intent(in) :: temp
             real(dp), intent(in) :: vol
     
-            call calculate_lnqtrans(lnq(:)%qtrans, bxv, temp, vol)
+            call calculate_lnqtrans(lnq(:)%qtrans, bxv, temp, vol, clusterset, global_data%vexcl)
             call calculate_lnqint(lnq(:)%qint, amf, temp, vol)
             lnq(:)%qtot = lnq(:)%qtrans + lnq(:)%qvib + lnq(:)%qrot + lnq(:)%qelec + &
                 lnq(:)%qint
@@ -114,23 +115,25 @@ module partition_functions
         !=================================================================================
         ! Calculates the translational cluster partition function.
         ! q_trans = (2*pi*m*kb*T/h^2)^1.5*V
-        subroutine calculate_lnqtrans(lnq, bxv, temp, vol)
+        subroutine calculate_lnqtrans(lnq, bxv, temp, vol, cluster_set, v_excl)
             real(dp), dimension(:), intent(out) :: lnq
             real(dp), intent(in) :: vol
             real(dp), intent(in) :: temp
             real(dp), intent(in) :: bxv
+            type(cluster_t), dimension(:), intent(in) :: cluster_set
+            real(dp), intent(in) :: v_excl
     
             real(dp):: lambda
             real(dp):: mass
             integer:: iclust
     
-            do iclust = 1, size(clusterset)
+            do iclust = 1, size(cluster_set)
                 ! Calculate the de Broglie wave length
-                mass = clusterset(iclust)%mass*amu
+                mass = cluster_set(iclust)%mass*amu
                 lambda = planck/sqrt(2.0_dp*pi*mass*kb*temp)
     
                 ! Calculate the partition function
-                lnq(iclust) = log(vol-bxv*global_data%vexcl) - 3.0_dp*log(lambda)
+                lnq(iclust) = log(vol-bxv*v_excl) - 3.0_dp*log(lambda)
             end do
         end subroutine calculate_lnqtrans
         !=================================================================================

@@ -50,6 +50,7 @@ module cluster
     public :: check_clusterset
     public :: cluster_table
     public :: toml_parse
+    public :: cluster_t
     !=====================================================================================
     ! The cluster_t data type, which represents a cluster. Reasonable defaults should be
     ! set here, if there are any.

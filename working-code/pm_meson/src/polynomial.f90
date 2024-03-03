@@ -58,6 +58,7 @@ module polynomial
                 l = l/n
             newton_loop: do i = 1, iterations
                 do j = 1, n
+                    !write(*,*) (j-1)*l, j*l-1, coeffs((j-1)*l:j*l-1)
                     call horner(n, d, l, coeffs((j-1)*l:j*l-1), x, p(j), pdiff(:, j))
                 end do
                 pdiff = transpose(pdiff)
