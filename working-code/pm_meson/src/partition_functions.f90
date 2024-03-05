@@ -31,7 +31,7 @@ module partition_functions
     !=====================================================================================
     ! Public entities
     public :: calculate_lnq
-    public :: calculate_lnqtrans, calculate_lnqvib
+    public :: calculate_lnqtrans, calculate_lnqvib, calculate_lnqrot
     public :: update_lnq
     public :: calculate_dlnq
     public :: calculate_ddlnq
@@ -54,7 +54,7 @@ module partition_functions
     
             call calculate_lnqtrans(lnq(:)%qtrans, bxv, temp, vol, clusterset, global_data%vexcl)
             call calculate_lnqvib(lnq(:)%qvib, temp, clusterset, global_data%rotor_cutoff)
-            call calculate_lnqrot(lnq(:)%qrot, temp)
+            call calculate_lnqrot(lnq(:)%qrot, temp, clusterset)
             call calculate_lnqelec(lnq(:)%qelec, temp)
             call calculate_lnqint(lnq(:)%qint, amf, temp, vol)
             lnq(:)%qtot = lnq(:)%qtrans + lnq(:)%qvib + lnq(:)%qrot + lnq(:)%qelec + &
@@ -203,16 +203,17 @@ module partition_functions
         ! q_rot = (1/sigma)*(T/t_rot)                               --- linear
         ! q_rot = sqrt(pi)/sigma*(T^3/(t_rot1*t_rot2*t_rot3))^(1/2) --- nonlinear
         ! q_rot = 1                                                 --- atom
-        subroutine calculate_lnqrot(lnq, temp)
+        subroutine calculate_lnqrot(lnq, temp, cluster_set)
             real(dp), dimension(:), intent(out) :: lnq
             real(dp), intent(in) :: temp
+            type(cluster_t), dimension(:), intent(in) :: cluster_set
     
             integer:: iclust
             integer:: imoment
             real(dp):: t_rot
     
-            do iclust = 1, size(clusterset)
-                associate(c => clusterset(iclust))
+            do iclust = 1, size(cluster_set)
+                associate(c => cluster_set(iclust))
                     if (c%atom) then
                         lnq(iclust) = 0.0_dp
                     else

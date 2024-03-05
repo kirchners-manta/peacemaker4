@@ -16,7 +16,8 @@ module test_partition_functions
     testsuite = [ &
       new_unittest("test_calc_lnqtrans", test_calc_lnqtrans), &
       new_unittest("test_calc_lnqvib", test_calc_lnqvib), &
-      new_unittest("test_calc_lnqvib_2", test_calc_lnqvib_2) &
+      new_unittest("test_calc_lnqvib_2", test_calc_lnqvib_2), &
+      new_unittest("test_calc_lnqrot", test_calc_lnqrot) &
       !new_unittest("test1.2", test_invalid, should_fail=.true.) &
       ]
   
@@ -66,26 +67,28 @@ module test_partition_functions
     ! Arguments
     type(error_type), allocatable, intent(out) :: error
     real(dp), dimension(2):: lnq
-    real(dp) :: temp = 298.0
+    real(dp) :: temp = 315.0
     type(cluster_t), dimension(:), allocatable :: cluster_set
 
     ! Only vibration
     real(dp) :: rotor_cutoff = 0.0
 
     ! Expected result
-    real(dp), dimension(2) :: expected = [0.2584469613283448, 21.647769951871787]
+    real(dp), dimension(2) :: expected = [-1.3967910870430646, 23.9041034243484]
 
     ! Allocate cluster_set
     allocate(cluster_set(2))
     ! Harmonic oscillator
-    cluster_set(1)%frequencies = [100.0, 200.0, 300.0]
+    cluster_set(1)%frequencies = [11.4, 25.6, 68.7, 134.9, 3555.9]
     cluster_set(1)%anharmonicity = 0.0
-    cluster_set(1)%inertia = [1.0, 1.0, 1.0]
+    cluster_set(1)%inertia = [212.4, 212.4]
+    cluster_set(1)%sigma = 2
 
     ! Morse oscillator
     cluster_set(2)%frequencies = [5.0, 648.0, 1000.0, 3555.7] !wavenumbers
     cluster_set(2)%anharmonicity = 0.34
-    cluster_set(2)%inertia = [1.0, 1.0, 1.0, 1.0]
+    cluster_set(2)%inertia = [38.6, 43.9, 112.9]
+    cluster_set(2)%sigma = 1
 
     call calculate_lnqvib(lnq, temp, cluster_set, rotor_cutoff)
 
@@ -136,7 +139,53 @@ module test_partition_functions
     call check(error, lnq(3), expected(3), thr=0.00001_dp, rel=.false.)
     if (allocated(error)) return
   end subroutine test_calc_lnqvib_2
+
+!----------------------------------------
+! Unit test for lnqrot
+!---------------------------------------- 
+  subroutine test_calc_lnqrot(error)
+    use partition_functions, only : calculate_lnqrot
+    use cluster, only : cluster_t
+
+    ! Arguments
+    type(error_type), allocatable, intent(out) :: error
+    real(dp), dimension(3) :: lnq 
+    real(dp) :: temp = 298.0
+
+    type(cluster_t), dimension(:), allocatable :: cluster_set
+
+    ! Expected result
+    real(dp), dimension(3) :: expected = [0.0, 6.130167446075413, 9.17613133433584]
+
+    ! Allocate cluster_set
+    allocate(cluster_set(3))
+    ! Case 1 : Cluster is an atom
+    cluster_set(1)%inertia = [0.0]
+    cluster_set(1)%sigma = 1.0
+    cluster_set(1)%atom = .true.
+    cluster_set(1)%linear = .false.
+
+    ! Case 2 : Cluster is linear
+    cluster_set(2)%inertia = [37.4, 37.4]
+    cluster_set(2)%sigma = 1.0
+    cluster_set(2)%atom = .false.
+    cluster_set(2)%linear = .true.
+
+    ! Case 3 : Cluster is nonlinear
+    cluster_set(3)%inertia = [21.2, 43.2, 70.0]
+    cluster_set(3)%sigma = 2.0
+    cluster_set(3)%atom = .false.
+    cluster_set(3)%linear = .false.
+
+
+    call calculate_lnqrot(lnq, temp, cluster_set)
   
+    call check(error, lnq(1), expected(1), thr=0.001_dp, rel=.false.)
+    call check(error, lnq(2), expected(2), thr=0.001_dp, rel=.false.)
+    call check(error, lnq(3), expected(3), thr=0.001_dp, rel=.false.)
+    if (allocated(error)) return
+  end subroutine test_calc_lnqrot
+ 
   subroutine test_invalid(error)
     type(error_type), allocatable, intent(out) :: error
     
