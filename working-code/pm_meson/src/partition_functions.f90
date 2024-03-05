@@ -31,7 +31,7 @@ module partition_functions
     !=====================================================================================
     ! Public entities
     public :: calculate_lnq
-    public :: calculate_lnqtrans
+    public :: calculate_lnqtrans, calculate_lnqvib
     public :: update_lnq
     public :: calculate_dlnq
     public :: calculate_ddlnq
@@ -53,7 +53,7 @@ module partition_functions
             real(dp), intent(in) :: temp
     
             call calculate_lnqtrans(lnq(:)%qtrans, bxv, temp, vol, clusterset, global_data%vexcl)
-            call calculate_lnqvib(lnq(:)%qvib, temp)
+            call calculate_lnqvib(lnq(:)%qvib, temp, clusterset, global_data%rotor_cutoff)
             call calculate_lnqrot(lnq(:)%qrot, temp)
             call calculate_lnqelec(lnq(:)%qelec, temp)
             call calculate_lnqint(lnq(:)%qint, amf, temp, vol)
@@ -140,7 +140,7 @@ module partition_functions
         ! Calculates the vibrational cluster partition function.
         ! edit: q_vib is the product, the sum occurs due to the logarithm
         ! q_vib = product over all nu: exp[-h*nu/(2*kb*T)]/{1-exp[-h*nu/(kb*T)]}
-        subroutine calculate_lnqvib(lnq, temp)
+        subroutine calculate_lnqvib(lnq, temp, cluster_set, rotor_cutoff)
             real(dp), dimension(:), intent(out) :: lnq
             real(dp), intent(in) :: temp
     
@@ -151,16 +151,18 @@ module partition_functions
             real(dp):: q_ho, q_fr
             real(dp):: moi, emoi, Bav, t_rot, w
             logical :: free_rotator
+            type(cluster_t), dimension(:), intent(in) :: cluster_set
+            real(dp) :: rotor_cutoff
             
             free_rotator = .false.
             w = 1.0_dp
-            if (global_data%rotor_cutoff > 0.0_dp) free_rotator = .true.
+            if (rotor_cutoff > 0.0_dp) free_rotator = .true.
 
             ! TODO: Check atoms.
             factor = planck*100.0_dp*speed_of_light/kb
-            do iclust = 1, size(clusterset)
-                associate(f => clusterset(iclust)%frequencies, q => lnq(iclust), &
-                    x => clusterset(iclust)%anharmonicity, c => clusterset(iclust))
+            do iclust = 1, size(cluster_set)
+                associate(f => cluster_set(iclust)%frequencies, q => lnq(iclust), &
+                    x => cluster_set(iclust)%anharmonicity, c => cluster_set(iclust))
                     q = 0.0_dp
                     q_ho = 0.0_dp
                     q_fr = 0.0_dp
@@ -187,7 +189,7 @@ module partition_functions
                                 emoi = moi * Bav/(moi + Bav)
                                 t_rot = hbar**2/(2.0_dp*emoi*kb)
                                 q_fr = log(sqrt(pi*temp/t_rot)/real(c%sigma, dp))
-                                w = 1.0_dp/(1.0_dp + (global_data%rotor_cutoff/f(ifreq))**4)
+                                w = 1.0_dp/(1.0_dp + (rotor_cutoff/f(ifreq))**4)
                             end if
                             
                             q = q + w * q_ho + (1.0_dp - w) * q_fr
