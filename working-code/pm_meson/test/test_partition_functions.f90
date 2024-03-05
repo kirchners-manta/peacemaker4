@@ -99,32 +99,41 @@ module test_partition_functions
     use cluster, only : cluster_t
     ! Arguments
     type(error_type), allocatable, intent(out) :: error
-    real(dp), dimension(2):: lnq
+    real(dp), dimension(3):: lnq
     real(dp) :: temp = 298.0
     type(cluster_t), dimension(:), allocatable :: cluster_set
 
     ! Grimme's rotor cutoff
-    real(dp) :: rotor_cutoff = 100.0
+    real(dp) :: rotor_cutoff = 3000.0
 
     ! Expected result
-    real(dp), dimension(2) :: expected = [0.2584469613283448, 21.647769951871787]
+    real(dp), dimension(3) :: expected = [1.7676272441463634, -3.855446885285766, -3.8012813311299443]
 
     ! Allocate cluster_set
-    allocate(cluster_set(2))
+    allocate(cluster_set(3))
     ! Harmonic oscillator
     cluster_set(1)%frequencies = [100.0, 200.0, 300.0]
     cluster_set(1)%anharmonicity = 0.0
     cluster_set(1)%inertia = [1.0, 1.0, 1.0]
+    cluster_set(1)%sigma = 1.0
 
-    ! Morse oscillator
+    ! Harmonic oscillator
     cluster_set(2)%frequencies = [5.0, 648.0, 1000.0, 3555.7] !wavenumbers
-    cluster_set(2)%anharmonicity = 0.34
-    cluster_set(2)%inertia = [1.0, 1.0, 1.0, 1.0]
+    cluster_set(2)%anharmonicity = 0.0
+    cluster_set(2)%inertia = [3.2, 5.9, 89.3, 1.0]
+    cluster_set(2)%sigma = 1.0
+
+    ! Morse oscillator -> Free rotator approximation is NOT used
+    cluster_set(3)%frequencies = [180.0, 270.0, 3550.0]
+    cluster_set(3)%anharmonicity = 0.6
+    cluster_set(3)%inertia = [1.0, 3.0, 1.0]
+    cluster_set(3)%sigma = 1.0
 
     call calculate_lnqvib(lnq, temp, cluster_set, rotor_cutoff)
 
     call check(error, lnq(1), expected(1), thr=0.00001_dp, rel=.false.)
     call check(error, lnq(2), expected(2), thr=0.00001_dp, rel=.false.)
+    call check(error, lnq(3), expected(3), thr=0.00001_dp, rel=.false.)
     if (allocated(error)) return
   end subroutine test_calc_lnqvib_2
   
