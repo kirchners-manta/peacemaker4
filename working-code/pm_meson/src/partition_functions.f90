@@ -31,7 +31,8 @@ module partition_functions
     !=====================================================================================
     ! Public entities
     public :: calculate_lnq
-    public :: calculate_lnqtrans, calculate_lnqvib, calculate_lnqrot, calculate_lnqelec
+    public :: calculate_lnqtrans, calculate_lnqvib, calculate_lnqrot, calculate_lnqelec, &
+              calculate_lnqint
     public :: update_lnq
     public :: calculate_dlnq
     public :: calculate_ddlnq
@@ -56,7 +57,7 @@ module partition_functions
             call calculate_lnqvib(lnq(:)%qvib, temp, clusterset, global_data%rotor_cutoff)
             call calculate_lnqrot(lnq(:)%qrot, temp, clusterset)
             call calculate_lnqelec(lnq(:)%qelec, temp, clusterset)
-            call calculate_lnqint(lnq(:)%qint, amf, temp, vol)
+            call calculate_lnqint(lnq(:)%qint, amf, temp, vol, clusterset, global_data%ntot)
             lnq(:)%qtot = lnq(:)%qtrans + lnq(:)%qvib + lnq(:)%qrot + lnq(:)%qelec + &
                 lnq(:)%qint
         end subroutine calculate_lnq
@@ -70,7 +71,7 @@ module partition_functions
             real(dp), intent(in) :: vol
     
             call calculate_lnqtrans(lnq(:)%qtrans, bxv, temp, vol, clusterset, global_data%vexcl)
-            call calculate_lnqint(lnq(:)%qint, amf, temp, vol)
+            call calculate_lnqint(lnq(:)%qint, amf, temp, vol, clusterset, global_data%ntot)
             lnq(:)%qtot = lnq(:)%qtrans + lnq(:)%qvib + lnq(:)%qrot + lnq(:)%qelec + &
                 lnq(:)%qint
         end subroutine update_lnq
@@ -253,18 +254,23 @@ module partition_functions
         end subroutine calculate_lnqelec
         !=================================================================================
         ! Calculates the mean field partition function.
-        subroutine calculate_lnqint(lnq, amf, temp, vol)
+        subroutine calculate_lnqint(lnq, amf, temp, vol, cluster_set, ntot)
             real(dp), dimension(:), intent(out) :: lnq
             real(dp), intent(in) :: vol
             real(dp), intent(in) :: amf
             real(dp), intent(in) :: temp
+            type(cluster_t), dimension(:), intent(in) :: cluster_set
+            real(dp), dimension(:), intent(in) :: ntot
     
             integer:: iclust
             real(dp):: emf
 
+            write(*,*) "amf", amf
+            write(*,*) "vol", vol
+
             do iclust = 1, size(clusterset)
-                associate(c => clusterset(iclust))
-                    emf = -amf*real(sum(c%composition), dp)*sum(global_data%ntot)/vol
+                associate(c => cluster_set(iclust))
+                    emf = -amf*real(sum(c%composition), dp)*sum(ntot)/vol
                     lnq(iclust) = -emf / (kb*temp)
                 end associate
             end do

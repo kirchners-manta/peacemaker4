@@ -1,9 +1,9 @@
 
-    Peacemaker 2.8 - a Quantum Cluster Equilibrium (QCE) code:               
+    Peacemaker 3.1.0 - a Quantum Cluster Equilibrium (QCE) code:             
 
         Copyright 2004-2006 Barbara Kirchner, University of Bonn
         Copyright 2007-2012 Barbara Kirchner, University of Leipzig          
-        Copyright 2013-2018 Barbara Kirchner, University of Bonn             
+        Copyright 2013-2022 Barbara Kirchner, University of Bonn             
 
         This program is free software: you can redistribute it and/or modify 
         it under the terms of the GNU General Public License as published by 
@@ -21,7 +21,6 @@
     The Peacemaker team (in alphabetical order):                             
 
         * Johannes Ingenmey                                                  
-        * Gwydyon Marchelli                                                  
         * Eva Perlt                                                          
         * Michael von Domaros                                                
 
@@ -39,22 +38,20 @@
         [ensemble]
             pressure: 1.01325 [bar]
             temperature: 273.150 ... 399.150 [K]
-            monomer amounts: 0.500000E-001 0.400000 0.550000 [mol]
+            monomer amounts: 0.500000E-1 0.400000 0.550000 [mol]
 
         [qce]
-0.476586 [J*m^3/mol^2]
-1.14145
+            amf: 0.476586 [J*m^3/mol^2]
+            bxv: 1.14145
             maximum number of QCE iterations: 100
             maximum number of Newton-Raphson iterations: 500
-            maximum relative deviation: 0.100000E-008
+            maximum relative deviation: 0.100000E-8
             number of grid iterations: 1
-            optimizer: none
-            volume damping factor: 0.100000E-001
+            volume damping factor: 0.100000E-1
             free rotator correction threshold frequency: 0.00000
 
         [reference]
             density (weight = 1.00000): 298.150 0.948755 [K; g/cm^3]
-            phase transition (weight = 1.00000): 357.010 [K]
 
     Using the following clusterset:
 
@@ -1723,15 +1720,19 @@
             inertia: 5258.53 4851.73 3117.45 [amu*Angstrom^2]
             frequencies: 10.3128 ... 3601.93 [1/cm]
 
+    Elapsed time - prepare: 0.0 seconds
+
+    [===================================================================================================>]  100%     [===================================================================================================>]  100% 
+    Elapsed time - start: 0.22 seconds
+
     Number of converged iterations: 127/127
     Number of converged iterations (total): 127/127
 
     Best isobar found for: amf_mix = 0.476586 J*m^3/mol^2, bxv_mix = 1.14145
-    Error: 0.538677E-003
-    Calculated phase transition: 350.904 K
+    Error: 0.246114E-3
     Calculated density: 0.963876 g/cm^3
 
-    Elapsed time: 0.37 seconds
+    Elapsed time - finalize: 0.14 seconds
 
 [1m    Please always cite:
 

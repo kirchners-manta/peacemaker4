@@ -18,7 +18,8 @@ module test_partition_functions
       new_unittest("test_calc_lnqvib", test_calc_lnqvib), &
       new_unittest("test_calc_lnqvib_2", test_calc_lnqvib_2), &
       new_unittest("test_calc_lnqrot", test_calc_lnqrot), &
-      new_unittest("test_calc_lnqelec", test_calc_lnqelec) &
+      new_unittest("test_calc_lnqelec", test_calc_lnqelec), &
+      new_unittest("test_calc_lnqint", test_calc_lnqint) &
       ]
   
   end subroutine collect_partition_functions
@@ -186,7 +187,7 @@ module test_partition_functions
     if (allocated(error)) return
   end subroutine test_calc_lnqrot
 
-  !----------------------------------------
+!----------------------------------------
 ! Unit test for lnqelec
 !---------------------------------------- 
 
@@ -214,6 +215,39 @@ module test_partition_functions
     call check(error, lnq(2), expected(2), thr=0.001_dp, rel=.false.)
     if (allocated(error)) return
   end subroutine test_calc_lnqelec
+
+!----------------------------------------
+! Unit test for lnqelec
+!---------------------------------------- 
+
+  subroutine test_calc_lnqint(error)
+    use partition_functions, only : calculate_lnqint
+    use cluster, only : cluster_t
+    use constants, only : avogadro
+
+    ! Arguments
+    type(error_type), allocatable, intent(out) :: error
+    real(dp), dimension(2) :: lnq 
+    real(dp) :: amf = 1.0e-32
+    real(dp) :: temp = 450.0
+    real(dp) :: vol = 3.5e-3
+    real(dp), dimension(3) :: ntot = [0.4*avogadro, 0.2*avogadro, 0.4*avogadro]  
+    type(cluster_t), dimension(:), allocatable :: cluster_set
+
+    ! Expected result
+    real(dp), dimension(2) :: expected = [2769409409386209.5, 2492468468447587.5]
+
+    ! Allocate cluster_set
+    allocate(cluster_set(2))
+    cluster_set(1)%composition = [2, 3, 5]
+    cluster_set(2)%composition = [1, 6, 2]
+    
+    call calculate_lnqint(lnq, amf, temp, vol, cluster_set, ntot)
+  
+    call check(error, lnq(1), expected(1), thr=10000.0_dp, rel=.true.)
+    call check(error, lnq(2), expected(2), thr=10000.0_dp, rel=.true.)
+    if (allocated(error)) return
+  end subroutine test_calc_lnqint
  
   
 end module test_partition_functions
