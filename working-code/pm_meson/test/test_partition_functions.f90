@@ -19,7 +19,9 @@ module test_partition_functions
       new_unittest("test_calc_lnqvib_2", test_calc_lnqvib_2), &
       new_unittest("test_calc_lnqrot", test_calc_lnqrot), &
       new_unittest("test_calc_lnqelec", test_calc_lnqelec), &
-      new_unittest("test_calc_lnqint", test_calc_lnqint) &
+      new_unittest("test_calc_lnqint", test_calc_lnqint), &
+      new_unittest("test_calc_dlnqtrans", test_calc_dlnqtrans), &
+      new_unittest("test_calc_dlnqtrans_2", test_calc_dlnqtrans_2, should_fail=.true.) &
       ]
   
   end subroutine collect_partition_functions
@@ -262,6 +264,60 @@ module test_partition_functions
     call check(error, lnq(2), expected(2), thr=thr, rel=.false.)
     if (allocated(error)) return
   end subroutine test_calc_lnqint
+
+!----------------------------------------
+! Unit test for dlnqtrans
+!----------------------------------------  
+  ! Temperature derivative of the natural logarithm of the translational partition function
+  subroutine test_calc_dlnqtrans(error)
+    use partition_functions, only : calculate_dlnqtrans
+    use cluster, only : cluster_t
+    !> Precision for the tests
+    real(dp) :: thr = 1.0e-5_dp
+
+    ! Arguments
+    type(error_type), allocatable, intent(out) :: error
+    real(dp), dimension(1) :: dlnq 
+    real(dp) :: bxv = 0.8
+    real(dp) :: bxv_temp = 0.9
+    real(dp) :: temp = 431.0
+    real(dp) :: vol = 2.5e-3
+    real(dp) :: vexcl = 1e-4
+
+    ! Expected result
+    real(dp), dimension(1) :: expected = [-0.033709804222354325]
+
+    call calculate_dlnqtrans(dlnq, bxv, bxv_temp, temp, vol, vexcl)
+
+    call check(error, dlnq(1), expected(1), thr=thr, rel=.false.)
+    if (allocated(error)) return
+  end subroutine test_calc_dlnqtrans
+
+  ! What happens if the denominator is zero?
+  ! This test should fail
+  subroutine test_calc_dlnqtrans_2(error)
+    use partition_functions, only : calculate_dlnqtrans
+    use cluster, only : cluster_t
+    !> Precision for the tests
+    real(dp) :: thr = 1.0e-5_dp
+
+    ! Arguments
+    type(error_type), allocatable, intent(out) :: error
+    real(dp), dimension(1) :: dlnq 
+    real(dp) :: bxv = 2.0
+    real(dp) :: bxv_temp = 0.9
+    real(dp) :: temp = 431.0
+    real(dp) :: vol = 2
+    real(dp) :: vexcl = 1.0
+
+    ! Expected result
+    real(dp), dimension(1) :: expected = [0.0]
+
+    call calculate_dlnqtrans(dlnq, bxv, bxv_temp, temp, vol, vexcl)
+
+    call check(error, dlnq(1), expected(1), thr=thr, rel=.false.)
+    if (allocated(error)) return
+  end subroutine test_calc_dlnqtrans_2
  
   
 end module test_partition_functions

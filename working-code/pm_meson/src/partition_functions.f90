@@ -35,6 +35,8 @@ module partition_functions
               calculate_lnqint
     public :: update_lnq
     public :: calculate_dlnq
+    public :: calculate_dlnqtrans, calculate_dlnqvib, calculate_dlnqrot, calculate_dlnqelec, &
+              calculate_dlnqint
     public :: calculate_ddlnq
     public :: pf_t
     !=====================================================================================
@@ -86,7 +88,7 @@ module partition_functions
             real(dp), intent(in) :: temp
             real(dp), intent(in) :: vol
     
-            call calculate_dlnqtrans(dlnq(:)%qtrans, bxv, bxv_temp, temp, vol)
+            call calculate_dlnqtrans(dlnq(:)%qtrans, bxv, bxv_temp, temp, vol, global_data%vexcl)
             call calculate_dlnqvib(dlnq(:)%qvib, temp)
             call calculate_dlnqrot(dlnq(:)%qrot, temp)
             call calculate_dlnqelec(dlnq(:)%qelec, temp)
@@ -275,15 +277,17 @@ module partition_functions
         end subroutine calculate_lnqint
         !=================================================================================
         ! Calculates the temperature derivative of the translational partition function.
-        subroutine calculate_dlnqtrans(dlnq, bxv, bxv_temp, temp, vol)
+        subroutine calculate_dlnqtrans(dlnq, bxv, bxv_temp, temp, vol, vexcl)
             real(dp), dimension(:), intent(out) :: dlnq
             real(dp), intent(in) :: bxv
             real(dp), intent(in) :: bxv_temp
             real(dp), intent(in)  :: temp
             real(dp), intent(in) :: vol
+            real(dp), intent(in) :: vexcl
     
-            dlnq(:) = 1.5_dp/temp + &
-                     (global_data%vexcl * bxv_temp)/(-vol+bxv*global_data%vexcl)
+            ! Fails if -vol+bxv*vexcl is zero.
+            dlnq(:) = 1.5_dp/temp + (vexcl * bxv_temp)/(-vol+bxv*vexcl)
+
         end subroutine calculate_dlnqtrans
         !=================================================================================
         ! Calculates the temperature derivative of the vibrational partition function.
