@@ -228,14 +228,14 @@ module test_partition_functions
     ! Arguments
     type(error_type), allocatable, intent(out) :: error
     real(dp), dimension(2) :: lnq 
-    real(dp) :: amf = 1.0e-32
+    real(dp) :: amf = 1.0e-48_dp
     real(dp) :: temp = 450.0
     real(dp) :: vol = 3.5e-3
     real(dp), dimension(3) :: ntot = [0.4*avogadro, 0.2*avogadro, 0.4*avogadro]  
     type(cluster_t), dimension(:), allocatable :: cluster_set
 
     ! Expected result
-    real(dp), dimension(2) :: expected = [2769409409386209.5, 2492468468447587.5]
+    real(dp), dimension(2) :: expected = [0.27694094093862087, 0.2492468468447588]
 
     ! Allocate cluster_set
     allocate(cluster_set(2))
@@ -244,8 +244,8 @@ module test_partition_functions
     
     call calculate_lnqint(lnq, amf, temp, vol, cluster_set, ntot)
   
-    call check(error, lnq(1), expected(1), thr=10000.0_dp, rel=.true.)
-    call check(error, lnq(2), expected(2), thr=10000.0_dp, rel=.true.)
+    call check(error, lnq(1), expected(1), thr=0.001_dp, rel=.false.)
+    call check(error, lnq(2), expected(2), thr=0.001_dp, rel=.false.)
     if (allocated(error)) return
   end subroutine test_calc_lnqint
  

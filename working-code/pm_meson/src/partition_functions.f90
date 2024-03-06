@@ -264,11 +264,8 @@ module partition_functions
     
             integer:: iclust
             real(dp):: emf
-
-            write(*,*) "amf", amf
-            write(*,*) "vol", vol
-
-            do iclust = 1, size(clusterset)
+            
+            do iclust = 1, size(cluster_set)
                 associate(c => cluster_set(iclust))
                     emf = -amf*real(sum(c%composition), dp)*sum(ntot)/vol
                     lnq(iclust) = -emf / (kb*temp)
