@@ -34,18 +34,20 @@ module test_partition_functions
   subroutine test_calc_lnqtrans(error)
     use partition_functions, only : calculate_lnqtrans
     use cluster, only : cluster_t
+    !> Precision for the tests
+    real(dp) :: thr = 1.0e-5_dp
 
     ! Arguments
     type(error_type), allocatable, intent(out) :: error
     real(dp), dimension(2) :: lnq 
-    real(dp) :: vol = 2.0
-    real(dp) :: temp = 298.0
     real(dp) :: bxv = 0.8
+    real(dp) :: temp = 298.0
+    real(dp) :: vol = 2.0
     type(cluster_t), dimension(:), allocatable :: cluster_set
     real(dp) :: v_excl = 0.1
 
     ! Expected result
-    real(dp), dimension(2) :: expected = [59.3344, 62.7883]
+    real(dp), dimension(2) :: expected = [59.33445379941631, 62.78833143890738]
 
     ! Allocate cluster_set
     allocate(cluster_set(2))
@@ -54,8 +56,8 @@ module test_partition_functions
 
     call calculate_lnqtrans(lnq, bxv, temp, vol, cluster_set, v_excl)
   
-    call check(error, lnq(1), expected(1), thr=0.001_dp, rel=.false.)
-    call check(error, lnq(2), expected(2), thr=0.001_dp, rel=.false.)
+    call check(error, lnq(1), expected(1), thr=thr, rel=.false.)
+    call check(error, lnq(2), expected(2), thr=thr, rel=.false.)
     if (allocated(error)) return
   end subroutine test_calc_lnqtrans
 
@@ -65,6 +67,9 @@ module test_partition_functions
   subroutine test_calc_lnqvib(error)
     use partition_functions, only : calculate_lnqvib
     use cluster, only : cluster_t
+    !> Precision for the tests
+    real(dp) :: thr = 1.0e-5_dp
+
     ! Arguments
     type(error_type), allocatable, intent(out) :: error
     real(dp), dimension(2):: lnq
@@ -93,14 +98,17 @@ module test_partition_functions
 
     call calculate_lnqvib(lnq, temp, cluster_set, rotor_cutoff)
 
-    call check(error, lnq(1), expected(1), thr=0.00001_dp, rel=.false.)
-    call check(error, lnq(2), expected(2), thr=0.00001_dp, rel=.false.)
+    call check(error, lnq(1), expected(1), thr=thr, rel=.false.)
+    call check(error, lnq(2), expected(2), thr=thr, rel=.false.)
     if (allocated(error)) return
   end subroutine test_calc_lnqvib
 
   subroutine test_calc_lnqvib_2(error)
     use partition_functions, only : calculate_lnqvib
     use cluster, only : cluster_t
+    !> Precision for the tests
+    real(dp) :: thr = 1.0e-5_dp
+
     ! Arguments
     type(error_type), allocatable, intent(out) :: error
     real(dp), dimension(3):: lnq
@@ -135,9 +143,9 @@ module test_partition_functions
 
     call calculate_lnqvib(lnq, temp, cluster_set, rotor_cutoff)
 
-    call check(error, lnq(1), expected(1), thr=0.00001_dp, rel=.false.)
-    call check(error, lnq(2), expected(2), thr=0.00001_dp, rel=.false.)
-    call check(error, lnq(3), expected(3), thr=0.00001_dp, rel=.false.)
+    call check(error, lnq(1), expected(1), thr=thr, rel=.false.)
+    call check(error, lnq(2), expected(2), thr=thr, rel=.false.)
+    call check(error, lnq(3), expected(3), thr=thr, rel=.false.)
     if (allocated(error)) return
   end subroutine test_calc_lnqvib_2
 
@@ -147,6 +155,8 @@ module test_partition_functions
   subroutine test_calc_lnqrot(error)
     use partition_functions, only : calculate_lnqrot
     use cluster, only : cluster_t
+    !> Precision for the tests
+    real(dp) :: thr = 1.0e-5_dp
 
     ! Arguments
     type(error_type), allocatable, intent(out) :: error
@@ -181,9 +191,9 @@ module test_partition_functions
 
     call calculate_lnqrot(lnq, temp, cluster_set)
   
-    call check(error, lnq(1), expected(1), thr=0.001_dp, rel=.false.)
-    call check(error, lnq(2), expected(2), thr=0.001_dp, rel=.false.)
-    call check(error, lnq(3), expected(3), thr=0.001_dp, rel=.false.)
+    call check(error, lnq(1), expected(1), thr=thr, rel=.false.)
+    call check(error, lnq(2), expected(2), thr=thr, rel=.false.)
+    call check(error, lnq(3), expected(3), thr=thr, rel=.false.)
     if (allocated(error)) return
   end subroutine test_calc_lnqrot
 
@@ -194,6 +204,8 @@ module test_partition_functions
   subroutine test_calc_lnqelec(error)
     use partition_functions, only : calculate_lnqelec
     use cluster, only : cluster_t
+    !> Precision for the tests
+    real(dp) :: thr = 1.0e-5_dp
 
     ! Arguments
     type(error_type), allocatable, intent(out) :: error
@@ -211,8 +223,8 @@ module test_partition_functions
     
     call calculate_lnqelec(lnq, temp, cluster_set)
   
-    call check(error, lnq(1), expected(1), thr=0.001_dp, rel=.false.)
-    call check(error, lnq(2), expected(2), thr=0.001_dp, rel=.false.)
+    call check(error, lnq(1), expected(1), thr=thr, rel=.false.)
+    call check(error, lnq(2), expected(2), thr=thr, rel=.false.)
     if (allocated(error)) return
   end subroutine test_calc_lnqelec
 
@@ -224,6 +236,8 @@ module test_partition_functions
     use partition_functions, only : calculate_lnqint
     use cluster, only : cluster_t
     use constants, only : avogadro
+    !> Precision for the tests
+    real(dp) :: thr = 1.0e-5_dp
 
     ! Arguments
     type(error_type), allocatable, intent(out) :: error
@@ -244,8 +258,8 @@ module test_partition_functions
     
     call calculate_lnqint(lnq, amf, temp, vol, cluster_set, ntot)
   
-    call check(error, lnq(1), expected(1), thr=0.001_dp, rel=.false.)
-    call check(error, lnq(2), expected(2), thr=0.001_dp, rel=.false.)
+    call check(error, lnq(1), expected(1), thr=thr, rel=.false.)
+    call check(error, lnq(2), expected(2), thr=thr, rel=.false.)
     if (allocated(error)) return
   end subroutine test_calc_lnqint
  
