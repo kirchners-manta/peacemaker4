@@ -17,8 +17,8 @@ module test_partition_functions
       new_unittest("test_calc_lnqtrans", test_calc_lnqtrans), &
       new_unittest("test_calc_lnqvib", test_calc_lnqvib), &
       new_unittest("test_calc_lnqvib_2", test_calc_lnqvib_2), &
-      new_unittest("test_calc_lnqrot", test_calc_lnqrot) &
-      !new_unittest("test1.2", test_invalid, should_fail=.true.) &
+      new_unittest("test_calc_lnqrot", test_calc_lnqrot), &
+      new_unittest("test_calc_lnqelec", test_calc_lnqelec) &
       ]
   
   end subroutine collect_partition_functions
@@ -185,13 +185,36 @@ module test_partition_functions
     call check(error, lnq(3), expected(3), thr=0.001_dp, rel=.false.)
     if (allocated(error)) return
   end subroutine test_calc_lnqrot
- 
-  subroutine test_invalid(error)
+
+  !----------------------------------------
+! Unit test for lnqelec
+!---------------------------------------- 
+
+  subroutine test_calc_lnqelec(error)
+    use partition_functions, only : calculate_lnqelec
+    use cluster, only : cluster_t
+
+    ! Arguments
     type(error_type), allocatable, intent(out) :: error
+    real(dp), dimension(2) :: lnq 
+    real(dp) :: temp = 318.15
+    type(cluster_t), dimension(:), allocatable :: cluster_set
+
+    ! Expected result
+    real(dp), dimension(2) :: expected = [25.793440947562555, 10.653072928364542]
+
+    ! Allocate cluster_set
+    allocate(cluster_set(2))
+    cluster_set(1)%energy = -68.23
+    cluster_set(2)%energy = -28.18
     
-    call check(error, 1, 0)
+    call calculate_lnqelec(lnq, temp, cluster_set)
+  
+    call check(error, lnq(1), expected(1), thr=0.001_dp, rel=.false.)
+    call check(error, lnq(2), expected(2), thr=0.001_dp, rel=.false.)
     if (allocated(error)) return
-  end subroutine test_invalid
+  end subroutine test_calc_lnqelec
+ 
   
 end module test_partition_functions
   

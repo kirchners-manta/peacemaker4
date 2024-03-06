@@ -31,7 +31,7 @@ module partition_functions
     !=====================================================================================
     ! Public entities
     public :: calculate_lnq
-    public :: calculate_lnqtrans, calculate_lnqvib, calculate_lnqrot
+    public :: calculate_lnqtrans, calculate_lnqvib, calculate_lnqrot, calculate_lnqelec
     public :: update_lnq
     public :: calculate_dlnq
     public :: calculate_ddlnq
@@ -55,7 +55,7 @@ module partition_functions
             call calculate_lnqtrans(lnq(:)%qtrans, bxv, temp, vol, clusterset, global_data%vexcl)
             call calculate_lnqvib(lnq(:)%qvib, temp, clusterset, global_data%rotor_cutoff)
             call calculate_lnqrot(lnq(:)%qrot, temp, clusterset)
-            call calculate_lnqelec(lnq(:)%qelec, temp)
+            call calculate_lnqelec(lnq(:)%qelec, temp, clusterset)
             call calculate_lnqint(lnq(:)%qint, amf, temp, vol)
             lnq(:)%qtot = lnq(:)%qtrans + lnq(:)%qvib + lnq(:)%qrot + lnq(:)%qelec + &
                 lnq(:)%qint
@@ -243,12 +243,13 @@ module partition_functions
         !=================================================================================
         ! Calculates the electronic cluster partition function.
         ! q_elec = exp(-dE/(kb*T))
-        subroutine calculate_lnqelec(lnq, temp)
+        subroutine calculate_lnqelec(lnq, temp, cluster_set)
             real(dp), dimension(:), intent(out) :: lnq
             real(dp), intent(in) :: temp
+            type(cluster_t), dimension(:), intent(in) :: cluster_set
     
             ! The adiabatic interaction energy is in units of kJ/mol.
-            lnq(:) = (-1000.0_dp/avogadro)*clusterset(:)%energy/(kb*temp)
+            lnq(:) = (-1000.0_dp/avogadro)*cluster_set(:)%energy/(kb*temp)
         end subroutine calculate_lnqelec
         !=================================================================================
         ! Calculates the mean field partition function.
