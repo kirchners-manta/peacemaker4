@@ -24,7 +24,8 @@ module test_partition_functions
       new_unittest("test_calc_dlnqtrans_2", test_calc_dlnqtrans_2, should_fail=.true.), &
       new_unittest("test_calc_dlnqvib", test_calc_dlnqvib), &
       new_unittest("test_calc_dlnqvib_2", test_calc_dlnqvib_2), &
-      new_unittest("test_calc_dlnqrot", test_calc_dlnqrot) &
+      new_unittest("test_calc_dlnqrot", test_calc_dlnqrot), &
+      new_unittest("test_calc_dlnqelec", test_calc_dlnqelec) &
       ]
   
   end subroutine collect_partition_functions
@@ -234,7 +235,7 @@ module test_partition_functions
   end subroutine test_calc_lnqelec
 
 !----------------------------------------
-! Unit test for lnqelec
+! Unit test for lnqint
 !---------------------------------------- 
 
   subroutine test_calc_lnqint(error)
@@ -431,6 +432,37 @@ module test_partition_functions
     call check(error, lnq(3), expected(3), thr=thr, rel=.false.)
     if (allocated(error)) return
   end subroutine test_calc_dlnqrot
+
+!----------------------------------------
+! Unit test for dlnqelec
+!---------------------------------------- 
+
+  subroutine test_calc_dlnqelec(error)
+    use partition_functions, only : calculate_dlnqelec
+    use cluster, only : cluster_t
+    !> Precision for the tests
+    real(dp) :: thr = 1.0e-5_dp
+
+    ! Arguments
+    type(error_type), allocatable, intent(out) :: error
+    real(dp), dimension(2) :: dlnq 
+    real(dp) :: temp = 318.15
+    type(cluster_t), dimension(:), allocatable :: cluster_set
+
+    ! Expected result
+    real(dp), dimension(2) :: expected = [-0.08107320744165505, -0.03348443478976754]
+
+    ! Allocate cluster_set
+    allocate(cluster_set(2))
+    cluster_set(1)%energy = -68.23
+    cluster_set(2)%energy = -28.18
+    
+    call calculate_dlnqelec(dlnq, temp, cluster_set)
+  
+    call check(error, dlnq(1), expected(1), thr=thr, rel=.false.)
+    call check(error, dlnq(2), expected(2), thr=thr, rel=.false.)
+    if (allocated(error)) return
+  end subroutine test_calc_dlnqelec
   
 end module test_partition_functions
   
