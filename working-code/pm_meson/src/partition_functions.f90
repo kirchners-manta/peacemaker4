@@ -110,7 +110,7 @@ module partition_functions
             real(dp), intent(in) :: vol
     
             call calculate_ddlnqtrans(ddlnq(:)%qtrans, bxv, bxv_temp, temp, vol, global_data%vexcl)
-            call calculate_ddlnqvib(ddlnq(:)%qvib, temp)
+            call calculate_ddlnqvib(ddlnq(:)%qvib, temp, clusterset, global_data%rotor_cutoff)
             call calculate_ddlnqrot(ddlnq(:)%qrot, temp)
             call calculate_ddlnqelec(ddlnq(:)%qelec, temp)
             call calculate_ddlnqint(ddlnq(:)%qint, temp, amf, amf_temp, vol)
@@ -415,9 +415,11 @@ module partition_functions
         !=================================================================================
         ! Calculates the second temperature derivative of the vibrational partition
         ! function.
-        subroutine calculate_ddlnqvib(dlnq, temp)
+        subroutine calculate_ddlnqvib(dlnq, temp, cluster_set, rotor_cutoff)
             real(dp), dimension(:), intent(out) :: dlnq
             real(dp), intent(in)  :: temp
+            type(cluster_t), dimension(:), intent(in) :: cluster_set
+            real(dp), intent(in) :: rotor_cutoff
     
             integer :: iclust
             integer:: ifreq
@@ -430,9 +432,9 @@ module partition_functions
     
             ! TODO: Check atoms.
             factor = planck*100.0_dp*speed_of_light/kb
-            do iclust = 1, size(clusterset)
-                associate(f => clusterset(iclust)%frequencies, q => dlnq(iclust), &
-                        x => clusterset(iclust)%anharmonicity)
+            do iclust = 1, size(cluster_set)
+                associate(f => cluster_set(iclust)%frequencies, q => dlnq(iclust), &
+                        x => cluster_set(iclust)%anharmonicity)
                     q = 0.0_dp
                     q_ho = 0.0_dp
                     q_fr = 0.0_dp
@@ -461,7 +463,7 @@ module partition_functions
                             ! Free rotator approximation by Grimme.
                             q_fr = -0.5_dp/temp**2
                             
-                            w = 1.0_dp/(1.0_dp + (global_data%rotor_cutoff/f(ifreq))**4)
+                            w = 1.0_dp/(1.0_dp + (rotor_cutoff/f(ifreq))**4)
                             q = q + w * q_ho + (1.0_dp - w) * q_fr
                         end if
                     end do

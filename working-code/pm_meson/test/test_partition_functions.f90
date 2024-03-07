@@ -27,7 +27,9 @@ module test_partition_functions
       new_unittest("test_calc_dlnqrot", test_calc_dlnqrot), &
       new_unittest("test_calc_dlnqelec", test_calc_dlnqelec), &
       new_unittest("test_calc_dlnqint", test_calc_dlnqint), &
-      new_unittest("test_calc_ddlnqtrans", test_calc_ddlnqtrans) &
+      new_unittest("test_calc_ddlnqtrans", test_calc_ddlnqtrans), &
+      new_unittest("test_calc_ddlnqvib", test_calc_ddlnqvib), &
+      new_unittest("test_calc_ddlnqvib_2", test_calc_ddlnqvib_2) &
       ]
   
   end subroutine collect_partition_functions
@@ -336,7 +338,7 @@ module test_partition_functions
 
     ! Arguments
     type(error_type), allocatable, intent(out) :: error
-    real(dp), dimension(1):: dlnq
+    real(dp), dimension(2):: dlnq
     real(dp) :: temp = 315.0
     type(cluster_t), dimension(:), allocatable :: cluster_set
 
@@ -529,6 +531,74 @@ module test_partition_functions
     call check(error, ddlnq(1), expected(1), thr=thr, rel=.false.)
     if (allocated(error)) return
   end subroutine test_calc_ddlnqtrans
+
+  !----------------------------------------
+  ! Unit test for ddlnqvib
+  !----------------------------------------
+  subroutine test_calc_ddlnqvib(error)
+    use partition_functions, only : calculate_ddlnqvib
+    use cluster, only : cluster_t
+    !> Precision for the tests
+    real(dp) :: thr = 1.0e-5_dp
+
+    ! Arguments
+    type(error_type), allocatable, intent(out) :: error
+    real(dp), dimension(2):: ddlnq
+    real(dp) :: temp = 315.0
+    type(cluster_t), dimension(:), allocatable :: cluster_set
+
+    ! Grimme's rotor cutoff
+    real(dp) :: rotor_cutoff = 0.0
+
+    ! Expected result
+    real(dp), dimension(2) :: expected = [-0.00020523340950663482, 0.0004338483705616495]
+
+    ! Allocate cluster_set
+    allocate(cluster_set(2))
+
+    ! Harmonic oscillator, rotor_cutoff = 0.0
+    cluster_set(1)%frequencies = [11.4, 25.6, 68.7, 134.9, 3555.9]
+    cluster_set(1)%anharmonicity = 0.0
+
+    ! Morse oscillator, rotor_cutoff = 0.0
+    cluster_set(2)%frequencies = [11.4, 25.6, 68.7, 134.9, 3555.9, 10000.0]
+    cluster_set(2)%anharmonicity = 3.5
+
+    call calculate_ddlnqvib(ddlnq, temp, cluster_set, rotor_cutoff)
+  
+    call check(error, ddlnq(1), expected(1), thr=thr, rel=.false.)
+    call check(error, ddlnq(2), expected(2), thr=thr, rel=.false.)
+    if (allocated(error)) return
+  end subroutine test_calc_ddlnqvib
+
+  subroutine test_calc_ddlnqvib_2(error)
+    use partition_functions, only : calculate_ddlnqvib
+    use cluster, only : cluster_t
+    !> Precision for the tests
+    real(dp) :: thr = 1.0e-5_dp
+
+    ! Arguments
+    type(error_type), allocatable, intent(out) :: error
+    real(dp), dimension(1):: ddlnq
+    real(dp) :: temp = 315.0
+    type(cluster_t), dimension(:), allocatable :: cluster_set
+
+    ! Grimme's rotor cutoff
+    real(dp) :: rotor_cutoff = 2398.0
+
+    ! Expected result
+    real(dp), dimension(1) :: expected = [-0.00015665345231443372]
+
+    ! Allocate cluster_set
+    allocate(cluster_set(1))
+    cluster_set(1)%frequencies = [11.4, 25.6, 68.7, 134.9, 3555.9]
+    cluster_set(1)%anharmonicity = 0.0
+
+    call calculate_ddlnqvib(ddlnq, temp, cluster_set, rotor_cutoff)
+  
+    call check(error, ddlnq(1), expected(1), thr=thr, rel=.false.)
+    if (allocated(error)) return
+  end subroutine test_calc_ddlnqvib_2
 
 end module test_partition_functions
   
