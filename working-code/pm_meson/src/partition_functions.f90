@@ -89,7 +89,7 @@ module partition_functions
             real(dp), intent(in) :: vol
     
             call calculate_dlnqtrans(dlnq(:)%qtrans, bxv, bxv_temp, temp, vol, global_data%vexcl)
-            call calculate_dlnqvib(dlnq(:)%qvib, temp)
+            call calculate_dlnqvib(dlnq(:)%qvib, temp, clusterset, global_data%rotor_cutoff)
             call calculate_dlnqrot(dlnq(:)%qrot, temp)
             call calculate_dlnqelec(dlnq(:)%qelec, temp)
             call calculate_dlnqint(dlnq(:)%qint, temp, amf, amf_temp, vol)
@@ -146,6 +146,8 @@ module partition_functions
         subroutine calculate_lnqvib(lnq, temp, cluster_set, rotor_cutoff)
             real(dp), dimension(:), intent(out) :: lnq
             real(dp), intent(in) :: temp
+            type(cluster_t), dimension(:), intent(in) :: cluster_set
+            real(dp), intent(in) :: rotor_cutoff
     
             integer:: iclust
             integer:: ifreq, imoment
@@ -154,8 +156,6 @@ module partition_functions
             real(dp):: q_ho, q_fr
             real(dp):: moi, emoi, Bav, t_rot, w
             logical :: free_rotator
-            type(cluster_t), dimension(:), intent(in) :: cluster_set
-            real(dp) :: rotor_cutoff
             
             free_rotator = .false.
             w = 1.0_dp
@@ -291,9 +291,11 @@ module partition_functions
         end subroutine calculate_dlnqtrans
         !=================================================================================
         ! Calculates the temperature derivative of the vibrational partition function.
-        subroutine calculate_dlnqvib(dlnq, temp)
+        subroutine calculate_dlnqvib(dlnq, temp, cluster_set, rotor_cutoff)
             real(dp), dimension(:), intent(out) :: dlnq
             real(dp), intent(in)  :: temp
+            type(cluster_t), dimension(:), intent(in) :: cluster_set
+            real(dp), intent(in) :: rotor_cutoff
     
             integer :: iclust
             integer:: ifreq
@@ -306,9 +308,9 @@ module partition_functions
     
             ! TODO: Check atoms.
             factor = planck*100.0_dp*speed_of_light/kb
-            do iclust = 1, size(clusterset)
-                associate(f => clusterset(iclust)%frequencies, q => dlnq(iclust), &
-                        x => clusterset(iclust)%anharmonicity)
+            do iclust = 1, size(cluster_set)
+                associate(f => cluster_set(iclust)%frequencies, q => dlnq(iclust), &
+                        x => cluster_set(iclust)%anharmonicity)
                     q = 0.0_dp
                     q_ho = 0.0_dp
                     q_fr = 0.0_dp
@@ -331,7 +333,7 @@ module partition_functions
                             ! Free rotator approximation by Grimme.
                             q_fr = 0.5_dp/temp
                             
-                            w = 1.0_dp/(1.0_dp + (global_data%rotor_cutoff/f(ifreq))**4)
+                            w = 1.0_dp/(1.0_dp + (rotor_cutoff/f(ifreq))**4)
                             q = q + w * q_ho + (1.0_dp - w) * q_fr
                         end if
                     end do
