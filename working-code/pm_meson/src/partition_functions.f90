@@ -90,7 +90,7 @@ module partition_functions
     
             call calculate_dlnqtrans(dlnq(:)%qtrans, bxv, bxv_temp, temp, vol, global_data%vexcl)
             call calculate_dlnqvib(dlnq(:)%qvib, temp, clusterset, global_data%rotor_cutoff)
-            call calculate_dlnqrot(dlnq(:)%qrot, temp)
+            call calculate_dlnqrot(dlnq(:)%qrot, temp, clusterset)
             call calculate_dlnqelec(dlnq(:)%qelec, temp)
             call calculate_dlnqint(dlnq(:)%qint, temp, amf, amf_temp, vol)
             dlnq(:)%qtot = dlnq(:)%qtrans + dlnq(:)%qvib + dlnq(:)%qrot + &
@@ -342,14 +342,15 @@ module partition_functions
         end subroutine calculate_dlnqvib
         !=================================================================================
         ! Calculates the temperature derivative of the rotational partition function.
-        subroutine calculate_dlnqrot(dlnq, temp)
+        subroutine calculate_dlnqrot(dlnq, temp, cluster_set)
             real(dp), dimension(:), intent(out) :: dlnq
             real(dp), intent(in)  :: temp
+            type(cluster_t), dimension(:), intent(in) :: cluster_set
 
             integer :: iclust
     
-            do iclust = 1, size(clusterset)
-                associate(c => clusterset(iclust), q => dlnq(iclust))
+            do iclust = 1, size(cluster_set)
+                associate(c => cluster_set(iclust), q => dlnq(iclust))
                     if (c%atom) then
                         q = 0.0_dp
                     else if (c%linear) then
