@@ -38,6 +38,8 @@ module partition_functions
     public :: calculate_dlnqtrans, calculate_dlnqvib, calculate_dlnqrot, calculate_dlnqelec, &
               calculate_dlnqint
     public :: calculate_ddlnq
+    public :: calculate_ddlnqtrans, calculate_ddlnqvib, calculate_ddlnqrot, calculate_ddlnqelec, &
+              calculate_ddlnqint
     public :: pf_t
     !=====================================================================================
     ! Data type representing a cluster partition function.
@@ -107,7 +109,7 @@ module partition_functions
             real(dp), intent(in) :: temp
             real(dp), intent(in) :: vol
     
-            call calculate_ddlnqtrans(ddlnq(:)%qtrans, bxv, bxv_temp, temp, vol)
+            call calculate_ddlnqtrans(ddlnq(:)%qtrans, bxv, bxv_temp, temp, vol, global_data%vexcl)
             call calculate_ddlnqvib(ddlnq(:)%qvib, temp)
             call calculate_ddlnqrot(ddlnq(:)%qrot, temp)
             call calculate_ddlnqelec(ddlnq(:)%qelec, temp)
@@ -399,16 +401,16 @@ module partition_functions
         !=================================================================================
         ! Calculates the second temperature derivative of the translational partition
         ! function.
-        subroutine calculate_ddlnqtrans(dlnq, bxv, bxv_temp, temp, vol)
+        subroutine calculate_ddlnqtrans(dlnq, bxv, bxv_temp, temp, vol, vexcl)
             real(dp), dimension(:), intent(out) :: dlnq
             real(dp), intent(in) :: bxv
             real(dp), intent(in) :: bxv_temp
             real(dp), intent(in)  :: temp
             real(dp), intent(in) :: vol
+            real(dp), intent(in) :: vexcl
 
             dlnq(:) = -1.5_dp/temp**2 - &
-                     (global_data%vexcl * bxv_temp)**2/(-vol+bxv*global_data%vexcl)**2
-!            write(*,*) temp, vol, bxv*global_data%vexcl
+                     (vexcl * bxv_temp)**2/(-vol+bxv*vexcl)**2
         end subroutine calculate_ddlnqtrans
         !=================================================================================
         ! Calculates the second temperature derivative of the vibrational partition

@@ -26,7 +26,8 @@ module test_partition_functions
       new_unittest("test_calc_dlnqvib_2", test_calc_dlnqvib_2), &
       new_unittest("test_calc_dlnqrot", test_calc_dlnqrot), &
       new_unittest("test_calc_dlnqelec", test_calc_dlnqelec), &
-      new_unittest("test_calc_dlnqint", test_calc_dlnqint) &
+      new_unittest("test_calc_dlnqint", test_calc_dlnqint), &
+      new_unittest("test_calc_ddlnqtrans", test_calc_ddlnqtrans) &
       ]
   
   end subroutine collect_partition_functions
@@ -500,6 +501,34 @@ module test_partition_functions
     call check(error, dlnq(2), expected(2), thr=thr, rel=.false.)
     if (allocated(error)) return
   end subroutine test_calc_dlnqint
+
+!----------------------------------------
+! Unit test for dlnqtrans
+!----------------------------------------  
+  ! Temperature derivative of the natural logarithm of the translational partition function
+  subroutine test_calc_ddlnqtrans(error)
+    use partition_functions, only : calculate_ddlnqtrans
+    use cluster, only : cluster_t
+    !> Precision for the tests
+    real(dp) :: thr = 1.0e-5_dp
+
+    ! Arguments
+    type(error_type), allocatable, intent(out) :: error
+    real(dp), dimension(1) :: ddlnq 
+    real(dp) :: bxv = 0.8
+    real(dp) :: bxv_temp = 0.9
+    real(dp) :: temp = 431.0
+    real(dp) :: vol = 2.5e-3
+    real(dp) :: vexcl = 1e-4
+
+    ! Expected result
+    real(dp), dimension(1) :: expected = [-0.0013911771390452982]
+
+    call calculate_ddlnqtrans(ddlnq, bxv, bxv_temp, temp, vol, vexcl)
+
+    call check(error, ddlnq(1), expected(1), thr=thr, rel=.false.)
+    if (allocated(error)) return
+  end subroutine test_calc_ddlnqtrans
 
 end module test_partition_functions
   
