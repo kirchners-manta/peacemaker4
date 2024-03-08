@@ -113,7 +113,7 @@ module partition_functions
             call calculate_ddlnqvib(ddlnq(:)%qvib, temp, clusterset, global_data%rotor_cutoff)
             call calculate_ddlnqrot(ddlnq(:)%qrot, temp, clusterset)
             call calculate_ddlnqelec(ddlnq(:)%qelec, temp, clusterset)
-            call calculate_ddlnqint(ddlnq(:)%qint, temp, amf, amf_temp, vol)
+            call calculate_ddlnqint(ddlnq(:)%qint, temp, amf, amf_temp, vol, clusterset, global_data%ntot)
             ddlnq(:)%qtot = ddlnq(:)%qtrans + ddlnq(:)%qvib + ddlnq(:)%qrot + &
                 ddlnq(:)%qelec + ddlnq(:)%qint
         end subroutine calculate_ddlnq
@@ -509,19 +509,21 @@ module partition_functions
         !=================================================================================
         ! Calculates the second temperature derivative of the the mean field partition
         ! function.
-        subroutine calculate_ddlnqint(dlnq, temp, amf, amf_temp, vol)
+        subroutine calculate_ddlnqint(dlnq, temp, amf, amf_temp, vol, cluster_set, ntot)
             real(dp), dimension(:), intent(out) :: dlnq
             real(dp), intent(in)  :: temp
             real(dp), intent(in)  :: amf
             real(dp), intent(in)  :: amf_temp
             real(dp), intent(in)  :: vol
+            type(cluster_t), dimension(:), intent(in) :: cluster_set
+            real(dp), dimension(:), intent(in) :: ntot
     
             integer :: iclust
             real(dp):: emf
     
-            do iclust = 1, size(clusterset)
-                associate(c => clusterset(iclust))
-                    emf = -real(sum(c%composition), dp)*sum(global_data%ntot)/vol * &
+            do iclust = 1, size(cluster_set)
+                associate(c => cluster_set(iclust))
+                    emf = -real(sum(c%composition), dp)*sum(ntot)/vol * &
                          (amf - temp * amf_temp)
                     dlnq(iclust) = -2.0_dp*emf/(kb*temp**3)
                 end associate

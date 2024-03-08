@@ -31,7 +31,8 @@ module test_partition_functions
       new_unittest("test_calc_ddlnqvib", test_calc_ddlnqvib), &
       new_unittest("test_calc_ddlnqvib_2", test_calc_ddlnqvib_2), &
       new_unittest("test_calc_ddlnqrot", test_calc_ddlnqrot), &
-      new_unittest("test_calc_ddlnqelec", test_calc_ddlnqelec) &
+      new_unittest("test_calc_ddlnqelec", test_calc_ddlnqelec), &
+      new_unittest("test_calc_ddlnqint", test_calc_ddlnqint) &
       ]
   
   end subroutine collect_partition_functions
@@ -507,7 +508,7 @@ module test_partition_functions
   end subroutine test_calc_dlnqint
 
 !----------------------------------------
-! Unit test for dlnqtrans
+! Unit test for ddlnqtrans
 !----------------------------------------  
   ! Temperature derivative of the natural logarithm of the translational partition function
   subroutine test_calc_ddlnqtrans(error)
@@ -603,7 +604,7 @@ module test_partition_functions
   end subroutine test_calc_ddlnqvib_2
 
 !----------------------------------------
-! Unit test for dlnqrot
+! Unit test for ddlnqrot
 !---------------------------------------- 
   subroutine test_calc_ddlnqrot(error)
     use partition_functions, only : calculate_ddlnqrot
@@ -645,7 +646,7 @@ module test_partition_functions
   end subroutine test_calc_ddlnqrot
 
 !----------------------------------------
-! Unit test for dlnqelec
+! Unit test for ddlnqelec
 !---------------------------------------- 
 
   subroutine test_calc_ddlnqelec(error)
@@ -674,6 +675,42 @@ module test_partition_functions
     call check(error, ddlnq(2), expected(2), thr=thr, rel=.false.)
     if (allocated(error)) return
   end subroutine test_calc_ddlnqelec
+
+!----------------------------------------
+! Unit test for ddlnqint
+!---------------------------------------- 
+
+  subroutine test_calc_ddlnqint(error)
+    use partition_functions, only : calculate_ddlnqint
+    use cluster, only : cluster_t
+    use constants, only : avogadro
+    !> Precision for the tests
+    real(dp) :: thr = 1.0e-10_dp
+
+    ! Arguments
+    type(error_type), allocatable, intent(out) :: error
+    real(dp), dimension(2) :: ddlnq 
+    real(dp) :: amf = 1.0e-48_dp
+    real(dp) :: amf_temp = 1.0e-50_dp
+    real(dp) :: temp = 180.0
+    real(dp) :: vol = 3.5e-3
+    real(dp), dimension(3) :: ntot = [0.4*avogadro, 0.2*avogadro, 0.4*avogadro]  
+    type(cluster_t), dimension(:), allocatable :: cluster_set
+
+    ! Expected result
+    real(dp), dimension(2) :: expected = [-3.419023962205197e-05, -3.0771215659846766e-05]
+
+    ! Allocate cluster_set
+    allocate(cluster_set(2))
+    cluster_set(1)%composition = [2, 3, 5]
+    cluster_set(2)%composition = [1, 6, 2]
+    
+    call calculate_ddlnqint(ddlnq, temp, amf, amf_temp, vol, cluster_set, ntot)
+  
+    call check(error, ddlnq(1), expected(1), thr=thr, rel=.false.)
+    call check(error, ddlnq(2), expected(2), thr=thr, rel=.false.)
+    if (allocated(error)) return
+  end subroutine test_calc_ddlnqint
 
 end module test_partition_functions
   
