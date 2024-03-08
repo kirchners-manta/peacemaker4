@@ -30,7 +30,8 @@ module test_partition_functions
       new_unittest("test_calc_ddlnqtrans", test_calc_ddlnqtrans), &
       new_unittest("test_calc_ddlnqvib", test_calc_ddlnqvib), &
       new_unittest("test_calc_ddlnqvib_2", test_calc_ddlnqvib_2), &
-      new_unittest("test_calc_ddlnqrot", test_calc_ddlnqrot) &
+      new_unittest("test_calc_ddlnqrot", test_calc_ddlnqrot), &
+      new_unittest("test_calc_ddlnqelec", test_calc_ddlnqelec) &
       ]
   
   end subroutine collect_partition_functions
@@ -642,6 +643,37 @@ module test_partition_functions
     call check(error, ddlnq(3), expected(3), thr=thr, rel=.false.)
     if (allocated(error)) return
   end subroutine test_calc_ddlnqrot
+
+!----------------------------------------
+! Unit test for dlnqelec
+!---------------------------------------- 
+
+  subroutine test_calc_ddlnqelec(error)
+    use partition_functions, only : calculate_ddlnqelec
+    use cluster, only : cluster_t
+    !> Precision for the tests
+    real(dp) :: thr = 1.0e-8_dp
+
+    ! Arguments
+    type(error_type), allocatable, intent(out) :: error
+    real(dp), dimension(2) :: ddlnq 
+    real(dp) :: temp = 318.15
+    type(cluster_t), dimension(:), allocatable :: cluster_set
+
+    ! Expected result
+    real(dp), dimension(2) :: expected = [0.0005096539836030493, 0.00021049463957106737]
+
+    ! Allocate cluster_set
+    allocate(cluster_set(2))
+    cluster_set(1)%energy = -68.23
+    cluster_set(2)%energy = -28.18
+    
+    call calculate_ddlnqelec(ddlnq, temp, cluster_set)
+  
+    call check(error, ddlnq(1), expected(1), thr=thr, rel=.false.)
+    call check(error, ddlnq(2), expected(2), thr=thr, rel=.false.)
+    if (allocated(error)) return
+  end subroutine test_calc_ddlnqelec
 
 end module test_partition_functions
   

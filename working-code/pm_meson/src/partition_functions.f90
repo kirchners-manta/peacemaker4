@@ -112,7 +112,7 @@ module partition_functions
             call calculate_ddlnqtrans(ddlnq(:)%qtrans, bxv, bxv_temp, temp, vol, global_data%vexcl)
             call calculate_ddlnqvib(ddlnq(:)%qvib, temp, clusterset, global_data%rotor_cutoff)
             call calculate_ddlnqrot(ddlnq(:)%qrot, temp, clusterset)
-            call calculate_ddlnqelec(ddlnq(:)%qelec, temp)
+            call calculate_ddlnqelec(ddlnq(:)%qelec, temp, clusterset)
             call calculate_ddlnqint(ddlnq(:)%qint, temp, amf, amf_temp, vol)
             ddlnq(:)%qtot = ddlnq(:)%qtrans + ddlnq(:)%qvib + ddlnq(:)%qrot + &
                 ddlnq(:)%qelec + ddlnq(:)%qint
@@ -498,12 +498,13 @@ module partition_functions
         !=================================================================================
         ! Calculates the second temperature derivative of the electronic partition
         ! function.
-        subroutine calculate_ddlnqelec(dlnq, temp)
+        subroutine calculate_ddlnqelec(dlnq, temp, cluster_set)
             real(dp), dimension(:), intent(out) :: dlnq
             real(dp), intent(in)  :: temp
+            type(cluster_t), dimension(:), intent(in) :: cluster_set
     
             ! The adiabatic interaction energy is in units of kJ/mol.
-            dlnq(:) = - (2000.0_dp/avogadro)*clusterset(:)%energy/(kb*temp**3)
+            dlnq(:) = - (2000.0_dp/avogadro)*cluster_set(:)%energy/(kb*temp**3)
         end subroutine calculate_ddlnqelec
         !=================================================================================
         ! Calculates the second temperature derivative of the the mean field partition
