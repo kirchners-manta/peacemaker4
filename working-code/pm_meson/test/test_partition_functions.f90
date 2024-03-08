@@ -29,7 +29,8 @@ module test_partition_functions
       new_unittest("test_calc_dlnqint", test_calc_dlnqint), &
       new_unittest("test_calc_ddlnqtrans", test_calc_ddlnqtrans), &
       new_unittest("test_calc_ddlnqvib", test_calc_ddlnqvib), &
-      new_unittest("test_calc_ddlnqvib_2", test_calc_ddlnqvib_2) &
+      new_unittest("test_calc_ddlnqvib_2", test_calc_ddlnqvib_2), &
+      new_unittest("test_calc_ddlnqrot", test_calc_ddlnqrot) &
       ]
   
   end subroutine collect_partition_functions
@@ -406,7 +407,7 @@ module test_partition_functions
 
     ! Arguments
     type(error_type), allocatable, intent(out) :: error
-    real(dp), dimension(3) :: lnq 
+    real(dp), dimension(3) :: dlnq 
     real(dp) :: temp = 512.0
 
     type(cluster_t), dimension(:), allocatable :: cluster_set
@@ -429,11 +430,11 @@ module test_partition_functions
     cluster_set(3)%linear = .false.
 
 
-    call calculate_dlnqrot(lnq, temp, cluster_set)
+    call calculate_dlnqrot(dlnq, temp, cluster_set)
   
-    call check(error, lnq(1), expected(1), thr=thr, rel=.false.)
-    call check(error, lnq(2), expected(2), thr=thr, rel=.false.)
-    call check(error, lnq(3), expected(3), thr=thr, rel=.false.)
+    call check(error, dlnq(1), expected(1), thr=thr, rel=.false.)
+    call check(error, dlnq(2), expected(2), thr=thr, rel=.false.)
+    call check(error, dlnq(3), expected(3), thr=thr, rel=.false.)
     if (allocated(error)) return
   end subroutine test_calc_dlnqrot
 
@@ -599,6 +600,48 @@ module test_partition_functions
     call check(error, ddlnq(1), expected(1), thr=thr, rel=.false.)
     if (allocated(error)) return
   end subroutine test_calc_ddlnqvib_2
+
+!----------------------------------------
+! Unit test for dlnqrot
+!---------------------------------------- 
+  subroutine test_calc_ddlnqrot(error)
+    use partition_functions, only : calculate_ddlnqrot
+    use cluster, only : cluster_t
+    !> Precision for the tests
+    real(dp) :: thr = 1.0e-10_dp
+
+    ! Arguments
+    type(error_type), allocatable, intent(out) :: error
+    real(dp), dimension(3) :: ddlnq 
+    real(dp) :: temp = 512.0
+
+    type(cluster_t), dimension(:), allocatable :: cluster_set
+
+    ! Expected result
+    real(dp), dimension(3) :: expected = [0.0, -3.814697265625e-06, -5.7220458984375e-06]
+
+    ! Allocate cluster_set
+    allocate(cluster_set(3))
+    ! Case 1 : Cluster is an atom
+    cluster_set(1)%atom = .true.
+    cluster_set(1)%linear = .false.
+
+    ! Case 2 : Cluster is linear
+    cluster_set(2)%atom = .false.
+    cluster_set(2)%linear = .true.
+
+    ! Case 3 : Cluster is nonlinear
+    cluster_set(3)%atom = .false.
+    cluster_set(3)%linear = .false.
+
+
+    call calculate_ddlnqrot(ddlnq, temp, cluster_set)
+  
+    call check(error, ddlnq(1), expected(1), thr=thr, rel=.false.)
+    call check(error, ddlnq(2), expected(2), thr=thr, rel=.false.)
+    call check(error, ddlnq(3), expected(3), thr=thr, rel=.false.)
+    if (allocated(error)) return
+  end subroutine test_calc_ddlnqrot
 
 end module test_partition_functions
   
