@@ -4,6 +4,7 @@ program tester
   !> > > > > >   BLOCK 1   > > > > > > > > > > >
   use test_polynomial, only : collect_polynomial
   use test_partition_functions, only : collect_partition_functions
+  use test_process_coords, only : collect_process_coords
   use test_suite2, only : collect_suite2
   !> ^- Hier use  test_<name>, only : collect_<name>  einfügen
 
@@ -18,6 +19,7 @@ program tester
     !> > > > > >   BLOCK 2   > > > > > > > > > >
     new_testsuite("polynomial", collect_polynomial), &
     new_testsuite("partition_functions", collect_partition_functions), &
+    new_testsuite("process_coordinates_record", collect_process_coords), &
     new_testsuite("suite2", collect_suite2) &
     !> ^- Hier  new_testsuite("<name>", collect_<name>), &  einfügen
     ]
