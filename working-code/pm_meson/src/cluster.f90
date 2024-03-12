@@ -366,6 +366,13 @@ module cluster
 
         !=================================================================================
         ! Processes a coordinates record.
+        ! The coordinates record is a file name. The file contains the number of atoms in
+        ! the first line, followed by an empty/comment line, followed by one line per atom.
+        ! Each line contains the atom label and the x, y, and z coordinates in Angstrom.
+        ! The total mass of the cluster is calculated and the origin is shifted to the
+        ! center of mass. The inertia tensor is calculated and diagonalized. The cluster
+        ! is classified as atom, linear, or non-linear. The moments of inertia are assigned
+        ! accordingly.
         subroutine process_coordinates_record(c, nr_args, args)
             use atomic_data, only: periodic_table
             use constants
@@ -383,7 +390,6 @@ module cluster
             real(dp), dimension(:, :), allocatable :: xyz
             real(dp), dimension(3) :: com
             real(dp), dimension(3, 3) :: inertia
-            real(dp):: tmp
             real(dp), dimension(3) :: eig
             integer:: n
     
