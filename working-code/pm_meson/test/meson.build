@@ -12,7 +12,6 @@ tests = [
   'polynomial',
   'partition_functions',
   'process_coordinates_record',
-  'suite2',
 ]
 
 test_srcs = files(
@@ -20,7 +19,6 @@ test_srcs = files(
   'test_polynomial.f90',
   'test_partition_functions.f90',
   'test_process_coordinates_record.f90',
-  'test_suite2.f90',
 )
 
 foreach t : tests

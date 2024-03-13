@@ -51,7 +51,7 @@ module cluster
     public :: cluster_table
     public :: toml_parse
     public :: cluster_t
-    public :: process_coordinates_record, diagonalize_3x3
+    public :: process_coordinates_record, diagonalize_3x3, center_of_mass
     !=====================================================================================
     ! The cluster_t data type, which represents a cluster. Reasonable defaults should be
     ! set here, if there are any.
@@ -218,6 +218,7 @@ module cluster
                         !> Get moments of inertia and mass from xyz file.
                         call get_value(child, "coordinates", path_string)
                         if (allocated(path_string)) then
+                            write(*,*) len(path_string)
                             allocate(path(1))
                             path(1) = path_string
                             call process_coordinates_record(c, 1, path(1))
@@ -425,14 +426,7 @@ module cluster
                 c%mass = sum(mass)
     
                 ! Calculate center of mass and shift to origin.
-                com = 0.0_dp
-                do i = 1, nr_atoms
-                    com(:) = com(:) + mass(i)*xyz(i, :)
-                end do
-                com(:) = com(:) / c%mass
-                do i = 1, nr_atoms
-                    xyz(i, :) = xyz(i, :) - com(:)
-                end do
+                call center_of_mass(nr_atoms, com, mass, xyz)
     
                 ! Calculate inertia tensor.
                 inertia = 0.0_dp
@@ -473,6 +467,34 @@ module cluster
                 call pmk_argument_count_error("coordinates", c%label)
             end if
         end subroutine process_coordinates_record
+
+        !=================================================================================
+        ! Calculation of the center of mass of a cluster.
+        ! Shifts the origin to the center of mass.
+        subroutine center_of_mass(nr_atoms, com, mass, xyz)
+            !> Number of atoms.
+            integer, intent(in) :: nr_atoms
+            !> Center of mass.
+            real(dp), dimension(3), intent(out) :: com
+            !> Masses of the atoms.
+            real(dp), dimension(:), intent(in) :: mass
+            !> Coordinates of the atoms.
+            real(dp), dimension(:, :), intent(inout) :: xyz
+
+            integer:: i
+
+            com = 0.0_dp
+            ! Calculate center of mass.
+            do i = 1, nr_atoms
+                com(:) = com(:) + mass(i)*xyz(i, :)
+            end do
+            com(:) = com(:) / sum(mass)
+
+            ! Shift to origin.
+            do i = 1, nr_atoms
+                xyz(i, :) = xyz(i, :) - com(:)
+            end do
+        end subroutine center_of_mass
 
         !=================================================================================
         ! Direct method for the diagonalization of a 3x3 symmetric matrix.
