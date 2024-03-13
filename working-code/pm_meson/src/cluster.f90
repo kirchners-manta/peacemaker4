@@ -51,7 +51,7 @@ module cluster
     public :: cluster_table
     public :: toml_parse
     public :: cluster_t
-    public :: process_coordinates_record, diagonalize_3x3, center_of_mass
+    public :: process_coordinates_record, diagonalize_3x3, center_of_mass, inertia_tensor
     !=====================================================================================
     ! The cluster_t data type, which represents a cluster. Reasonable defaults should be
     ! set here, if there are any.
@@ -218,7 +218,6 @@ module cluster
                         !> Get moments of inertia and mass from xyz file.
                         call get_value(child, "coordinates", path_string)
                         if (allocated(path_string)) then
-                            write(*,*) len(path_string)
                             allocate(path(1))
                             path(1) = path_string
                             call process_coordinates_record(c, 1, path(1))
@@ -429,18 +428,7 @@ module cluster
                 call center_of_mass(nr_atoms, com, mass, xyz)
     
                 ! Calculate inertia tensor.
-                inertia = 0.0_dp
-                do i = 1, nr_atoms
-                    inertia(1,1) = inertia(1,1) + mass(i)*(xyz(i,2)**2 + xyz(i,3)**2)
-                    inertia(2,2) = inertia(2,2) + mass(i)*(xyz(i,1)**2 + xyz(i,3)**2)
-                    inertia(3,3) = inertia(3,3) + mass(i)*(xyz(i,1)**2 + xyz(i,2)**2)
-                    inertia(1,2) = inertia(1,2) - mass(i)*xyz(i,1)*xyz(i,2)
-                    inertia(1,3) = inertia(1,3) - mass(i)*xyz(i,1)*xyz(i,3)
-                    inertia(2,3) = inertia(2,3) - mass(i)*xyz(i,2)*xyz(i,3)
-                end do
-                inertia(2, 1) = inertia(1, 2)
-                inertia(3, 1) = inertia(1, 3)
-                inertia(3, 2) = inertia(2, 3)
+                call inertia_tensor(nr_atoms, inertia, mass, xyz)
     
                 ! Diagonalize inertia tensor.
                 call diagonalize_3x3(inertia, eig)
@@ -495,6 +483,33 @@ module cluster
                 xyz(i, :) = xyz(i, :) - com(:)
             end do
         end subroutine center_of_mass
+
+        !=================================================================================
+        ! Calculation of the inertia tensor of a cluster.
+        subroutine inertia_tensor(nr_atoms, inertia, mass, xyz)
+            !> Number of atoms.
+            integer, intent(in) :: nr_atoms
+            !> Inertia tensor.
+            real(dp), dimension(3, 3), intent(out) :: inertia
+            !> Masses of the atoms.
+            real(dp), dimension(:), intent(in) :: mass
+            !> Coordinates of the atoms.
+            real(dp), dimension(:, :), intent(in) :: xyz
+
+            integer:: i
+            inertia = 0.0_dp
+            do i = 1, nr_atoms
+                inertia(1,1) = inertia(1,1) + mass(i)*(xyz(i,2)**2 + xyz(i,3)**2)
+                inertia(2,2) = inertia(2,2) + mass(i)*(xyz(i,1)**2 + xyz(i,3)**2)
+                inertia(3,3) = inertia(3,3) + mass(i)*(xyz(i,1)**2 + xyz(i,2)**2)
+                inertia(1,2) = inertia(1,2) - mass(i)*xyz(i,1)*xyz(i,2)
+                inertia(1,3) = inertia(1,3) - mass(i)*xyz(i,1)*xyz(i,3)
+                inertia(2,3) = inertia(2,3) - mass(i)*xyz(i,2)*xyz(i,3)
+            end do
+            inertia(2, 1) = inertia(1, 2)
+            inertia(3, 1) = inertia(1, 3)
+            inertia(3, 2) = inertia(2, 3)
+        end subroutine inertia_tensor
 
         !=================================================================================
         ! Direct method for the diagonalization of a 3x3 symmetric matrix.

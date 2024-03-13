@@ -14,40 +14,13 @@ module test_process_coords
     type(unittest_type), allocatable, intent(out) :: testsuite(:)
   
     testsuite = [ &
+      new_unittest("test_center_of_mass", test_center_of_mass), &
+      new_unittest("test_inertia_tensor", test_inertia_tensor), &
       new_unittest("test_diagonalize_3x3", test_diagonalize_3x3), &
-      new_unittest("test_center_of_mass", test_center_of_mass) &
+      new_unittest("test_diagonalize_3x3_2", test_diagonalize_3x3_2) &
       ]
   
   end subroutine collect_process_coords
-
-!---------------------------------------------
-! Unit test for diagonalization of 3x3 matrix
-!--------------------------------------------- 
-  ! Diagonalization of 3x3 matrix
-  subroutine test_diagonalize_3x3(error)
-    use cluster, only : diagonalize_3x3
-    !> Precision for the tests
-    real(dp) :: thr = 1.0e-5_dp
-
-    ! Arguments
-    type(error_type), allocatable, intent(out) :: error
-    real(dp), dimension(3,3) :: a
-    real(dp), dimension(3) :: eig
-    real(dp), dimension(3) :: expected
-
-    ! Initialize the matrix
-    a = reshape([2.0_dp, 2.0_dp, -1.0_dp, 2.0_dp, 1.0_dp, 0.0_dp, -1.0_dp, 0.0_dp, 4.0_dp], [3,3])
-
-    ! Expected eigenvalues
-    expected = [4.64575131_dp, 3.0_dp, -0.64575131_dp]
-
-    call diagonalize_3x3(a, eig)
-  
-    call check(error, eig(1), expected(1), thr=thr, rel=.false.)
-    call check(error, eig(2), expected(2), thr=thr, rel=.false.)
-    call check(error, eig(3), expected(3), thr=thr, rel=.false.)
-    if (allocated(error)) return
-  end subroutine test_diagonalize_3x3
 
 !---------------------------------------------
 ! Unit test for center_of_mass
@@ -124,6 +97,120 @@ module test_process_coords
 
     if (allocated(error)) return
   end subroutine test_center_of_mass
+
+!---------------------------------------------
+! Unit test for inertia_tensor
+!--------------------------------------------- 
+  ! Calculation of inertia_tensor
+  subroutine test_inertia_tensor(error)
+    use cluster, only : inertia_tensor
+    !> Precision for the tests
+    real(dp) :: thr = 1.0e-5_dp
+
+    ! Arguments
+    type(error_type), allocatable, intent(out) :: error
+    integer :: nr_atoms
+    real(dp), dimension(3, 3) :: inertia
+    real(dp), dimension(20) :: mass
+    real(dp), dimension(20, 3) :: xyz 
+    real(dp), dimension(3, 3) :: expected
+
+    integer :: i
+
+    ! Initialize
+    nr_atoms = 20
+    mass = [12.01_dp, 35.45_dp, 35.45_dp, 1.008_dp, 35.45_dp, 12.01_dp, 1.008_dp, 16.0_dp, 1.008_dp, 1.008_dp, &
+              1.008_dp, 16.0_dp, 1.008_dp, 1.008_dp, 16.0_dp, 1.008_dp, 1.008_dp, 16.0_dp, 1.008_dp, 1.008_dp]
+    xyz = reshape([-1.128269385488_dp, -2.307123512803_dp, -0.617507219855_dp, -0.252092394680_dp, &
+                   -1.849266465267_dp,  2.805502301619_dp,  3.080897563504_dp,  3.055859015522_dp, &
+                    1.752850885331_dp,  3.420109627386_dp,  2.514164458195_dp,  1.428211581447_dp, &
+                    1.795003729236_dp,  1.436218321680_dp,  1.385589078721_dp,  1.758035728821_dp, &
+                    0.512598833195_dp,  2.180769231769_dp,  2.662065900071_dp,  1.443387252387_dp, &
+                   -0.223498115174_dp, -1.364728910913_dp, -0.766742379470_dp, -0.171684155502_dp, &
+                    1.388991987730_dp, -2.150039642401_dp, -2.722832473900_dp, -0.776947481542_dp, &
+                   -2.339284400300_dp, -2.481159515366_dp, -0.449084658372_dp,  0.399636693138_dp, &
+                    0.560928536618_dp,  1.274269424177_dp,  2.611247276242_dp,  2.233634531957_dp, &
+                    2.941430915954_dp,  1.187398510186_dp,  0.489411040145_dp,  0.749410218063_dp, &
+                    0.283707343106_dp,  0.955558563588_dp, -1.318268247292_dp,  0.943153600361_dp, &
+                    0.161769457271_dp, -0.242602761657_dp,  0.647534066255_dp, -0.064530357201_dp, &
+                   -0.475879620487_dp, -1.078684620774_dp,  0.683625169538_dp,  1.818423393044_dp, &
+                    2.689089332707_dp,  1.351596667591_dp,  0.368403520138_dp, -0.460516009096_dp, &
+                    0.146105402580_dp, -1.768550425494_dp, -1.283442582099_dp, -2.200550735867_dp], [20,3])
+
+                   
+
+    expected = reshape([ 6.120516601215e+02_dp, -2.689910123451e+01_dp,  8.868159766987e+01_dp, &
+                        -2.689910123451e+01_dp,  9.918256337610e+02_dp,  7.800215517093e-01_dp, &
+                         8.868159766987e+01_dp,  7.800215517093e-01_dp,  1.162148369943e+03_dp], [3,3])
+
+    call inertia_tensor(nr_atoms, inertia, mass, xyz)
+
+    do i=1,3
+      call check(error, inertia(i,1), expected(i,1), thr=thr, rel=.false.)
+      call check(error, inertia(i,2), expected(i,2), thr=thr, rel=.false.)
+      call check(error, inertia(i,3), expected(i,3), thr=thr, rel=.false.)
+    end do
+  
+
+    if (allocated(error)) return
+  end subroutine test_inertia_tensor
+
+
+!---------------------------------------------
+! Unit test for diagonalization of 3x3 matrix
+!--------------------------------------------- 
+  ! Diagonalization of 3x3 matrix
+  subroutine test_diagonalize_3x3(error)
+    use cluster, only : diagonalize_3x3
+    !> Precision for the tests
+    real(dp) :: thr = 1.0e-5_dp
+
+    ! Arguments
+    type(error_type), allocatable, intent(out) :: error
+    real(dp), dimension(3,3) :: a
+    real(dp), dimension(3) :: eig
+    real(dp), dimension(3) :: expected
+
+    ! Initialize the matrix
+    a = reshape([2.0_dp, 2.0_dp, -1.0_dp, 2.0_dp, 1.0_dp, 0.0_dp, -1.0_dp, 0.0_dp, 4.0_dp], [3,3])
+
+    ! Expected eigenvalues
+    expected = [4.64575131_dp, 3.0_dp, -0.64575131_dp]
+
+    call diagonalize_3x3(a, eig)
+  
+    call check(error, eig(1), expected(1), thr=thr, rel=.false.)
+    call check(error, eig(2), expected(2), thr=thr, rel=.false.)
+    call check(error, eig(3), expected(3), thr=thr, rel=.false.)
+    if (allocated(error)) return
+  end subroutine test_diagonalize_3x3
+
+  subroutine test_diagonalize_3x3_2(error)
+    use cluster, only : diagonalize_3x3
+    !> Precision for the tests
+    real(dp) :: thr = 1.0e-5_dp
+
+    ! Arguments
+    type(error_type), allocatable, intent(out) :: error
+    real(dp), dimension(3,3) :: a
+    real(dp), dimension(3) :: eig
+    real(dp), dimension(3) :: expected
+
+    ! Initialize the matrix
+    a = reshape([ 6.120516601215e+02_dp, -2.689910123451e+01_dp,  8.868159766987e+01_dp, &
+                 -2.689910123451e+01_dp,  9.918256337610e+02_dp,  7.800215517093e-01_dp, &
+                  8.868159766987e+01_dp,  7.800215517093e-01_dp,  1.162148369943e+03_dp], [3,3])
+
+    ! Expected eigenvalues
+    expected = [1176.154814207935_dp,  993.563899202036_dp,  596.306950415176_dp]
+
+    call diagonalize_3x3(a, eig)
+  
+    call check(error, eig(1), expected(1), thr=thr, rel=.false.)
+    call check(error, eig(2), expected(2), thr=thr, rel=.false.)
+    call check(error, eig(3), expected(3), thr=thr, rel=.false.)
+    if (allocated(error)) return
+  end subroutine test_diagonalize_3x3_2
 
 
 end module test_process_coords
