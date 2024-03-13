@@ -60,11 +60,13 @@ module test_process_coords
 
     ! Arguments
     type(error_type), allocatable, intent(out) :: error
-    real(dp), dimension(3) :: expected
+    real(dp), dimension(3) :: expected_com
+    real(dp), dimension(20,3) :: expected_xyz
     integer :: nr_atoms
     real(dp), dimension(3) :: com
     real(dp), dimension(20) :: mass
     real(dp), dimension(20,3) :: xyz
+    integer :: i
 
     ! Initialize
     nr_atoms = 20
@@ -93,13 +95,32 @@ module test_process_coords
                    
 
     ! Expected moments of inertia
-    expected = [-0.04072005, 0.07544383, 0.04374451]
+    expected_com = [-0.04072005, 0.07544383, 0.04374451]
+    expected_xyz = reshape([-1.12826939_dp, -2.30712351_dp, -0.61750722_dp, -0.25209239_dp, -1.84926647_dp, &
+                             2.80550230_dp,  3.08089756_dp,  3.05585902_dp,  1.75285089_dp,  3.42010963_dp, &
+                             2.51416446_dp,  1.42821158_dp,  1.79500373_dp,  1.43621832_dp,  1.38558908_dp, &
+                             1.75803573_dp,  0.51259883_dp,  2.18076923_dp,  2.66206590_dp,  1.44338725_dp, &
+                            -0.22349812_dp, -1.36472891_dp, -0.76674238_dp, -0.17168416_dp,  1.38899199_dp, &
+                            -2.15003964_dp, -2.72283247_dp, -0.77694748_dp, -2.33928440_dp, -2.48115952_dp, &
+                            -0.44908466_dp,  0.39963669_dp,  0.56092854_dp,  1.27426942_dp,  2.61124728_dp, &
+                             2.23363453_dp,  2.94143092_dp,  1.18739851_dp,  0.48941104_dp,  0.74941022_dp, &
+                             0.28370734_dp,  0.95555856_dp, -1.31826825_dp,  0.94315360_dp,  0.16176946_dp, &
+                            -0.24260276_dp,  0.64753407_dp, -0.06453036_dp, -0.47587962_dp, -1.07868462_dp, &
+                             0.68362517_dp,  1.81842339_dp,  2.68908933_dp,  1.35159667_dp,  0.36840352_dp, &
+                            -0.46051601_dp,  0.14610540_dp, -1.76855043_dp, -1.28344258_dp, -2.20055074_dp], [20,3])
 
     call center_of_mass(nr_atoms, com, mass, xyz)
   
-    call check(error, com(1), expected(1), thr=thr, rel=.false.)
-    call check(error, com(2), expected(2), thr=thr, rel=.false.)
-    call check(error, com(3), expected(3), thr=thr, rel=.false.)
+    call check(error, com(1), expected_com(1), thr=thr, rel=.false.)
+    call check(error, com(2), expected_com(2), thr=thr, rel=.false.)
+    call check(error, com(3), expected_com(3), thr=thr, rel=.false.)
+
+    do i=1,20
+      call check(error, xyz(i,1), expected_xyz(i,1), thr=thr, rel=.false.)
+      call check(error, xyz(i,2), expected_xyz(i,2), thr=thr, rel=.false.)
+      call check(error, xyz(i,3), expected_xyz(i,3), thr=thr, rel=.false.)
+    end do  
+    
 
     if (allocated(error)) return
   end subroutine test_center_of_mass
