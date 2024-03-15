@@ -14,8 +14,8 @@ subroutine collect_polynomial(testsuite)
   type(unittest_type), allocatable, intent(out) :: testsuite(:)
 
   testsuite = [ &
-    new_unittest("test_newton", test_newton) &
-    !new_unittest("test_newton_2", test_newton_2) &
+    new_unittest("test_newton", test_newton), &
+    new_unittest("test_newton_2", test_newton_2) &
     !new_unittest("test_newton_3", test_newton_3) &
     ]
 
