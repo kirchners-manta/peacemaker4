@@ -982,22 +982,12 @@ module qce
             do i = 0, size(degree)-1
                 coeffs_all(i*n_comp) = -1.0_dp
             end do
-            !write(*,*) "comp", n_comp
-            !write(*,*) "degree", degree
-            !write(*,*) "monomer", size(monomer)
-            !write(*,*) "coeffs", size(coeffs_all)
 
             do iclust = 1, size(clusterset)
                indx_clust = clusterset(iclust)%composition(1)
-               !write(*,*) "comp1",clusterset(iclust)%composition(1)
-               !write(*,*) "comp2",clusterset(iclust)%composition(2)
-               !write(*,*) "index", indx_clust
                
                do j = 2, size(monomer)
                    indx_clust = indx_clust + clusterset(iclust)%composition(j) * product(degree(:j-1))
-                   !write(*,*) "degree prod", product(degree(:j-1))
-                   !write(*,*) "index", indx_clust
-                   !write(*,*) degree(:j-1)
                end do
                do i = 1, size(monomer)
                 ! why is this perm here?
@@ -1006,7 +996,6 @@ module qce
                        perm = perm/GAMMA(real(clusterset(iclust)%composition(j)+1, dp))
                    end do
                    coeffs_all(indx_clust + (i-1)*n_comp) = coeffs_all(indx_clust + (i-1)*n_comp) + pop_coeffs(i,iclust)
-                   !write(*,*) "index final", indx_clust + (i-1)*n_comp
                end do
             end do
 
@@ -1024,7 +1013,7 @@ module qce
             
             ! Solve the polynomials.
             call newton(size(degree), global_data%degree, size(coeffs_all), coeffs_all, monomer_populations, &
-                global_data%newton_iterations, success)
+                global_data%newton_iterations, success, monomer)
             
             ! Check for unphysical solution.
             if (any(monomer_populations < 0.0_dp)) success = .false.
