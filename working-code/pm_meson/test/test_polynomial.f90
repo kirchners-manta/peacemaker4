@@ -20,7 +20,8 @@ subroutine collect_polynomial(testsuite)
     new_unittest("test_newton_3", test_newton_3), &
     new_unittest("test_newton_4", test_newton_4), &
     new_unittest("test_newton_5", test_newton_5), &
-    new_unittest("test_newton_5", test_newton_6) &
+    new_unittest("test_newton_6", test_newton_6), &
+    new_unittest("test_newton_7", test_newton_7) &
     ]
 
 end subroutine collect_polynomial
@@ -94,8 +95,6 @@ subroutine test_newton(error)
 
   ! Call the Newton algorithm
   call newton(n, d, l, coeffs, x0, iter, success, monomer)
-  write(*,*) "x0: ", x0
-  write(*,*) "Success: ", success
 
   ! Check the result
   call check(error, x0(1), expected, thr=thr, rel=.false.)
@@ -128,8 +127,6 @@ subroutine test_newton_2(error)
 
   ! Call the Newton-Raphson algorithm
   call newton(n, d, l, coeffs, x0, iter, success, monomer)
-  write(*,*) "Success: ", success
-  write(*,*) "x0: ", x0
 
   ! Check the result
   call check(error, x0(1), expected(1), thr=thr, rel=.false.)
@@ -164,8 +161,6 @@ subroutine test_newton_3(error)
 
   ! Call the Newton algorithm
   call newton(n, d, l, coeffs, x0, iter, success, monomer)
-  write(*,*) "Success: ", success
-  write(*,*) "x0: ", x0
 
   ! Check the result
   call check(error, x0(1), expected(1), thr=thr, rel=.false.)
@@ -205,8 +200,6 @@ subroutine test_newton_4(error)
 
   ! Call the Newton-Raphson algorithm
   call newton(n, d, l, coeffs, x0, iter, success, monomer)
-  write(*,*) "Success: ", success
-  write(*,*) "x0: ", x0
 
   ! Check the result
   call check(error, x0(1), expected(1), thr=thr, rel=.false.)
@@ -248,8 +241,6 @@ subroutine test_newton_5(error)
 
   ! Call the Newton-Raphson algorithm
   call newton(n, d, l, coeffs, x0, iter, success, monomer)
-  write(*,*) "Success: ", success
-  write(*,*) "x0: ", x0
 
   ! Check the result
   call check(error, x0(1), expected(1), thr=thr, rel=.false.)
@@ -305,8 +296,6 @@ subroutine test_newton_6(error)
 
   ! Call the Newton-Raphson algorithm
   call newton(n, d, l, coeffs, x0, iter, success, monomer)
-  write(*,*) "Success: ", success
-  write(*,*) "x0: ", x0
 
   ! Check the result
   call check(error, x0(1), expected(1), thr=thr, rel=.false.)
@@ -315,6 +304,85 @@ subroutine test_newton_6(error)
 
   if (allocated(error)) return
 end subroutine test_newton_6
+
+! 4D polynomial, degree 4, 1, 2, 2
+subroutine test_newton_7(error)
+  ! Example system:
+  ! f_1(x,y,z) = -1.2568 + x + x² + 5x³ - y + 3y² + 4z + xy + xyz²
+  ! f_2(x,y,z) = -0.3129 + x³ + 8y² - z³ + yz² + 3x³z
+  ! f_3(x,y,z) = 0.983 + 5x³ - y + 8y² - 4z + z² + x²y
+
+  ! Dependency
+  use polynomial, only : newton
+    !> Precision for the tests
+  real(dp) :: thr = 1.0e-5_dp
+  ! Arguments
+  type(error_type), allocatable, intent(out) :: error
+  integer, parameter :: n = 4                                    ! Number of the polynomials
+  integer, dimension(n) :: d = [4, 1, 2, 2]                      ! Degree of the polynomials
+  integer :: l = 360                                             ! Length of the coefficient array
+  real(dp), dimension(360) :: coeffs = [0.6178516892_dp, 1.0_dp, 2.0_dp, 3.0_dp, -5.0_dp, 0.0_dp, 1.0_dp, 0.0_dp, 0.0_dp, & ! 1  First
+                                        0.0_dp, 0.0_dp, 0.0_dp, 0.0_dp, 0.0_dp, 0.0_dp, 0.0_dp, 0.0_dp, 0.0_dp, & ! 2
+                                        0.0_dp, 0.0_dp, 0.0_dp, 0.0_dp, 0.0_dp, 0.0_dp, 0.0_dp, -5.0_dp, 0.0_dp, & ! 3
+                                        0.0_dp, 0.0_dp, 0.0_dp, 0.0_dp, 0.0_dp, 0.0_dp, 0.0_dp, 0.0_dp, 0.0_dp, & ! 4
+                                        0.0_dp, 0.0_dp, 0.0_dp, 0.0_dp, -8.0_dp, 0.0_dp, 0.0_dp, 0.0_dp, 0.0_dp, & ! 5
+                                        0.0_dp, -2.0_dp, 0.0_dp, 0.0_dp, 0.0_dp, 0.0_dp, 0.0_dp, 0.0_dp, 0.0_dp, & ! 6
+                                        0.0_dp, 0.0_dp, 0.0_dp, 0.0_dp, 0.0_dp, 0.0_dp, 0.0_dp, 0.0_dp, 0.0_dp, & ! 7
+                                        0.0_dp, 0.0_dp, 0.0_dp, 0.0_dp, 0.0_dp, 0.0_dp, 0.0_dp, 0.0_dp, 0.0_dp, & ! 8
+                                        0.0_dp, 0.0_dp, 0.0_dp, 0.0_dp, 0.0_dp, 0.0_dp, 0.0_dp, 0.0_dp, 0.0_dp, & ! 9
+                                        0.0_dp, 0.0_dp, 0.0_dp, 0.0_dp, 0.0_dp, 0.0_dp, 0.0_dp, 0.0_dp, 2.3_dp, & ! 10
+                                        0.3488084515_dp, 0.0_dp, 0.0_dp, 1.0_dp, 0.0_dp, -4.0_dp, 0.0_dp, 0.0_dp, 0.0_dp, & ! 1  Second
+                                        0.0_dp, 0.0_dp, 0.0_dp, 0.0_dp, 0.0_dp, 0.0_dp, 0.0_dp, 0.0_dp, 0.0_dp, & ! 2
+                                        0.0_dp, 0.0_dp, 0.0_dp, 6.0_dp, 0.0_dp, 0.0_dp, 0.0_dp, 0.0_dp, 0.0_dp, & ! 3
+                                        0.0_dp, 0.0_dp, 0.0_dp, 0.0_dp, 0.0_dp, 0.0_dp, 0.0_dp, 0.0_dp, 5.0_dp, & ! 4
+                                        0.0_dp, 0.0_dp, 0.0_dp, 0.0_dp, 0.0_dp, 0.0_dp, 0.0_dp, 0.0_dp, 0.0_dp, & ! 5
+                                        0.0_dp, 0.0_dp, 0.0_dp, 0.0_dp, 0.0_dp, 0.0_dp, 0.0_dp, 0.0_dp, 0.0_dp, & ! 6
+                                        0.0_dp, 0.0_dp, 0.0_dp, 0.0_dp, 0.0_dp, 0.0_dp, 0.0_dp, 0.0_dp, 0.0_dp, & ! 7
+                                        0.0_dp, 0.0_dp, 0.0_dp, 0.0_dp, 0.0_dp, 5.0_dp, 0.0_dp, 0.0_dp, 0.0_dp, & ! 8
+                                        0.0_dp, 0.0_dp, 0.0_dp, 0.0_dp, 0.0_dp, 0.0_dp, 0.0_dp, 0.0_dp, 0.0_dp, & ! 9
+                                        0.0_dp, 0.0_dp, 0.0_dp, 0.0_dp, 0.0_dp, 0.0_dp, 0.0_dp, 0.0_dp, 0.0_dp, & ! 10
+                                        -0.17944167_dp, 0.0_dp, 3.0_dp, -1.0_dp, 0.0_dp, 0.0_dp, 0.0_dp, 0.0_dp, 1.0_dp, & ! 1  Third
+                                        0.0_dp, 0.0_dp, 0.0_dp, 0.0_dp, 0.0_dp, 0.0_dp, 0.0_dp, 0.0_dp, 0.0_dp, & ! 2
+                                        0.0_dp, 0.0_dp, 0.0_dp, 0.0_dp, 0.0_dp, 0.0_dp, 0.0_dp, 0.0_dp, 0.0_dp, & ! 3
+                                        0.0_dp, 0.0_dp, 0.0_dp, 0.0_dp, 0.0_dp, 0.0_dp, 0.0_dp, 0.0_dp, 0.0_dp, & ! 4
+                                        0.0_dp, 0.0_dp, 0.0_dp, 0.0_dp, 0.0_dp, 0.0_dp, 0.0_dp, 0.0_dp, 0.0_dp, & ! 5
+                                        0.0_dp, 0.0_dp, 0.0_dp, 0.0_dp, 0.0_dp, 0.0_dp, 0.0_dp, 0.0_dp, 0.0_dp, & ! 6
+                                        0.0_dp, 0.0_dp, 0.0_dp, 0.0_dp, 0.0_dp, 0.0_dp, 0.0_dp, 0.0_dp, 0.0_dp, & ! 7
+                                        0.0_dp, 0.0_dp, 0.0_dp, 0.0_dp, 0.0_dp, 0.0_dp, 0.0_dp, 0.0_dp, 0.0_dp, & ! 8
+                                        0.0_dp, 0.0_dp, 0.0_dp, 1.0_dp, 0.0_dp, 0.0_dp, 0.0_dp, 0.0_dp, -1.0_dp, & ! 9
+                                        0.0_dp, 0.0_dp, 0.0_dp, 0.0_dp, 0.0_dp, 0.0_dp, 0.0_dp, 0.0_dp, 0.0_dp, & ! 10
+                                        -0.1328316336_dp, 1.0_dp, 0.0_dp, 0.0_dp, 0.0_dp, 0.0_dp, 0.0_dp, -1.0_dp, 0.0_dp, & ! 1  Fourth
+                                        0.0_dp, 0.0_dp, 0.0_dp, 0.0_dp, 0.0_dp, 0.0_dp, 0.0_dp, 0.0_dp, 0.0_dp, & ! 2
+                                        0.0_dp, 0.0_dp, 0.0_dp, 0.0_dp, 0.0_dp, 0.0_dp, 0.0_dp, 0.0_dp, 0.0_dp, & ! 3
+                                        0.0_dp, 0.0_dp, 0.0_dp, 0.0_dp, 0.0_dp, 0.0_dp, 0.0_dp, 0.0_dp, 0.0_dp, & ! 4
+                                        0.0_dp, 0.0_dp, 0.0_dp, 0.0_dp, 0.0_dp, 0.0_dp, 0.0_dp, 0.0_dp, 0.0_dp, & ! 5
+                                        0.0_dp, 0.0_dp, 0.0_dp, 0.0_dp, 0.0_dp, -7.0_dp, 0.0_dp, 0.0_dp, 0.0_dp, & ! 6
+                                        0.0_dp, 0.0_dp, 0.0_dp, 0.0_dp, 0.0_dp, 0.0_dp, 0.0_dp, 0.0_dp, 0.0_dp, & ! 7
+                                        6.0_dp, 0.0_dp, 0.0_dp, 0.0_dp, 0.0_dp, 0.0_dp, 0.0_dp, 0.0_dp, 0.0_dp, & ! 8
+                                        0.0_dp, 0.0_dp, 0.0_dp, 0.0_dp, 0.0_dp, 0.0_dp, 0.0_dp, 0.0_dp, 0.0_dp, & ! 9
+                                        0.0_dp, 0.0_dp, 0.0_dp, 0.0_dp, 8.0_dp, 0.0_dp, 0.0_dp, 0.0_dp, 0.0_dp]   ! 10
+  
+  
+
+  real(dp), dimension(n) :: x0 = [0.5_dp, 0.5_dp, 0.5_dp, 0.5_dp] ! Initial guess
+  integer :: iter = 500                                           ! Maximum number of iterations
+  logical :: success                                              ! Success flag
+  integer, dimension(4) :: monomer  = [1, 1, 1, 1]                ! Monomers
+
+  ! Expected result
+  real(dp), dimension(n) :: expected = [0.2300000000_dp, 0.5300000000_dp, 0.1900000000_dp, 0.6400000000_dp]
+
+  ! Call the Newton-Raphson algorithm
+  call newton(n, d, l, coeffs, x0, iter, success, monomer)
+
+  ! Check the result
+  call check(error, x0(1), expected(1), thr=thr, rel=.false.)
+  call check(error, x0(2), expected(2), thr=thr, rel=.false.)
+  call check(error, x0(3), expected(3), thr=thr, rel=.false.)
+  call check(error, x0(4), expected(4), thr=thr, rel=.false.)
+
+  if (allocated(error)) return
+end subroutine test_newton_7
 
 
 
