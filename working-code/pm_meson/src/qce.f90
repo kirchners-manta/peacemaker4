@@ -969,10 +969,11 @@ module qce
                 end associate
             end do
 
-            ! Calculate coefficients for >> each possible composition <<. We simulate a multi-dimensional
+            ! (Calculate) coefficients for >> each possible composition <<. We simulate a multi-dimensional
             ! array as a linear or one-dimensional array. n_comp is the number of possible cluster compositions
             ! and thus the number of coefficients in the population polynomial (some of which may be 0).
             ! indx_clust is the position of a cluster in the array coeffs_all.
+            ! The calculated coefficients are sorted into the array.
             n_comp = 1
             do i = 1, size(degree)
                 n_comp = n_comp * degree(i)
@@ -1027,8 +1028,7 @@ module qce
                     lnq)
             end if
             
-
-            end subroutine calculate_populations
+        end subroutine calculate_populations
         !=================================================================================
         ! Given the monomer populations, this calculates all other populations.
         subroutine calculate_remaining_populations(populations, monomer_populations, &
