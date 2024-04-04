@@ -62,6 +62,7 @@ module info
             write(*, *)
             write(*, "(A)") "    The Peacemaker team (in alphabetical order):                             "
             write(*, *)
+            write(*, "(A)") "        * Katrin Drysch                                                      "
             write(*, "(A)") "        * Johannes Ingenmey                                                  "
             write(*, "(A)") "        * Eva Perlt                                                          "
             write(*, "(A)") "        * Michael von Domaros                                                "
@@ -96,6 +97,13 @@ module info
             write(*, "(A)") '          "Cooperative versus dispersion effects: ' // &
                 'What is more important in an associated liquid such as water?".'
             write(*, "(A)") '          J. Chem. Phys. 123 (2005), 204116.'
+            write(*, *)
+            write(*, "(A)") '    For multicomponent mixtures, please cite:'
+            write(*, *)
+            write(*, "(A)") '        * Tom Frömbgen, Katrin Drysch, Paul Zaby, Jürgen Dölz, Johannes Ingenmey, Barbara Kirchner:'
+            write(*, "(A)") '          "Quantum Cluster Equilibrium Theory for Multicomponent Liquids".'
+            write(*, "(A)") '          J. Chem. Theory Comput. 20 (2024), 1838-1846.'
+            write(*, *)
             write(*, *)
             write(*, "(A)") '    For binary mixtures, please cite:'
             write(*, *)
