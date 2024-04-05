@@ -10,6 +10,7 @@ testdrive_dep = dependency('test-drive', fallback: ['test-drive', 'testdrive_dep
 
 tests = [
   'pop_polynomial',
+  'vol_polynomial',
   'partition_functions',
   'process_coordinates_record',
 ]
@@ -17,6 +18,7 @@ tests = [
 test_srcs = files(
   'main.f90',
   'test_pop_polynomial.f90',
+  'test_vol_polynomial.f90',
   'test_partition_functions.f90',
   'test_process_coordinates_record.f90',
 )

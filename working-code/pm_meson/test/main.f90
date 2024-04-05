@@ -3,6 +3,7 @@ program tester
   use testdrive, only : run_testsuite, new_testsuite, testsuite_type
   !> > > > > >   BLOCK 1   > > > > > > > > > > >
   use test_pop_polynomial, only : collect_pop_polynomial
+  use test_vol_polynomial, only : collect_vol_polynomial
   use test_partition_functions, only : collect_partition_functions
   use test_process_coords, only : collect_process_coords
   !> ^- Hier use  test_<name>, only : collect_<name>  einfügen
@@ -17,6 +18,7 @@ program tester
   testsuites = [ &
     !> > > > > >   BLOCK 2   > > > > > > > > > >
     new_testsuite("pop_polynomial", collect_pop_polynomial), &
+    new_testsuite("vol_polynomial", collect_vol_polynomial), &
     new_testsuite("partition_functions", collect_partition_functions), &
     new_testsuite("process_coordinates_record", collect_process_coords) &
     !> ^- Hier  new_testsuite("<name>", collect_<name>), &  einfügen
