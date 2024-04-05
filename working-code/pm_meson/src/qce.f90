@@ -36,6 +36,7 @@ module qce
     public :: qce_prepare
     public :: qce_start
     public :: qce_finalize
+    public :: calculate_remaining_populations ! for unit testing
     !=====================================================================================
     ! Data type storing reference_data.
     type :: reference_t
@@ -1025,37 +1026,45 @@ module qce
                 ! populations.
                 monomer_populations = monomer_populations*sum(global_data%ntot)/1.0_dp
                 call calculate_remaining_populations(populations, monomer_populations, &
-                    lnq)
+                    lnq, clusterset, monomer)
             end if
             
         end subroutine calculate_populations
         !=================================================================================
         ! Given the monomer populations, this calculates all other populations.
         subroutine calculate_remaining_populations(populations, monomer_populations, &
-            lnq)
+            lnq, cluster_set, mono)
             type(pf_t), dimension(size(clusterset)), intent(in) :: lnq
             real(dp), dimension(size(monomer)), intent(in) :: monomer_populations
             real(dp), dimension(size(clusterset)), intent(out) :: populations
+            type(cluster_t), dimension(:), intent(in) :: cluster_set
+            integer, dimension(:), intent(in) :: mono
     
             integer:: i
             integer:: j
             real(dp):: tmp
     
             ! Assign monomer populations.
-            do i = 1, size(monomer)
-                populations(monomer(i)) = monomer_populations(i)
+            do i = 1, size(mono)
+                populations(mono(i)) = monomer_populations(i)
             end do
             ! Calculate the remaining populations.
-            do i = 1, size(clusterset)
-                associate(c => clusterset(i))
+            do i = 1, size(cluster_set)
+                associate(c => cluster_set(i))
                     if (c%monomer) cycle
                     tmp = 0.0_dp
-                    do j = 1, size(monomer)
+                    do j = 1, size(mono)
                         tmp = tmp + real(c%composition(j), dp)* &
-                            (log(monomer_populations(j)) - lnq(monomer(j))%qtot)
+                            (log(monomer_populations(j)) - lnq(mono(j))%qtot)
                     end do
                     tmp = tmp + lnq(i)%qtot
                     populations(i) = exp(tmp) * 1.0_dp
+
+                    ! If a population is infinite, warn the user.
+                    if (populations(i) >= huge(0.0_dp)) then
+                        write(*,*) 'Warning: Population of cluster ', i, ' is infinite.'
+                    end if
+                    
                 end associate
             end do
         end subroutine calculate_remaining_populations

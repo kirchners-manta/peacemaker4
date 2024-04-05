@@ -1,15 +1,19 @@
-module test_polynomial
+! In this module the Newton and Horner algortihms for solving the population polynomial 
+! for obtaining the monomer populations are tested.
+! Additionally the subroutine calculating remaining populations is tested.
+
+module test_pop_polynomial
   use testdrive, only : new_unittest, unittest_type, error_type, check
   use kinds, only : dp
   implicit none
   private
 
-  public :: collect_polynomial
+  public :: collect_pop_polynomial
 
 contains
 
 !> Collect all exported unit tests
-subroutine collect_polynomial(testsuite)
+subroutine collect_pop_polynomial(testsuite)
   !> Collection of tests
   type(unittest_type), allocatable, intent(out) :: testsuite(:)
 
@@ -21,10 +25,12 @@ subroutine collect_polynomial(testsuite)
     new_unittest("test_newton_4", test_newton_4), &
     new_unittest("test_newton_5", test_newton_5), &
     new_unittest("test_newton_6", test_newton_6), &
-    new_unittest("test_newton_7", test_newton_7) &
+    new_unittest("test_newton_7", test_newton_7), &
+    new_unittest("test_calc_remaining_populations", test_calc_remaining_populations), &
+    new_unittest("test_calc_remaining_populations_2", test_calc_remaining_populations_2) &
     ]
 
-end subroutine collect_polynomial
+end subroutine collect_pop_polynomial
 
 !----------------------------------------
 ! Unit test for Horner's algorithm
@@ -384,6 +390,132 @@ subroutine test_newton_7(error)
   if (allocated(error)) return
 end subroutine test_newton_7
 
+!-----------------------------------------------
+! Unit test for calculate_remaining_populations
+!-----------------------------------------------
+subroutine test_calc_remaining_populations(error)
+  use qce, only : calculate_remaining_populations
+  use cluster, only : cluster_t
+  use partition_functions, only : pf_t
+  !> Precision for the tests
+  real(dp) :: thr = 1.0e-10_dp
+
+  ! Arguments 
+  type(error_type), allocatable, intent(out) :: error
+  type(pf_t), dimension(:), allocatable :: lnq 
+  real(dp), dimension(:), allocatable :: monomer_populations
+  real(dp), dimension(:), allocatable :: populations
+  type(cluster_t), dimension(:), allocatable :: cluster_set
+  integer, dimension(:), allocatable :: mono                
+
+  ! Expected result
+  real(dp), dimension(6) :: expected = [1.000000000000e-02_dp, 2.195246544376e-04_dp, 2.000000000000e-01_dp, &
+                                        5.443077197365e-06_dp, 8.118571642079e-13_dp, 3.000000000000e-02_dp]
+
+  ! Allocate and initialize 
+  allocate(cluster_set(6))
+  cluster_set(1)%composition = [1, 0, 0]
+  cluster_set(2)%composition = [1, 2, 0]
+  cluster_set(3)%composition = [0, 1, 0]
+  cluster_set(4)%composition = [1, 1, 1]
+  cluster_set(5)%composition = [2, 1, 3]
+  cluster_set(6)%composition = [0, 0, 1]
+
+  allocate(mono(3))
+  mono = [1, 3, 6] ! Positions of the monomers in the cluster set
+
+  allocate(monomer_populations(size(mono)))
+  monomer_populations = [0.01_dp, 0.2_dp, 0.03_dp]
+
+  allocate(lnq(size(cluster_set)))
+  lnq(1)%qtot = 1.2_dp
+  lnq(2)%qtot = 3.2_dp
+  lnq(3)%qtot = 1.3_dp
+  lnq(4)%qtot = 1.2_dp
+  lnq(5)%qtot = 0.5_dp
+  lnq(6)%qtot = 1.1_dp
+
+  allocate(populations(size(cluster_set)))
+
+  ! Call the function
+  call calculate_remaining_populations(populations, monomer_populations, lnq, cluster_set, mono)
+
+  ! Check the result
+  call check(error, populations(1), expected(1), thr=thr, rel=.false.)
+  call check(error, populations(2), expected(2), thr=thr, rel=.false.)
+  call check(error, populations(3), expected(3), thr=thr, rel=.false.)
+  call check(error, populations(4), expected(4), thr=thr, rel=.false.)
+  call check(error, populations(5), expected(5), thr=thr, rel=.false.)
+  call check(error, populations(6), expected(6), thr=thr, rel=.false.)
+
+end subroutine test_calc_remaining_populations
+
+subroutine test_calc_remaining_populations_2(error)
+  use qce, only : calculate_remaining_populations
+  use cluster, only : cluster_t
+  use partition_functions, only : pf_t
+  !> Precision for the tests
+  real(dp) :: thr = 10e-10_dp
+
+  ! Arguments 
+  type(error_type), allocatable, intent(out) :: error
+  type(pf_t), dimension(:), allocatable :: lnq 
+  real(dp), dimension(:), allocatable :: monomer_populations
+  real(dp), dimension(:), allocatable :: populations
+  type(cluster_t), dimension(:), allocatable :: cluster_set
+  integer, dimension(:), allocatable :: mono                
+
+  ! Expected result
+  real(dp), dimension(9) :: expected = [2.000000000000e+023_dp, 1.088297856368e+171_dp, 2.351085132193e+161_dp, &
+                                        1.128067738370e+082_dp, 1.200000000000e+023_dp, 2.523225797410e+148_dp, &
+                                        3.100000000000e+022_dp, 1.142209387045e+164_dp, 5.400000000000e+020_dp]
+
+  ! Allocate and initialize 
+  allocate(cluster_set(9))
+  cluster_set(1)%composition = [1, 0, 0, 0]
+  cluster_set(2)%composition = [1, 2, 0, 5]
+  cluster_set(3)%composition = [0, 1, 40, 2]
+  cluster_set(4)%composition = [1, 1, 0, 1]
+  cluster_set(5)%composition = [0, 1, 0, 0]
+  cluster_set(6)%composition = [2, 0, 3, 1]
+  cluster_set(7)%composition = [0, 0, 1, 0]
+  cluster_set(8)%composition = [2, 3, 1, 1]
+  cluster_set(9)%composition = [0, 0, 0, 1]
+
+  allocate(mono(4))
+  mono = [1, 5, 7, 9] ! Positions of the monomers in the cluster set
+
+  allocate(monomer_populations(size(mono)))
+  monomer_populations = [2.0e23_dp, 1.2e23_dp, 3.1e22_dp, 5.4e20_dp]
+
+  allocate(lnq(size(cluster_set)))
+  lnq(1)%qtot = -3.2_dp
+  lnq(2)%qtot = 5.0_dp
+  lnq(3)%qtot = 25.0_dp
+  lnq(4)%qtot = 36.2_dp
+  lnq(5)%qtot = 4.0_dp
+  lnq(6)%qtot = 28.3_dp
+  lnq(7)%qtot = 0.8_dp
+  lnq(8)%qtot = 18.9_dp
+  lnq(9)%qtot = 1.0_dp
+
+  allocate(populations(size(cluster_set)))
+
+  ! Call the function
+  call calculate_remaining_populations(populations, monomer_populations, lnq, cluster_set, mono)
+
+  ! Check the result
+  call check(error, populations(1), expected(1), thr=thr, rel=.true.)
+  call check(error, populations(2), expected(2), thr=thr, rel=.true.)
+  !call check(error, populations(3), expected(3), thr=thr, rel=.true.)
+  call check(error, populations(4), expected(4), thr=thr, rel=.true.)
+  call check(error, populations(5), expected(5), thr=thr, rel=.true.)
+  call check(error, populations(6), expected(6), thr=thr, rel=.true.)
+  call check(error, populations(7), expected(7), thr=thr, rel=.true.)
+  call check(error, populations(8), expected(8), thr=thr, rel=.true.)
+  call check(error, populations(9), expected(9), thr=thr, rel=.true.)
+
+end subroutine test_calc_remaining_populations_2
 
 
-end module test_polynomial
+end module test_pop_polynomial
