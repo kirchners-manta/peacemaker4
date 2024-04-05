@@ -140,6 +140,13 @@ module partition_functions
                 ! Calculate the partition function
                 lnq(iclust) = log(vol-bxv*v_excl) - 3.0_dp*log(lambda)
             end do
+            
+            ! If a value is infinite, warn the user.
+            if (any(lnq >= huge(0.0_dp))) then
+                write(*,*) 'Warning: The translational partition function of one cluster'
+                write(*,*) '         is infinite.'
+            end if
+
         end subroutine calculate_lnqtrans
         !=================================================================================
         ! Calculates the vibrational cluster partition function.
@@ -202,6 +209,13 @@ module partition_functions
                     end do
                 end associate
             end do
+
+            ! If a value is infinite, warn the user.
+            if (any(lnq >= huge(0.0_dp))) then
+                write(*,*) 'Warning: The vibrational partition function of one cluster'
+                write(*,*) '         is infinite.'
+            end if
+
         end subroutine calculate_lnqvib
         !=================================================================================
         ! Calculates the rotational cluster partition function.
@@ -244,6 +258,13 @@ module partition_functions
                     end if
                 end associate
             end do
+
+            ! If a value is infinite, warn the user.
+            if (any(lnq >= huge(0.0_dp))) then
+                write(*,*) 'Warning: The rotational partition function of one cluster'
+                write(*,*) '         is infinite.'
+            end if
+
         end subroutine calculate_lnqrot
         !=================================================================================
         ! Calculates the electronic cluster partition function.
@@ -255,6 +276,13 @@ module partition_functions
     
             ! The adiabatic interaction energy is in units of kJ/mol.
             lnq(:) = (-1000.0_dp/avogadro)*cluster_set(:)%energy/(kb*temp)
+
+            ! If a value is infinite, warn the user.
+            if (any(lnq >= huge(0.0_dp))) then
+                write(*,*) 'Warning: The electronic partition function of one cluster'
+                write(*,*) '         is infinite.'
+            end if
+
         end subroutine calculate_lnqelec
         !=================================================================================
         ! Calculates the mean field partition function.
@@ -276,6 +304,12 @@ module partition_functions
                 end associate
             end do
 
+            ! If a value is infinite, warn the user.
+            if (any(lnq >= huge(0.0_dp))) then
+                write(*,*) 'Warning: The mean field partition function of one cluster'
+                write(*,*) '         is infinite.'
+            end if
+
         end subroutine calculate_lnqint
         !=================================================================================
         ! Calculates the temperature derivative of the translational partition function.
@@ -289,6 +323,13 @@ module partition_functions
     
             ! Fails if -vol+bxv*vexcl is zero.
             dlnq(:) = 1.5_dp/temp + (vexcl * bxv_temp)/(-vol+bxv*vexcl)
+
+            ! If a value is infinite, warn the user.
+            if (any(dlnq >= huge(0.0_dp))) then
+                write(*,*) 'Warning: The temperature derivative of the translational'
+                write(*,*) '         partition function of one cluster is infinite.'
+            end if
+
 
         end subroutine calculate_dlnqtrans
         !=================================================================================
@@ -341,6 +382,13 @@ module partition_functions
                     end do
                 end associate
             end do
+
+            ! If a value is infinite, warn the user.
+            if (any(dlnq >= huge(0.0_dp))) then
+                write(*,*) 'Warning: The temperature derivative of the vibrational'
+                write(*,*) '         partition function of one cluster is infinite.'
+            end if
+
         end subroutine calculate_dlnqvib
         !=================================================================================
         ! Calculates the temperature derivative of the rotational partition function.
@@ -365,6 +413,13 @@ module partition_functions
                     end if
                 end associate
             end do
+
+            ! If a value is infinite, warn the user.
+            if (any(dlnq >= huge(0.0_dp))) then
+                write(*,*) 'Warning: The temperature derivative of the rotational'
+                write(*,*) '         partition function of one cluster is infinite.'
+            end if
+
         end subroutine calculate_dlnqrot
         !=================================================================================
         ! Calculates the temperature derivative of the electronic partition function.
@@ -375,6 +430,13 @@ module partition_functions
     
             ! The adiabatic interaction energy is in units of kJ/mol.
             dlnq(:) = (1000.0_dp/avogadro)*cluster_set(:)%energy/(kb*temp**2)
+
+            ! If a value is infinite, warn the user.
+            if (any(dlnq >= huge(0.0_dp))) then
+                write(*,*) 'Warning: The temperature derivative of the electronic'
+                write(*,*) '         partition function of one cluster is infinite.'
+            end if
+
         end subroutine calculate_dlnqelec
         !=================================================================================
         ! Calculates the temperature derivative of the mean field partition function.
@@ -397,6 +459,12 @@ module partition_functions
                 end associate
             end do
 
+            ! If a value is infinite, warn the user.
+            if (any(dlnq >= huge(0.0_dp))) then
+                write(*,*) 'Warning: The temperature derivative of the mean field'
+                write(*,*) '         partition function of one cluster is infinite.'
+            end if
+
         end subroutine calculate_dlnqint
         !=================================================================================
         ! Calculates the second temperature derivative of the translational partition
@@ -411,6 +479,13 @@ module partition_functions
 
             dlnq(:) = -1.5_dp/temp**2 - &
                      (vexcl * bxv_temp)**2/(-vol+bxv*vexcl)**2
+
+            ! If a value is infinite, warn the user.
+            if (any(dlnq >= huge(0.0_dp))) then
+                write(*,*) 'Warning: The second temperature derivative of the translational'
+                write(*,*) '         partition function of one cluster is infinite.'
+            end if
+
         end subroutine calculate_ddlnqtrans
         !=================================================================================
         ! Calculates the second temperature derivative of the vibrational partition
@@ -469,6 +544,13 @@ module partition_functions
                     end do
                 end associate
             end do
+
+            ! If a value is infinite, warn the user.
+            if (any(dlnq >= huge(0.0_dp))) then
+                write(*,*) 'Warning: The second temperature derivative of the vibrational'
+                write(*,*) '         partition function of one cluster is infinite.'
+            end if
+
         end subroutine calculate_ddlnqvib
         !=================================================================================
         ! Calculates the second temperature derivative of the rotational partition
@@ -494,6 +576,13 @@ module partition_functions
                     end if
                 end associate
             end do
+
+            ! If a value is infinite, warn the user.
+            if (any(dlnq >= huge(0.0_dp))) then
+                write(*,*) 'Warning: The second temperature derivative of the rotational'
+                write(*,*) '         partition function of one cluster is infinite.'
+            end if
+
         end subroutine calculate_ddlnqrot
         !=================================================================================
         ! Calculates the second temperature derivative of the electronic partition
@@ -505,6 +594,13 @@ module partition_functions
     
             ! The adiabatic interaction energy is in units of kJ/mol.
             dlnq(:) = - (2000.0_dp/avogadro)*cluster_set(:)%energy/(kb*temp**3)
+
+            ! If a value is infinite, warn the user.
+            if (any(dlnq >= huge(0.0_dp))) then
+                write(*,*) 'Warning: The second temperature derivative of the electronic'
+                write(*,*) '         partition function of one cluster is infinite.'
+            end if
+
         end subroutine calculate_ddlnqelec
         !=================================================================================
         ! Calculates the second temperature derivative of the the mean field partition
@@ -528,6 +624,12 @@ module partition_functions
                     dlnq(iclust) = -2.0_dp*emf/(kb*temp**3)
                 end associate
             end do
+
+            ! If a value is infinite, warn the user.
+            if (any(dlnq >= huge(0.0_dp))) then
+                write(*,*) 'Warning: The second temperature derivative of the mean field'
+                write(*,*) '         partition function of one cluster is infinite.'
+            end if
 
         end subroutine calculate_ddlnqint
         !=================================================================================
