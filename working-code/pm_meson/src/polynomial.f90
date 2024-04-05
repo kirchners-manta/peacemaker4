@@ -222,7 +222,7 @@ module polynomial
 
         end subroutine lu_dcmp
         !=================================================================================
-        ! Solves a third order polynomial.
+        ! Solves a third order polynomial. (Cardano's method)
         subroutine solve_polynomial3(coeffs, roots)
             real(dp), dimension(0:3), intent(in) :: coeffs
             complex(dp), dimension(3), intent(out) :: roots
@@ -232,7 +232,7 @@ module polynomial
             complex(dp), parameter :: one_third = cmplx(1.0_dp/3.0_dp, 0.0_dp, dp)
             real(dp), parameter :: two_power_one_third = 2.0_dp**(1.0_dp/3.0_dp)
             real(dp), parameter :: sqrt3 = sqrt(3.0_dp)
-            
+
             roots = (0.0_dp, 0.0_dp)
             cof = (0.0_dp, 0.0_dp)
             
