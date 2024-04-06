@@ -4,7 +4,7 @@
 [qce]
   amf = [0.47658595]
   bxv = [1.141447]
-  optimizer = 0
+  optimizer = []
 
 [ensemble]
   temperature = [273.15, 399.15, 127] # K

@@ -75,6 +75,7 @@ module input
         type(range_t) :: amf_temp, bxv_temp
         real(dp) :: max_deviation, volume_damping_factor, rotor_cutoff
         integer :: qce_iterations, newton_iterations, grid_iterations, optimizer
+        character(len=:), allocatable :: optimizer_helper
 
         ! Input read from the [reference] section.
         logical :: compare, compare_density, compare_isobar, compare_phase_transition
@@ -179,7 +180,7 @@ module input
             type(toml_table), pointer :: child
             type(toml_array), pointer :: array
             logical :: reverse
-            integer :: ival
+            integer :: ival, a, b, c, d
         
             ! The default values are set as via else statements in the following.
             !------------------------------------------------------------------------
@@ -324,19 +325,44 @@ module input
                     call pmk_argument_count_error("grid_iterations", "qce")
                 end if
             end if
-            
-          
+
             !> optimizer
-            !> if only integer is provided, it gets parsed.
-            !  if array with one element is provided, it gets parsed.
-            !  if array with more than one element is provided, error is thrown.
-            call get_value(child, "optimizer", input%optimizer, 0)
-            call get_value(child, "optimizer", array, requested=.false.)
+            ! If the array contains "amf", 1 is added to the optimizer,
+            ! if it contains "bxv", 10 is added to the optimizer,
+            ! if it contains "amf_temp", 100 is added to the optimizer,
+            ! if it contains "bxv_temp", 1000 is added to the optimizer.
+            call get_value(child, "optimizer", array)
+            input%optimizer = 0 ! default value
+            a = 0
+            b = 0
+            c = 0
+            d = 0
             if (associated(array)) then
-                if (len(array)==1) then
-                    call get_value(array, 1, input%optimizer)
+                if (len(array) <= 4) then
+                    do ival = 1, len(array)
+                        call get_value(array, ival, input%optimizer_helper)
+                        if (input%optimizer_helper == "amf") then
+                            input%optimizer = input%optimizer + 1
+                            a = a + 1
+                        else if (input%optimizer_helper == "bxv") then
+                            input%optimizer = input%optimizer + 10
+                            b = b + 1
+                        else if (input%optimizer_helper == "amf_temp") then
+                            input%optimizer = input%optimizer + 100
+                            c = c + 1
+                        else if (input%optimizer_helper == "bxv_temp") then
+                            input%optimizer = input%optimizer + 1000
+                            d = d + 1
+                        else
+                            call pmk_argument_error("optimizer", "qce")
+                        end if
+                end do
                 else 
                     call pmk_argument_count_error("optimizer", "qce")
+                end if
+                ! Check if a keyword is given more than once.
+                if (a > 1 .or. b > 1 .or. c > 1 .or. d > 1) then
+                    call pmk_argument_error("optimizer", "qce")
                 end if
             end if
           

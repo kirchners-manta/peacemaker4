@@ -4,7 +4,7 @@
 [qce]
   amf = [0.0, 2.0, 21] # J*m^3/mol
   bxv = [0.1, 2.1, 21]
-  optimizer = 11
+  optimizer = ["bxv", "amf"]
   rotor_cutoff = 100
 
 [ensemble]
