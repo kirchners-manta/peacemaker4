@@ -76,6 +76,7 @@ module input
         real(dp) :: max_deviation, volume_damping_factor, rotor_cutoff
         integer :: qce_iterations, newton_iterations, grid_iterations, optimizer
         character(len=:), allocatable :: optimizer_helper
+        logical :: imode
 
         ! Input read from the [reference] section.
         logical :: compare, compare_density, compare_isobar, compare_phase_transition
@@ -87,7 +88,7 @@ module input
 
         ! Input read from the [output] section.
         logical :: contrib, helmholtz_contrib, internal_contrib, entropy_contrib, &
-            cv_contrib, imode
+                   cv_contrib
         logical :: progress_bar
     end type input_data
 
@@ -367,12 +368,7 @@ module input
             end if
           
             !> interface mode
-            call get_value(child, "imode", array, requested=.false.)
-            if (associated(array)) then
-                input%imode = .true.
-            else 
-                input%imode = .false.
-            end if
+            call get_value(child, "interface_mode", input%imode, .false.)
         
             !> maximum relative deviation
             !> if only integer is provided, it gets parsed.

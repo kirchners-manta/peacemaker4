@@ -6,6 +6,7 @@
   bxv = [0.1, 2.1, 21]
   optimizer = ["bxv", "amf"]
   rotor_cutoff = 100
+  interface_mode = false
 
 [ensemble]
   temperature = [280.0, 550.0, 271] # K
