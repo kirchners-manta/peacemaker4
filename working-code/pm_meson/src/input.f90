@@ -74,9 +74,10 @@ module input
         type(range_t) :: amf, bxv
         type(range_t) :: amf_temp, bxv_temp
         real(dp) :: max_deviation, volume_damping_factor, rotor_cutoff
-        integer :: qce_iterations, newton_iterations, grid_iterations, optimizer
+        integer :: qce_iterations, newton_iterations, grid_iterations
         character(len=:), allocatable :: optimizer_helper
         logical :: imode
+        logical, dimension(4) :: optimizer
 
         ! Input read from the [reference] section.
         logical :: compare, compare_density, compare_isobar, compare_phase_transition
@@ -130,7 +131,7 @@ module input
             pmk_input%qce_iterations = 100
             pmk_input%newton_iterations = 500
             pmk_input%grid_iterations = 1
-            pmk_input%optimizer = 0
+            pmk_input%optimizer = .false.
             pmk_input%imode = .false.
 
             ! Defaults for the [reference] section.
@@ -328,12 +329,10 @@ module input
             end if
 
             !> optimizer
-            ! If the array contains "amf", 1 is added to the optimizer,
-            ! if it contains "bxv", 10 is added to the optimizer,
-            ! if it contains "amf_temp", 100 is added to the optimizer,
-            ! if it contains "bxv_temp", 1000 is added to the optimizer.
+            ! Array containing the logicals for the optimizer in the 
+            ! order [amf, bxv, amf_temp, bxv_temp]
+            pmk_input%optimizer = .false.
             call get_value(child, "optimizer", array)
-            input%optimizer = 0 ! default value
             a = 0
             b = 0
             c = 0
@@ -343,16 +342,16 @@ module input
                     do ival = 1, len(array)
                         call get_value(array, ival, input%optimizer_helper)
                         if (input%optimizer_helper == "amf") then
-                            input%optimizer = input%optimizer + 1
+                            input%optimizer(1) = .true.
                             a = a + 1
                         else if (input%optimizer_helper == "bxv") then
-                            input%optimizer = input%optimizer + 10
+                            input%optimizer(2) = .true.
                             b = b + 1
                         else if (input%optimizer_helper == "amf_temp") then
-                            input%optimizer = input%optimizer + 100
+                            input%optimizer(3) = .true.
                             c = c + 1
                         else if (input%optimizer_helper == "bxv_temp") then
-                            input%optimizer = input%optimizer + 1000
+                            input%optimizer(4) = .true.
                             d = d + 1
                         else
                             call pmk_argument_error("optimizer", "qce")
@@ -363,7 +362,7 @@ module input
                 end if
                 ! Check if a keyword is given more than once.
                 if (a > 1 .or. b > 1 .or. c > 1 .or. d > 1) then
-                    call pmk_argument_error("optimizer", "qce")
+                    call pmk_argument_count_error("optimizer", "qce")
                 end if
             end if
           
@@ -744,7 +743,7 @@ module input
                 pmk_input%max_deviation
             write(*, '(12X,A,1X,G0)') "number of grid iterations:", &
                 pmk_input%grid_iterations
-            if (pmk_input%optimizer > 0) then
+            if (any(pmk_input%optimizer)) then
                write(*, '(12X,A)') "optimizer: Downhill-Simplex"
             end if
             write(*, '(12X,A,1X,G0.6)') "volume damping factor:", &

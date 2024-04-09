@@ -32,7 +32,7 @@ module shared_data
     !=====================================================================================
     ! Data type storing global data.
     type :: global_data_t
-        integer :: qce_iterations, newton_iterations, grid_iterations, optimizer, nconverged
+        integer :: qce_iterations, newton_iterations, grid_iterations, nconverged
         integer, dimension(:), allocatable :: degree
         real(dp) :: press, mtot, vexcl
         real(dp), dimension(:), allocatable :: ntot
@@ -41,6 +41,7 @@ module shared_data
         type(range_t) :: amf_temp, bxv_temp
         real(dp), dimension(:), allocatable :: monomer_amounts
         logical :: progress_bar, imode
+        logical, dimension(4) :: optimizer
     end type global_data_t
     !=====================================================================================
     ! Instantiation of the data type specified above. Data in here is shared across

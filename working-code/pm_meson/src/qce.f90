@@ -278,7 +278,7 @@ module qce
             if (global_data%imode) then
                 call interface()
             ! Starts the optimizer if any parameter was chosen to be optimized.
-            else if (global_data%optimizer /= 0) then
+            else if (any(global_data%optimizer)) then
                 call downhill_simplex()
             end if
 
@@ -289,9 +289,10 @@ module qce
         ! Starts interface mode.
         subroutine interface()
             real(dp), dimension(:), allocatable :: params
-            integer:: myunit, stat, n_params, optimizer
+            integer:: myunit, stat, n_params, i
             logical:: do_sp
             logical:: stop_im
+            logical, dimension(4) :: optimizer
             
             write(0,*) "Interface mode"
 
@@ -300,21 +301,9 @@ module qce
 
             n_params=1
             optimizer = global_data%optimizer
-            if (optimizer >= 1000) then
-                optimizer = optimizer - 1000
-                n_params = n_params + 1
-            end if
-            if (optimizer >= 100) then
-                optimizer = optimizer - 100
-                n_params = n_params + 1
-            end if
-            if (optimizer >= 10) then
-                optimizer = optimizer - 10
-                n_params = n_params + 1
-            end if
-            if (optimizer == 1) then
-                n_params = n_params + 1
-            end if
+            do i=1, size(optimizer)
+                if (optimizer(i)) n_params = n_params + 1
+            end do
 
             allocate(params(n_params))
 
@@ -359,13 +348,8 @@ module qce
             real(dp), dimension(:), allocatable :: m, r, e, c
             real(dp), dimension(4,5) :: simplex_start
             real(dp):: diff, crit
-            integer:: i, j, n, optimizer
-            logical:: opt_a, opt_b, opt_at, opt_bt
-            
-            opt_a = .false.
-            opt_b = .false.
-            opt_at = .false.
-            opt_bt = .false.
+            integer:: i, j, n
+            logical, dimension(4) :: optimizer
             
             ! The simplex_start array contains a set of vectors that are used to construct
             ! the n-simplex, that is a triangle, tetrahedron, or pentachoron (4-simplex) around
@@ -377,25 +361,9 @@ module qce
             
             n=1
             optimizer = global_data%optimizer
-            if (optimizer >= 1000) then
-                opt_bt = .true.
-                optimizer = optimizer - 1000
-                n = n + 1
-            end if
-            if (optimizer >= 100) then
-                opt_at = .true.
-                optimizer = optimizer - 100
-                n = n + 1
-            end if
-            if (optimizer >= 10) then
-                opt_b = .true.
-                optimizer = optimizer - 10
-                n = n + 1
-            end if
-            if (optimizer == 1) then
-                opt_a = .true.
-                n = n + 1
-            end if
+            do i=1, size(optimizer)
+                if (optimizer(i)) n = n + 1
+            end do
             
             allocate(simplex(n,n))
             allocate(m(n))
@@ -405,19 +373,19 @@ module qce
             
             do i = 1, n
                 j = 1
-                if (opt_a) then
+                if (optimizer(1)) then
                     simplex(i,j) = best_ib%amf*avogadro**2.0_dp+simplex_start(j,i)*0.05_dp
                     j = j + 1
                 end if
-                if (opt_b) then
+                if (optimizer(2)) then
                     simplex(i,j) = best_ib%bxv+simplex_start(j,i)*0.05_dp
                     j = j + 1
                 end if
-                if (opt_at) then
+                if (optimizer(3)) then
                     simplex(i,j) = best_ib%amf_temp*avogadro**2.0_dp+simplex_start(j,i)*0.00005_dp
                     j = j + 1
                 end if
-                if (opt_bt) then
+                if (optimizer(4)) then
                     simplex(i,j) = best_ib%bxv_temp+simplex_start(j,i)*0.0005_dp
                 end if
             end do
@@ -607,66 +575,30 @@ module qce
             real(dp):: amf_temp
             real(dp):: bxv_temp
             real(dp):: error
-            integer:: itemp
+            integer:: itemp, index, i
 
             amf = best_ib%amf*avogadro**2
             bxv = best_ib%bxv
             amf_temp = best_ib%amf_temp*avogadro**2
             bxv_temp = best_ib%bxv_temp
-            
-            !TODO: Find better solution for this.
-            select case (global_data%optimizer)
-            case (1)
-                amf = params(1)
-            case (10)
-                bxv = params(1)
-            case (11)
-                amf = params(1)
-                bxv = params(2)
-            case (100)
-                amf_temp = params(1)
-            case (101)
-                amf = params(1)
-                amf_temp = params(2)
-            case (110)
-                bxv = params(1)
-                amf_temp = params(2)
-            case (111)
-                amf = params(1)
-                bxv = params(2)
-                amf_temp = params(3)
-            case (1000)
-                bxv_temp = params(1)
-            case (1001)
-                amf = params(1)
-                bxv_temp = params(2)
-            case (1010)
-                bxv = params(1)
-                bxv_temp = params(2)
-            case (1011)
-                amf = params(1)
-                bxv = params(2)
-                bxv_temp = params(3)
-            case (1100)
-                amf_temp = params(1)
-                bxv_temp = params(2)
-            case (1101)
-                amf = params(1)
-                amf_temp = params(2)
-                bxv_temp = params(3)
-            case (1110)
-                bxv = params(1)
-                amf_temp = params(2)
-                bxv_temp = params(3)
-            case (1111)
-                amf = params(1)
-                bxv = params(2)
-                amf_temp = params(3)
-                bxv_temp = params(4)
-            case default
-                amf = params(1)
-                bxv = params(2)
-            end select
+
+            ! Assing the parameters to the corresponding variables.
+            index = 1
+            do i=1, size(global_data%optimizer)
+                if (global_data%optimizer(i)) then
+                    select case (i)
+                    case (1)
+                        amf = params(index)
+                    case (2)
+                        bxv = params(index)
+                    case (3)
+                        amf_temp = params(index)
+                    case (4)
+                        bxv_temp = params(index)
+                    end select
+                    index = index + 1
+                end if
+            end do            
 
             allocate(ib%temp(global_data%temp%num))
             allocate(ib%vol(global_data%temp%num))
