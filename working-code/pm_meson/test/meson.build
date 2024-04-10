@@ -13,6 +13,7 @@ tests = [
   'vol_polynomial',
   'partition_functions',
   'process_coordinates_record',
+  'qce'
 ]
 
 test_srcs = files(
@@ -21,6 +22,7 @@ test_srcs = files(
   'test_vol_polynomial.f90',
   'test_partition_functions.f90',
   'test_process_coordinates_record.f90',
+  'test_qce.f90'
 )
 
 foreach t : tests

@@ -6,6 +6,7 @@ program tester
   use test_vol_polynomial, only : collect_vol_polynomial
   use test_partition_functions, only : collect_partition_functions
   use test_process_coords, only : collect_process_coords
+  use test_qce, only : collect_qce
   !> ^- Hier use  test_<name>, only : collect_<name>  einfügen
 
   implicit none
@@ -20,7 +21,8 @@ program tester
     new_testsuite("pop_polynomial", collect_pop_polynomial), &
     new_testsuite("vol_polynomial", collect_vol_polynomial), &
     new_testsuite("partition_functions", collect_partition_functions), &
-    new_testsuite("process_coordinates_record", collect_process_coords) &
+    new_testsuite("process_coordinates_record", collect_process_coords), &
+    new_testsuite("qce", collect_qce) &
     !> ^- Hier  new_testsuite("<name>", collect_<name>), &  einfügen
     ]
 

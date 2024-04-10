@@ -36,7 +36,7 @@ module qce
     public :: qce_prepare
     public :: qce_start
     public :: qce_finalize
-    public :: calculate_remaining_populations ! for unit testing
+    public :: calculate_remaining_populations, check_convergence ! for unit testing
     !=====================================================================================
     ! Data type storing reference_data.
     type :: reference_t
@@ -830,7 +830,8 @@ module qce
                 end if
     
                 ! Check for convergence.
-                call check_convergence(gibbs, temp, vol, populations, lnq, converged)
+                call check_convergence(gibbs, temp, vol, global_data%press, populations, &
+                                       lnq, converged, global_data%max_deviation)
                 if (converged) exit qce_loop
             end do qce_loop
         end subroutine qce_iteration
@@ -1050,15 +1051,17 @@ module qce
         ! This subroutine checks whether the QCE iteration has converged. It checks the
         ! deviation of the Gibbs free enthalpy from the previous run. The Gibbs free
         ! enthalpy ensures that both populations and volume have converged.
-        subroutine check_convergence(gibbs, temp, vol, populations, lnq, &
-            converged)
+        subroutine check_convergence(gibbs, temp, vol, press, populations, lnq, &
+            converged, max_dev)
             use auxiliary, only: ln_factorial
-            type(pf_t), dimension(size(clusterset)), intent(in) :: lnq
+            type(pf_t), dimension(:), intent(in) :: lnq         ! size(clusterset)
             real(dp), intent(in) :: vol
+            real(dp), intent(in) :: press
             real(dp), intent(in) :: temp
             real(dp), intent(inout) :: gibbs
-            real(dp), dimension(size(clusterset)), intent(in) :: populations
+            real(dp), dimension(:), intent(in) :: populations   ! size(clusterset)
             logical, intent(out) :: converged
+            real(dp), intent(in) :: max_dev
             real(dp):: new_gibbs
             real(dp):: deviation
             integer:: iclust
@@ -1066,15 +1069,15 @@ module qce
             converged = .false.
             ! Calculate new Gibbs energy.
             new_gibbs = 0.0_dp
-            do iclust = 1, size(clusterset)
+            do iclust = 1, size(lnq)
                 new_gibbs = new_gibbs - ln_factorial(populations(iclust)) + &
                     populations(iclust)*lnq(iclust)%qtot
             end do
-            new_gibbs = -kb*temp*new_gibbs + global_data%press*vol
+            new_gibbs = -kb*temp*new_gibbs + press*vol
             deviation = new_gibbs/gibbs-1.0_dp
             gibbs = new_gibbs
     
-            if (abs(deviation) <= global_data%max_deviation) converged = .true.
+            if (abs(deviation) <= max_dev) converged = .true.
         end subroutine check_convergence
         !=================================================================================
         ! Compares to an experimental isobar.
