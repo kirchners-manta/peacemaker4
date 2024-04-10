@@ -223,6 +223,9 @@ module polynomial
         end subroutine lu_dcmp
         !=================================================================================
         ! Solves a third order polynomial. (Cardano's method)
+        ! a_3 x³ + a_2 x² + a_1 x + a_0 = 0.
+        ! The soubroutine fails if the coefficient of the cubic term is zero since we devide by it.
+        ! The subroutine fails if a_1 and a_2 are both zero.
         subroutine solve_polynomial3(coeffs, roots)
             real(dp), dimension(0:3), intent(in) :: coeffs
             complex(dp), dimension(3), intent(out) :: roots
