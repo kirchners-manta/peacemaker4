@@ -359,7 +359,8 @@ module qce
             simplex_start(3,:) = (/-1.0_dp, -1.0_dp, -1.0_dp,  1.0_dp, 0.0_dp/)
             simplex_start(4,:) = (/-1.0_dp, -1.0_dp, -1.0_dp, -1.0_dp, 1.0_dp/)
             
-            n=1
+            ! Calculate the number of parameters to optimize.
+            n = 1
             optimizer = global_data%optimizer
             do i=1, size(optimizer)
                 if (optimizer(i)) n = n + 1
@@ -394,6 +395,7 @@ module qce
             diff = 1.0e12_dp
             crit = 1.0e-12_dp
                         
+            ! Error values of (number of parameters to be optimized + 1) points are calculated. 
             do i = 1, n
                 call single_qce(simplex(i,:))
             end do
@@ -737,7 +739,6 @@ module qce
                     reference%density, error)
                 ib%error = ib%error + reference%density_weight*error
             end if
-            ! wenn man hier auskommentiert ist man in einer endlosschleife
             if (reference%compare_isobar) then
                 call compare_isobar(ib, reference%isobar_temperature, &
                     reference%isobar_volume, error)
