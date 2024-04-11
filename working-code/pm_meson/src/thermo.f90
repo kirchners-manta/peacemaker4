@@ -29,7 +29,8 @@ module thermo
     ! Public entities.
     public :: calculate_thermo, calculate_cluster_thermo
     public :: calculate_lnq_sys, add_lnq_indi, calculate_helmholtz_energy, & ! for unit testing
-              calculate_gibbs_enthalpy, calculate_internal_energy, calculate_enthalpy 
+              calculate_gibbs_enthalpy, calculate_internal_energy, calculate_enthalpy, & 
+              calculate_entropy
     !=====================================================================================
     contains
         !=================================================================================

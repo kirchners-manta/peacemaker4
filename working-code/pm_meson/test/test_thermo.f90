@@ -20,7 +20,8 @@ module test_thermo
       new_unittest("test_calc_helmholtz_energy", test_calc_helmholtz_energy), &
       new_unittest("test_calc_gibbs_enthalpy", test_calc_gibbs_enthalpy), &
       new_unittest("test_calc_internal_energy", test_calc_internal_energy), &
-      new_unittest("test_calc_enthalpy", test_calc_enthalpy) &
+      new_unittest("test_calc_enthalpy", test_calc_enthalpy), &
+      new_unittest("test_calc_entropy", test_calc_entropy) &
       ]
   
   end subroutine collect_thermo
@@ -111,8 +112,6 @@ module test_thermo
   ! -----------------------------------------
   ! Unit test for calculate_helmholtz_energy
   ! -----------------------------------------
-  ! Adds the part of the system partition function arising from particle
-  ! indistinguishability. 
   subroutine test_calc_helmholtz_energy(error)
   
     ! Dependencies
@@ -153,8 +152,6 @@ module test_thermo
   ! -----------------------------------------
   ! Unit test for calculate_helmholtz_energy
   ! -----------------------------------------
-  ! Adds the part of the system partition function arising from particle
-  ! indistinguishability. 
   subroutine test_calc_gibbs_enthalpy(error)
   
     ! Dependencies
@@ -204,8 +201,6 @@ module test_thermo
   ! -----------------------------------------
   ! Unit test for calculate_internal_energy
   ! -----------------------------------------
-  ! Adds the part of the system partition function arising from particle
-  ! indistinguishability. 
   subroutine test_calc_internal_energy(error)
   
     ! Dependencies
@@ -250,8 +245,6 @@ module test_thermo
   ! -----------------------------------------
   ! Unit test for calculate_enthalpy
   ! -----------------------------------------
-  ! Adds the part of the system partition function arising from particle
-  ! indistinguishability. 
   subroutine test_calc_enthalpy(error)
   
     ! Dependencies
@@ -294,6 +287,71 @@ module test_thermo
     end do
   
   end subroutine test_calc_enthalpy
+
+  ! -----------------------------------------
+  ! Unit test for calculate_entropy
+  ! -----------------------------------------
+  ! Adds the part of the system partition function arising from particle
+  ! indistinguishability. 
+  subroutine test_calc_entropy(error)
+  
+    ! Dependencies
+    use thermo, only : calculate_entropy
+    ! Precision
+    real(dp) :: thr = 1.0e-26_dp
+    
+    ! Arguments
+    type(error_type), allocatable, intent(out) :: error
+    integer :: i
+    integer :: ntemp = 33
+    real(dp), dimension(33) :: temp = [412.25_dp, 123.4_dp, 512.0_dp, 406.05_dp, &
+                                      530.0_dp, 604.0_dp, 730.4_dp, 850.0_dp, &
+                                      900.0_dp, 423.0_dp, 1100.0_dp, 1200.8_dp, &
+                                      100.15_dp, 233.4_dp, 512.0_dp, 406.05_dp, &
+                                      530.0_dp, 604.0_dp, 730.4_dp, 850.0_dp, &
+                                      900.0_dp, 423.0_dp, 1100.0_dp, 1200.8_dp, &
+                                      100.15_dp, 233.4_dp, 512.0_dp, 406.05_dp, &
+                                      530.0_dp, 604.0_dp, 730.4_dp, 850.0_dp, &
+                                      900.0_dp]
+    real(dp), dimension(33) :: lnq = [-2.4_dp, 38.5_dp, 20.43_dp, 1.99_dp, &
+                                       5.04_dp, 53.0_dp, -7.5_dp, 8.54_dp,  &
+                                       9.0_dp, 10.0_dp, 11.0_dp, -12.0_dp, &
+                                       1.03e-2_dp, -2.45_dp, 3.2_dp, 1.99_dp, &
+                                       5.04_dp, 53.0_dp, -7.5_dp, 8.54_dp, 9.0_dp, &
+                                       10.0_dp, 11.0_dp, -12.0_dp, 1.03e-2_dp, &
+                                       -2.45_dp, 3.2_dp, 1.99_dp, 5.04_dp, 53.0_dp, &
+                                       -7.5_dp, 8.54_dp, 9.0_dp]
+    real(dp), dimension(33) :: dlnq = [1.03e-2_dp, -2.45_dp, 3.2_dp, 1.99_dp, &
+                                       5.04_dp, 53.0_dp, -7.5_dp, 8.54_dp, &
+                                       9.0_dp, 10.0_dp, 11.0_dp, -12.0_dp, &
+                                       1.03e-2_dp, -2.45_dp, 3.2_dp, 1.99_dp, &
+                                       5.04_dp, 53.0_dp, -7.5_dp, 8.54_dp, 9.0_dp, &
+                                       10.0_dp, 11.0_dp, -12.0_dp, &
+                                       1.03e-2_dp, -2.45_dp, 3.2_dp, 1.99_dp, &
+                                       5.04_dp, 53.0_dp, -7.5_dp, 8.54_dp, 9.0_dp]
+    real(dp), dimension(33) :: s
+
+
+    ! Expected values
+    real(dp) :: expected(33) = [2.54891930e-23_dp, -3.64256573e-21_dp,  2.29026165e-20_dp,  1.11836626e-20_dp, &
+                                3.69494754e-20_dp,  4.42705038e-19_dp, -7.57354899e-20_dp,  1.00339204e-19_dp, &
+                                1.11956811e-19_dp,  5.85395091e-20_dp,  1.67210376e-19_dp, -1.99111647e-19_dp, &
+                                1.43842205e-23_dp, -7.92878993e-21_dp,  2.26647307e-20_dp,  1.11836626e-20_dp, &
+                                3.69494754e-20_dp,  4.42705038e-19_dp, -7.57354899e-20_dp,  1.00339204e-19_dp, &
+                                1.11956811e-19_dp,  5.85395091e-20_dp,  1.67210376e-19_dp, -1.99111647e-19_dp, &
+                                1.43842205e-23_dp, -7.92878993e-21_dp,  2.26647307e-20_dp,  1.11836626e-20_dp, &
+                                3.69494754e-20_dp,  4.42705038e-19_dp, -7.57354899e-20_dp,  1.00339204e-19_dp, &
+                                1.11956811e-19_dp]
+    
+    ! Call the subroutine
+    call calculate_entropy(ntemp, temp, lnq, dlnq, s)
+
+    ! Check the results
+    do i = 1, 18
+      call check(error, s(i), expected(i), thr=thr, rel=.false.)
+    end do
+  
+  end subroutine test_calc_entropy
   
   end module test_thermo
   
