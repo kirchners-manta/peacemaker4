@@ -15,7 +15,8 @@ module test_thermo
     type(unittest_type), allocatable, intent(out) :: testsuite(:)
   
     testsuite = [ &
-      new_unittest("test_calc_lnq_sys", test_calc_lnq_sys) &
+      new_unittest("test_calc_lnq_sys", test_calc_lnq_sys), &
+      new_unittest("test_add_lnq_indi", test_add_lnq_indi) &
       ]
   
   end subroutine collect_thermo
@@ -57,6 +58,41 @@ module test_thermo
     call check(error, lnq_sys(5), expected(5), thr=thr, rel=.false.)
   
   end subroutine test_calc_lnq_sys
+
+  subroutine test_add_lnq_indi(error)
+  
+    ! Dependencies
+    use thermo, only : add_lnq_indi
+
+    ! Precision
+    real(dp) :: thr = 1.0e-5_dp
+    
+    ! Arguments
+    type(error_type), allocatable, intent(out) :: error
+    integer :: ntemp = 5
+    integer :: nclust = 4
+    real(dp), dimension(5, 4) :: pop = reshape([0.5_dp, 0.4_dp, 0.3_dp, 0.2_dp, 0.1_dp, &
+                                                0.3_dp, 0.3_dp, 0.3_dp, 0.3_dp, 0.3_dp, &
+                                                0.1_dp, 0.2_dp, 0.3_dp, 0.4_dp, 0.5_dp, &
+                                                0.1_dp, 0.1_dp, 0.1_dp, 0.1_dp, 0.1_dp], [5, 4])
+    real(dp), dimension(5) :: lnq_sys = [-1.10000000e+00_dp, -3.33066907e-16_dp, &
+                                         1.15000000e+00_dp,  2.40000000e+00_dp,  3.65000000e+00_dp]
+
+    ! Expected values
+    real(dp) :: expected(5) = [-0.771298070337215_dp, 0.363034254943387_dp, 1.52439686978342_dp, &
+                                2.76303425494339_dp, 3.97870192966279_dp]
+    
+    ! Call the subroutine
+    call add_lnq_indi(ntemp, nclust, pop, lnq_sys)
+
+    ! Check the results
+    call check(error, lnq_sys(1), expected(1), thr=thr, rel=.false.)
+    call check(error, lnq_sys(2), expected(2), thr=thr, rel=.false.)
+    call check(error, lnq_sys(3), expected(3), thr=thr, rel=.false.)
+    call check(error, lnq_sys(4), expected(4), thr=thr, rel=.false.)
+    call check(error, lnq_sys(5), expected(5), thr=thr, rel=.false.)
+  
+  end subroutine test_add_lnq_indi
 
   
   end module test_thermo
