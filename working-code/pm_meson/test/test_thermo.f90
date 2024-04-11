@@ -17,7 +17,9 @@ module test_thermo
     testsuite = [ &
       new_unittest("test_calc_lnq_sys", test_calc_lnq_sys), &
       new_unittest("test_add_lnq_indi", test_add_lnq_indi), &
-      new_unittest("test_calc_helmholtz_energy", test_calc_helmholtz_energy) &
+      new_unittest("test_calc_helmholtz_energy", test_calc_helmholtz_energy), &
+      new_unittest("test_calc_gibbs_enthalpy", test_calc_gibbs_enthalpy), &
+      new_unittest("test_calc_internal_energy", test_calc_internal_energy) &
       ]
   
   end subroutine collect_thermo
@@ -146,6 +148,103 @@ module test_thermo
     call check(error, a(8), expected(8), thr=thr, rel=.false.)
   
   end subroutine test_calc_helmholtz_energy
+
+  ! -----------------------------------------
+  ! Unit test for calculate_helmholtz_energy
+  ! -----------------------------------------
+  ! Adds the part of the system partition function arising from particle
+  ! indistinguishability. 
+  subroutine test_calc_gibbs_enthalpy(error)
+  
+    ! Dependencies
+    use thermo, only : calculate_gibbs_enthalpy
+    ! Precision
+    real(dp) :: thr = 1.0e-5_dp
+    
+    ! Arguments
+    type(error_type), allocatable, intent(out) :: error
+    integer :: ntemp = 12
+    real(dp), dimension(12) :: temp = [100.15_dp, 233.4_dp, 512.0_dp, 406.05_dp, &
+                                      530.0_dp, 604.0_dp, 730.4_dp, 850.0_dp, &
+                                      900.0_dp, 423.0_dp, 1100.0_dp, 1200.8_dp]
+    real(dp), dimension(12) :: lnq = [1.03_dp, -2.45_dp, 3.2_dp, 1.99_dp, &
+                                     5.04_dp, 53.0_dp, -7.5_dp, 8.54_dp, &
+                                     9.0_dp, 10.0_dp, 11.0_dp, -12.0_dp]
+    real(dp), dimension(12) :: vol = [0.5_dp, 0.6_dp, 4.7_dp, 0.8_dp, &
+                                      0.9_dp, 1.0_dp, 1.1_dp, 61.2_dp, &
+                                      1.3_dp, 1.4_dp, 1.5_dp, 12.6_dp]
+    real(dp) :: press = 1.01325_dp
+    real(dp), dimension(12) :: g
+
+    ! Expected values
+    real(dp) :: expected(12) = [0.506625_dp, 0.60795_dp, 4.762275_dp, 0.8106_dp, &
+                                0.911925_dp, 1.01325_dp, 1.114575_dp, 62.0109_dp, &
+                                1.317225_dp, 1.41855_dp, 1.519875_dp, 12.76695_dp]
+    
+    ! Call the subroutine
+    call calculate_gibbs_enthalpy(ntemp, temp, lnq, vol, press, g)
+
+    ! Check the results
+    call check(error, g(1), expected(1), thr=thr, rel=.false.)
+    call check(error, g(2), expected(2), thr=thr, rel=.false.)
+    call check(error, g(3), expected(3), thr=thr, rel=.false.)
+    call check(error, g(4), expected(4), thr=thr, rel=.false.)
+    call check(error, g(5), expected(5), thr=thr, rel=.false.)
+    call check(error, g(6), expected(6), thr=thr, rel=.false.)
+    call check(error, g(7), expected(7), thr=thr, rel=.false.)
+    call check(error, g(8), expected(8), thr=thr, rel=.false.)
+    call check(error, g(9), expected(9), thr=thr, rel=.false.)
+    call check(error, g(10), expected(10), thr=thr, rel=.false.)
+    call check(error, g(11), expected(11), thr=thr, rel=.false.)
+    call check(error, g(12), expected(12), thr=thr, rel=.false.)
+  
+  end subroutine test_calc_gibbs_enthalpy
+
+  ! -----------------------------------------
+  ! Unit test for calculate_internal_energy
+  ! -----------------------------------------
+  ! Adds the part of the system partition function arising from particle
+  ! indistinguishability. 
+  subroutine test_calc_internal_energy(error)
+  
+    ! Dependencies
+    use thermo, only : calculate_internal_energy
+    ! Precision
+    real(dp) :: thr = 1.0e-24_dp
+    
+    ! Arguments
+    type(error_type), allocatable, intent(out) :: error
+    integer :: i
+    integer :: ntemp = 21
+    real(dp), dimension(21) :: temp = [100.15_dp, 233.4_dp, 512.0_dp, 406.05_dp, &
+                                      530.0_dp, 604.0_dp, 730.4_dp, 850.0_dp, &
+                                      900.0_dp, 423.0_dp, 1100.0_dp, 1200.8_dp, &
+                                      100.15_dp, 233.4_dp, 512.0_dp, 406.05_dp, &
+                                      530.0_dp, 604.0_dp, 730.4_dp, 850.0_dp, &
+                                      900.0_dp]
+    real(dp), dimension(21) :: dlnq = [1.03e-2_dp, -2.45_dp, 3.2_dp, 1.99_dp, &
+                                       5.04_dp, 53.0_dp, -7.5_dp, 8.54_dp, 9.0_dp, 10.0_dp, 11.0_dp, -12.0_dp, &
+                                       1.03e-2_dp, -2.45_dp, 3.2_dp, 1.99_dp, 5.04_dp, 53.0_dp, -7.5_dp, 8.54_dp, 9.0_dp]
+    real(dp), dimension(21) :: u
+
+
+    ! Expected values
+    real(dp) :: expected(21) = [1.42633767e-21_dp, -1.84268461e-18_dp, 1.15817216e-17_dp, 4.52997000e-18_dp, &
+                                1.95463421e-17_dp, 2.66951869e-16_dp, -5.52415699e-17_dp, 8.51881019e-17_dp, &
+                                1.00649298e-16_dp, 2.47038109e-17_dp, 1.83764355e-16_dp, -2.38894320e-16_dp, &
+                                1.42633767e-21_dp, -1.84268461e-18_dp, 1.15817216e-17_dp, 4.52997000e-18_dp, &
+                                1.95463421e-17_dp, 2.66951869e-16_dp, -5.52415699e-17_dp, 8.51881019e-17_dp, &
+                                1.00649298e-16_dp]
+    
+    ! Call the subroutine
+    call calculate_internal_energy(ntemp, temp, dlnq, u)
+
+    ! Check the results
+    do i = 1, 21
+      call check(error, u(i), expected(i), thr=thr, rel=.false.)
+    end do
+  
+  end subroutine test_calc_internal_energy
   
   end module test_thermo
   
