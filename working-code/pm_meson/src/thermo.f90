@@ -28,7 +28,7 @@ module thermo
     !=====================================================================================
     ! Public entities.
     public :: calculate_thermo, calculate_cluster_thermo
-    public :: calculate_lnq_sys, add_lnq_indi ! for unit testing
+    public :: calculate_lnq_sys, add_lnq_indi, calculate_helmholtz_energy ! for unit testing
     !=====================================================================================
     contains
         !=================================================================================
