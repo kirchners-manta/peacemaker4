@@ -8,6 +8,7 @@ program tester
   use test_process_coords, only : collect_process_coords
   use test_qce, only : collect_qce
   use test_thermo, only : collect_thermo
+  use test_auxiliary, only : collect_auxiliary
   !> ^- Hier use  test_<name>, only : collect_<name>  einfügen
 
   implicit none
@@ -24,7 +25,8 @@ program tester
     new_testsuite("partition_functions", collect_partition_functions), &
     new_testsuite("process_coordinates_record", collect_process_coords), &
     new_testsuite("qce", collect_qce), &
-    new_testsuite("thermo", collect_thermo) &
+    new_testsuite("thermo", collect_thermo), &
+    new_testsuite("auxiliary", collect_auxiliary) &
     !> ^- Hier  new_testsuite("<name>", collect_<name>), &  einfügen
     ]
 

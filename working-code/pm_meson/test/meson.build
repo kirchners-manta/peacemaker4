@@ -14,7 +14,8 @@ tests = [
   'partition_functions',
   'process_coordinates_record',
   'qce',
-  'thermo'
+  'thermo',
+  'auxiliary'
 ]
 
 test_srcs = files(
@@ -24,7 +25,8 @@ test_srcs = files(
   'test_partition_functions.f90',
   'test_process_coordinates_record.f90',
   'test_qce.f90',
-  'test_thermo.f90'
+  'test_thermo.f90',
+  'test_auxiliary.f90'
 )
 
 foreach t : tests
