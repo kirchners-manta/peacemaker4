@@ -19,7 +19,8 @@ module test_thermo
       new_unittest("test_add_lnq_indi", test_add_lnq_indi), &
       new_unittest("test_calc_helmholtz_energy", test_calc_helmholtz_energy), &
       new_unittest("test_calc_gibbs_enthalpy", test_calc_gibbs_enthalpy), &
-      new_unittest("test_calc_internal_energy", test_calc_internal_energy) &
+      new_unittest("test_calc_internal_energy", test_calc_internal_energy), &
+      new_unittest("test_calc_enthalpy", test_calc_enthalpy) &
       ]
   
   end subroutine collect_thermo
@@ -245,6 +246,54 @@ module test_thermo
     end do
   
   end subroutine test_calc_internal_energy
+
+  ! -----------------------------------------
+  ! Unit test for calculate_enthalpy
+  ! -----------------------------------------
+  ! Adds the part of the system partition function arising from particle
+  ! indistinguishability. 
+  subroutine test_calc_enthalpy(error)
+  
+    ! Dependencies
+    use thermo, only : calculate_enthalpy
+    ! Precision
+    real(dp) :: thr = 1.0e-24_dp
+    
+    ! Arguments
+    type(error_type), allocatable, intent(out) :: error
+    integer :: i
+    integer :: ntemp = 18
+    real(dp), dimension(18) :: temp = [412.25_dp, 123.4_dp, 512.0_dp, 406.05_dp, &
+                                      530.0_dp, 604.0_dp, 730.4_dp, 850.0_dp, &
+                                      900.0_dp, 423.0_dp, 1100.0_dp, 1200.8_dp, &
+                                      100.15_dp, 233.4_dp, 512.0_dp, 406.05_dp, &
+                                      530.0_dp, 604.0_dp]
+    real(dp), dimension(18) :: dlnq = [-2.4_dp, 38.5_dp, 20.43_dp, 1.99_dp, &
+                                       5.04_dp, 53.0_dp, -7.5_dp, 8.54_dp, 9.0_dp, 10.0_dp, 11.0_dp, -12.0_dp, &
+                                       1.03e-2_dp, -2.45_dp, 3.2_dp, 1.99_dp, 5.04_dp, 53.0_dp]
+    real(dp), dimension(18) :: vol = [0.33_dp, 23.5_dp, 17.32_dp, 0.43_dp, &
+                                      8.3_dp, 1.0_dp, 1.1_dp, 61.2_dp, 1.3_dp, 1.4_dp, 1.5_dp, 12.6_dp, &
+                                      0.33_dp, 23.5_dp, 17.32_dp, 0.43_dp, 8.3_dp, 1.0_dp]
+    real(dp) :: press = 1e-20_dp
+    real(dp), dimension(18) :: h
+
+
+    ! Expected values
+    real(dp) :: expected(18) = [-5.62809240e-18_dp, 8.32920629e-18_dp, 7.41152536e-17_dp, 4.53427000e-18_dp, &
+                                1.96293421e-17_dp, 2.66961869e-16_dp, -5.52305699e-17_dp, 8.58001019e-17_dp, &
+                                1.00662298e-16_dp, 2.47178109e-17_dp, 1.83779355e-16_dp, -2.38768320e-16_dp, &
+                                4.72633767e-21_dp, -1.60768461e-18_dp, 1.17549216e-17_dp, 4.53427000e-18_dp, &
+                                1.96293421e-17_dp, 2.66961869e-16_dp]
+    
+    ! Call the subroutine
+    call calculate_enthalpy(ntemp, temp, dlnq, vol, press, h)
+
+    ! Check the results
+    do i = 1, 18
+      call check(error, h(i), expected(i), thr=thr, rel=.false.)
+    end do
+  
+  end subroutine test_calc_enthalpy
   
   end module test_thermo
   
