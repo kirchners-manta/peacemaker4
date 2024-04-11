@@ -21,7 +21,8 @@ module test_thermo
       new_unittest("test_calc_gibbs_enthalpy", test_calc_gibbs_enthalpy), &
       new_unittest("test_calc_internal_energy", test_calc_internal_energy), &
       new_unittest("test_calc_enthalpy", test_calc_enthalpy), &
-      new_unittest("test_calc_entropy", test_calc_entropy) &
+      new_unittest("test_calc_entropy", test_calc_entropy), &
+      new_unittest("test_calc_expansion_coefficient", test_calc_expansion_coefficient) &
       ]
   
   end subroutine collect_thermo
@@ -347,11 +348,51 @@ module test_thermo
     call calculate_entropy(ntemp, temp, lnq, dlnq, s)
 
     ! Check the results
-    do i = 1, 18
+    do i = 1, 33
       call check(error, s(i), expected(i), thr=thr, rel=.false.)
     end do
   
   end subroutine test_calc_entropy
+
+  ! -----------------------------------------
+  ! Unit test for  calculate_expansion_coefficient
+  ! -----------------------------------------
+  ! Adds the part of the system partition function arising from particle
+  ! indistinguishability. 
+  subroutine test_calc_expansion_coefficient(error)
+  
+    ! Dependencies
+    use thermo, only :  calculate_expansion_coefficient
+    ! Precision
+    real(dp) :: thr = 1.0e-5_dp
+    
+    ! Arguments
+    type(error_type), allocatable, intent(out) :: error
+    integer :: i
+    integer :: ntemp = 10
+    real(dp), dimension(10) :: vol = [12.42_dp, 1.93_dp, 5.44_dp, 3.23_dp, 4.23_dp, &
+                                       5.23_dp, 6.23_dp, 7.23_dp, 8.23_dp, 9.23_dp]
+    real(dp), dimension(10) :: dvol = [-1.3_dp, 300.4_dp, 23.3_dp, -12.44_dp, 25.32_dp, &
+                                      -212.42_dp, 1.0_dp, 2.0_dp, 3.0_dp, 4.0_dp]
+    
+    real(dp), dimension(10) :: alpha
+
+
+    ! Expected values
+    real(dp) :: expected(10) = [-1.04669887e-01_dp,  1.55647668e+02_dp,  4.28308824e+00_dp, -3.85139319e+00_dp, &
+                                 5.98581560e+00_dp, -4.06156788e+01_dp,  1.60513644e-01_dp,  2.76625173e-01_dp, &
+                                 3.64520049e-01_dp,  4.33369447e-01_dp]
+    
+    ! Call the subroutine
+    call  calculate_expansion_coefficient(ntemp, vol, dvol, alpha)
+
+    ! Check the results
+    do i = 1, 10
+      call check(error, alpha(i), expected(i), thr=thr, rel=.false.)
+    end do
+  
+  end subroutine test_calc_expansion_coefficient
+ 
   
   end module test_thermo
   
