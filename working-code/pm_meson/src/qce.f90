@@ -29,6 +29,7 @@ module qce
     use auxiliary, only: range_t
     use shared_data
     use partition_functions
+    use error
     implicit none
     private
     !=====================================================================================
@@ -828,6 +829,10 @@ module qce
                     vdamp_local = vdamp_local*vdamp
                     call initialize_populations(populations)
                     cycle qce_loop
+                end if
+                ! Check if vexcl * bxv is smaller than the overall volume.
+                if (bxv * global_data%vexcl >= vol) then
+                    call pmk_unphysical_argument_error("bxv", "qce")
                 end if
     
                 ! Check for convergence.
