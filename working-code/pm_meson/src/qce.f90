@@ -38,6 +38,7 @@ module qce
     public :: qce_start
     public :: qce_finalize
     public :: calculate_remaining_populations, check_convergence ! for unit testing
+    public :: reorder, middle, reflection ! for unit testing
     !=====================================================================================
     ! Data type storing reference_data.
     type :: reference_t
@@ -481,26 +482,31 @@ module qce
         end subroutine reorder
         !=================================================================================
         ! Calculates midpoint m of n-1 best points x1, ..., xn-1
-        subroutine middle(simplex, m)
+        subroutine middle(simplex, m, skip_qce)
             real(dp), dimension(:,:), intent(in) :: simplex
             real(dp), dimension(:), intent(out) :: m
+            logical, intent(in), optional :: skip_qce ! For unit testing
             integer:: i, n
-            
+        
             n = size(simplex, 1)
-            
+        
             do i = 1, n-1
                 m(i) = SUM(simplex(:n-1,i))/real(n-1, dp)
             end do
-            
-            call single_qce(m)
-            
+        
+            if (.not. present(skip_qce) .or. .not. skip_qce) then
+                call single_qce(m)
+            endif
+        
         end subroutine middle
+        
         !=================================================================================
         ! Reflects the worst point xn at midpoint m to form point r
-        subroutine reflection(simplex, m, r)
+        subroutine reflection(simplex, m, r, skip_qce)
             real(dp), dimension(:,:), intent(in) :: simplex
             real(dp), dimension(:), intent(in) :: m
             real(dp), dimension(:), intent(out) :: r
+            logical, intent(in), optional :: skip_qce ! For unit testing
             real(dp):: alpha
             integer:: i, n
             
@@ -511,8 +517,11 @@ module qce
             do i = 1, n-1
                 r(i) = (1.0_dp + alpha) * m(i) - alpha * simplex(n,i)
             end do
-            
-            call single_qce(r)
+
+            if (.not. present(skip_qce) .or. .not. skip_qce) then
+                call single_qce(r)
+            endif
+
         end subroutine reflection
         !=================================================================================
         ! Expands the worst point xn at midpoint m to form point e
