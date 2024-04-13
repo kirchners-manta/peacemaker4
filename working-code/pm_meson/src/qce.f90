@@ -38,7 +38,7 @@ module qce
     public :: qce_start
     public :: qce_finalize
     public :: calculate_remaining_populations, check_convergence ! for unit testing
-    public :: reorder, middle, reflection ! for unit testing
+    public :: reorder, middle, reflection, expansion, contraction, compression ! for unit testing
     !=====================================================================================
     ! Data type storing reference_data.
     type :: reference_t
@@ -482,10 +482,9 @@ module qce
         end subroutine reorder
         !=================================================================================
         ! Calculates midpoint m of n-1 best points x1, ..., xn-1
-        subroutine middle(simplex, m, skip_qce)
+        subroutine middle(simplex, m)
             real(dp), dimension(:,:), intent(in) :: simplex
             real(dp), dimension(:), intent(out) :: m
-            logical, intent(in), optional :: skip_qce ! For unit testing
             integer:: i, n
         
             n = size(simplex, 1)
@@ -494,19 +493,16 @@ module qce
                 m(i) = SUM(simplex(:n-1,i))/real(n-1, dp)
             end do
         
-            if (.not. present(skip_qce) .or. .not. skip_qce) then
-                call single_qce(m)
-            endif
+            call single_qce(m)
         
         end subroutine middle
         
         !=================================================================================
         ! Reflects the worst point xn at midpoint m to form point r
-        subroutine reflection(simplex, m, r, skip_qce)
+        subroutine reflection(simplex, m, r)
             real(dp), dimension(:,:), intent(in) :: simplex
             real(dp), dimension(:), intent(in) :: m
             real(dp), dimension(:), intent(out) :: r
-            logical, intent(in), optional :: skip_qce ! For unit testing
             real(dp):: alpha
             integer:: i, n
             
@@ -518,9 +514,7 @@ module qce
                 r(i) = (1.0_dp + alpha) * m(i) - alpha * simplex(n,i)
             end do
 
-            if (.not. present(skip_qce) .or. .not. skip_qce) then
-                call single_qce(r)
-            endif
+            call single_qce(r)
 
         end subroutine reflection
         !=================================================================================
@@ -539,8 +533,9 @@ module qce
             do i = 1, n-1
                 e(i) = (1.0_dp + gamma) * m(i) - gamma * simplex(n,i)
             end do
-            
+       
             call single_qce(e)
+
         end subroutine expansion
         !=================================================================================
         ! Contracts the better point h of r or xn with the midpoint m to form point c
