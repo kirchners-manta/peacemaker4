@@ -402,17 +402,24 @@ module qce
                 call single_qce(simplex(i,:))
             end do
             
+            ! Main loop of the Downhill-Simplex algorithm.
             do while (abs(diff) > crit)
+                ! Reorder the simplex from best to worst.
                 call reorder(simplex)
                 
+                ! Check for convergence.
                 diff = simplex(1,n) - simplex(n,n)
                 
+                ! Calculate the midpoint m of the n-1 best points.
                 call middle(simplex, m)
+                ! Reflect the worst point xn at midpoint m to form point r.
                 call reflection(simplex, m, r)
                 
+                ! If r is better than the best point, expand the simplex and cycle.
                 if (r(n) < simplex(1,n)) then
                     call expansion(simplex, m, e)
                     
+                    ! If e is better than r, replace the worst point with e.
                     if (r(n) < e(n)) then
                         simplex(n,:) = r(:)
                     else
@@ -422,23 +429,30 @@ module qce
                     cycle
                 end if
                 
-                
+                ! If r is not better than the best point, but better than the second worst
+                ! point, replace the worst point with r and cycle.
                 if (r(n) < simplex(n-1,n)) then
                     simplex(n,:) = r(:)
                     cycle
                 end if
                 
+                ! If r is not better than the second worst point, but better than the worst
+                ! point, take the midpoint of r and the midpoint m.
                 if (r(n) < simplex(n,n)) then
                     call contraction(r, m, c)
                 else
+                    ! If r is worse than the worst point, take the midpoint of the worst point 
+                    ! and the midpoint m.
                     call contraction(simplex(n,1:n), m, c)
                 end if
                 
+                ! If c is better than the worst point, replace the worst point with c and cycle.
                 if (c(n) < simplex(n,n)) then
                     simplex(n,:) = c(:)
                     cycle
                 end if
                 
+                ! If none of the above conditions are met, compress the simplex.
                 call compression(simplex)
             
             end do
