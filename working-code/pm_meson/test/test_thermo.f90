@@ -22,7 +22,9 @@ module test_thermo
       new_unittest("test_calc_internal_energy", test_calc_internal_energy), &
       new_unittest("test_calc_enthalpy", test_calc_enthalpy), &
       new_unittest("test_calc_entropy", test_calc_entropy), &
-      new_unittest("test_calc_expansion_coefficient", test_calc_expansion_coefficient) &
+      new_unittest("test_calc_expansion_coefficient", test_calc_expansion_coefficient), &
+      new_unittest("test_calc_cv", test_calc_cv), &
+      new_unittest("test_calc_cp", test_calc_cp) &
       ]
   
   end subroutine collect_thermo
@@ -392,6 +394,88 @@ module test_thermo
     end do
   
   end subroutine test_calc_expansion_coefficient
+
+  ! -----------------------------------------
+  ! Unit test for  calculate_cv
+  ! -----------------------------------------
+  ! Calculates the heat capacity at constant volume.
+  ! BUT : The volume changes at every temperature.
+  !       It is not constant and thus it is not possible to calculate the heat capacity at constant volume.
+  subroutine test_calc_cv(error)
+    
+      ! Dependencies
+      use thermo, only : calculate_cv
+      ! Precision
+      real(dp) :: thr = 1.0e-25_dp
+      
+      ! Arguments
+      type(error_type), allocatable, intent(out) :: error
+      integer :: i
+      integer :: ntemp = 10
+      real(dp), dimension(10) :: temp = [12.42_dp, 1.93_dp, 5.44_dp, 3.23_dp, 4.23_dp, &
+                                         5.23_dp, 6.23_dp, 7.23_dp, 8.23_dp, 9.23_dp]
+      real(dp), dimension(10) :: dlnq = [-1.3_dp, 300.4_dp, 23.3_dp, -12.44_dp, 25.32_dp, &
+                                        -212.42_dp, 1.0_dp, 2.0_dp, 3.0_dp, 4.0_dp]
+      real(dp), dimension(10) :: ddlnq = [38.2_dp, -0.2_dp, 0.0_dp, 100.3_dp, -4.2_dp, &
+                                         3.2_dp, 2.3_dp, 1.3_dp, 0.3_dp, 0.1_dp]
+      real(dp), dimension(10) :: cv
+
+      ! Expected values
+      real(dp) :: expected(10) = [8.09101959e-20_dp, 1.59989448e-20_dp, 3.49999993e-21_dp, 1.33378609e-20_dp, &
+                                   1.91988908e-21_dp, -2.94683460e-20_dp, 1.40452947e-21_dp, 1.33750035e-21_dp, &
+                                   9.62310419e-22_dp, 1.13709255e-21_dp]
+
+      ! Call the subroutine
+      call calculate_cv(ntemp, temp, dlnq, ddlnq, cv)
+
+      ! Check the results
+      do i = 1, 10
+        call check(error, cv(i), expected(i), thr=thr, rel=.false.)
+      end do
+
+  end subroutine test_calc_cv
+
+  !-----------------------------------------
+  ! Unit test for calculate_cp
+  !-----------------------------------------
+  ! Calculates the heat capacity at constant pressure.
+  ! BUT : Is calculated using the heat capacity at constant volume, which is not possible to calculate.
+
+  subroutine test_calc_cp(error)
+    
+      ! Dependencies
+      use thermo, only : calculate_cp
+      ! Precision
+      real(dp) :: thr = 1.0e-13_dp
+      
+      ! Arguments
+      type(error_type), allocatable, intent(out) :: error
+      integer :: i
+      integer :: ntemp = 10
+      real(dp), dimension(10) :: temp = [-1.3_dp, 300.4_dp, 23.3_dp, -12.44_dp, 25.32_dp, &
+                                         -212.42_dp, 1.0_dp, 2.0_dp, 3.0_dp, 4.0_dp]
+      real(dp), dimension(10) :: dlnq = [5.2_dp, 3.8_dp, 2.3_dp, 1.3_dp, 4.2_dp, &
+                                        3.3_dp, 2.8_dp, 1.3_dp, 3.2_dp, 3.3_dp]
+      real(dp), dimension(10) :: ddlnq = [1.3_dp, 4.2_dp, 28.3_dp, 2.8_dp, -1.3_dp, &
+                                         3.2_dp, 33.3_dp, 1.3_dp, 8.3_dp, 1.3_dp]
+      real(dp), dimension(10) :: dvol = [5.3e-8_dp, 2.1e-7_dp, -2.6e-9_dp, 1.0e-8_dp, 1.3e-6_dp, &
+                                        2.3e-8_dp, 3.3e-8_dp, 4.3e-6_dp, 5.3e-9_dp, 6.3e-8_dp]
+      real(dp) :: press = 1.01325_dp
+      real(dp), dimension(10) :: cp
+
+      ! Expected values
+      real(dp) :: expected(10) = [5.370225e-08_dp, 2.127825e-07_dp, -2.634450e-09_dp, 1.013250e-08_dp, 1.317225e-06_dp, &
+                                   2.330475e-08_dp, 3.343725e-08_dp, 4.356975e-06_dp, 5.370225e-09_dp, 6.383475e-08_dp]
+
+      ! Call the subroutine
+      call calculate_cp(ntemp, temp, dlnq, ddlnq, dvol, press, cp)
+
+      ! Check the results
+      do i = 1, 10
+        call check(error, cp(i), expected(i), thr=thr, rel=.false.)
+      end do
+
+    end subroutine test_calc_cp
  
   
   end module test_thermo
