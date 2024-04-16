@@ -1,2 +1,9 @@
 peacemaker3/src/*.mod
 working-code/src/*.mod
+manual/*.aux
+manual/*.log
+manual/*.out
+manual/*.toc
+manual/*.fls
+manual/*.gz
+manual/*.fdb_latexmk
