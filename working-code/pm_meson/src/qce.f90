@@ -29,6 +29,7 @@ module qce
     use auxiliary, only: range_t
     use shared_data
     use partition_functions
+    use error
     implicit none
     private
     !=====================================================================================
@@ -36,6 +37,8 @@ module qce
     public :: qce_prepare
     public :: qce_start
     public :: qce_finalize
+    public :: calculate_remaining_populations, check_convergence ! for unit testing
+    public :: reorder, middle, reflection, expansion, contraction, compression ! for unit testing
     !=====================================================================================
     ! Data type storing reference_data.
     type :: reference_t
@@ -153,6 +156,7 @@ module qce
         end subroutine initialize_conserved_quantities
         !=================================================================================
         ! Initializes the degree of the population and mass polynomials.
+        ! Find maximum degree of the population and mass polynomials.
         subroutine initialize_degree()
             integer:: i
             integer:: j
@@ -276,7 +280,7 @@ module qce
             if (global_data%imode) then
                 call interface()
             ! Starts the optimizer if any parameter was chosen to be optimized.
-            else if (global_data%optimizer /= 0) then
+            else if (any(global_data%optimizer)) then
                 call downhill_simplex()
             end if
 
@@ -287,9 +291,10 @@ module qce
         ! Starts interface mode.
         subroutine interface()
             real(dp), dimension(:), allocatable :: params
-            integer:: myunit, stat, n_params, optimizer
+            integer:: myunit, stat, n_params, i
             logical:: do_sp
             logical:: stop_im
+            logical, dimension(4) :: optimizer
             
             write(0,*) "Interface mode"
 
@@ -298,21 +303,9 @@ module qce
 
             n_params=1
             optimizer = global_data%optimizer
-            if (optimizer >= 1000) then
-                optimizer = optimizer - 1000
-                n_params = n_params + 1
-            end if
-            if (optimizer >= 100) then
-                optimizer = optimizer - 100
-                n_params = n_params + 1
-            end if
-            if (optimizer >= 10) then
-                optimizer = optimizer - 10
-                n_params = n_params + 1
-            end if
-            if (optimizer == 1) then
-                n_params = n_params + 1
-            end if
+            do i=1, size(optimizer)
+                if (optimizer(i)) n_params = n_params + 1
+            end do
 
             allocate(params(n_params))
 
@@ -357,13 +350,8 @@ module qce
             real(dp), dimension(:), allocatable :: m, r, e, c
             real(dp), dimension(4,5) :: simplex_start
             real(dp):: diff, crit
-            integer:: i, j, n, optimizer
-            logical:: opt_a, opt_b, opt_at, opt_bt
-            
-            opt_a = .false.
-            opt_b = .false.
-            opt_at = .false.
-            opt_bt = .false.
+            integer:: i, j, n
+            logical, dimension(4) :: optimizer
             
             ! The simplex_start array contains a set of vectors that are used to construct
             ! the n-simplex, that is a triangle, tetrahedron, or pentachoron (4-simplex) around
@@ -373,27 +361,12 @@ module qce
             simplex_start(3,:) = (/-1.0_dp, -1.0_dp, -1.0_dp,  1.0_dp, 0.0_dp/)
             simplex_start(4,:) = (/-1.0_dp, -1.0_dp, -1.0_dp, -1.0_dp, 1.0_dp/)
             
-            n=1
+            ! Calculate the number of parameters to optimize.
+            n = 1
             optimizer = global_data%optimizer
-            if (optimizer >= 1000) then
-                opt_bt = .true.
-                optimizer = optimizer - 1000
-                n = n + 1
-            end if
-            if (optimizer >= 100) then
-                opt_at = .true.
-                optimizer = optimizer - 100
-                n = n + 1
-            end if
-            if (optimizer >= 10) then
-                opt_b = .true.
-                optimizer = optimizer - 10
-                n = n + 1
-            end if
-            if (optimizer == 1) then
-                opt_a = .true.
-                n = n + 1
-            end if
+            do i=1, size(optimizer)
+                if (optimizer(i)) n = n + 1
+            end do
             
             allocate(simplex(n,n))
             allocate(m(n))
@@ -403,19 +376,19 @@ module qce
             
             do i = 1, n
                 j = 1
-                if (opt_a) then
+                if (optimizer(1)) then
                     simplex(i,j) = best_ib%amf*avogadro**2.0_dp+simplex_start(j,i)*0.05_dp
                     j = j + 1
                 end if
-                if (opt_b) then
+                if (optimizer(2)) then
                     simplex(i,j) = best_ib%bxv+simplex_start(j,i)*0.05_dp
                     j = j + 1
                 end if
-                if (opt_at) then
+                if (optimizer(3)) then
                     simplex(i,j) = best_ib%amf_temp*avogadro**2.0_dp+simplex_start(j,i)*0.00005_dp
                     j = j + 1
                 end if
-                if (opt_bt) then
+                if (optimizer(4)) then
                     simplex(i,j) = best_ib%bxv_temp+simplex_start(j,i)*0.0005_dp
                 end if
             end do
@@ -424,21 +397,29 @@ module qce
             diff = 1.0e12_dp
             crit = 1.0e-12_dp
                         
+            ! Error values of (number of parameters to be optimized + 1) points are calculated. 
             do i = 1, n
                 call single_qce(simplex(i,:))
             end do
             
+            ! Main loop of the Downhill-Simplex algorithm.
             do while (abs(diff) > crit)
+                ! Reorder the simplex from best to worst.
                 call reorder(simplex)
                 
+                ! Check for convergence.
                 diff = simplex(1,n) - simplex(n,n)
                 
+                ! Calculate the midpoint m of the n-1 best points.
                 call middle(simplex, m)
+                ! Reflect the worst point xn at midpoint m to form point r.
                 call reflection(simplex, m, r)
                 
+                ! If r is better than the best point, expand the simplex and cycle.
                 if (r(n) < simplex(1,n)) then
                     call expansion(simplex, m, e)
                     
+                    ! If e is better than r, replace the worst point with e.
                     if (r(n) < e(n)) then
                         simplex(n,:) = r(:)
                     else
@@ -448,23 +429,30 @@ module qce
                     cycle
                 end if
                 
-                
+                ! If r is not better than the best point, but better than the second worst
+                ! point, replace the worst point with r and cycle.
                 if (r(n) < simplex(n-1,n)) then
                     simplex(n,:) = r(:)
                     cycle
                 end if
                 
+                ! If r is not better than the second worst point, but better than the worst
+                ! point, take the midpoint of r and the midpoint m.
                 if (r(n) < simplex(n,n)) then
                     call contraction(r, m, c)
                 else
+                    ! If r is worse than the worst point, take the midpoint of the worst point 
+                    ! and the midpoint m.
                     call contraction(simplex(n,1:n), m, c)
                 end if
                 
+                ! If c is better than the worst point, replace the worst point with c and cycle.
                 if (c(n) < simplex(n,n)) then
                     simplex(n,:) = c(:)
                     cycle
                 end if
                 
+                ! If none of the above conditions are met, compress the simplex.
                 call compression(simplex)
             
             end do
@@ -512,16 +500,17 @@ module qce
             real(dp), dimension(:,:), intent(in) :: simplex
             real(dp), dimension(:), intent(out) :: m
             integer:: i, n
-            
+        
             n = size(simplex, 1)
-            
+        
             do i = 1, n-1
                 m(i) = SUM(simplex(:n-1,i))/real(n-1, dp)
             end do
-            
+        
             call single_qce(m)
-            
+        
         end subroutine middle
+        
         !=================================================================================
         ! Reflects the worst point xn at midpoint m to form point r
         subroutine reflection(simplex, m, r)
@@ -538,8 +527,9 @@ module qce
             do i = 1, n-1
                 r(i) = (1.0_dp + alpha) * m(i) - alpha * simplex(n,i)
             end do
-            
+
             call single_qce(r)
+
         end subroutine reflection
         !=================================================================================
         ! Expands the worst point xn at midpoint m to form point e
@@ -557,8 +547,9 @@ module qce
             do i = 1, n-1
                 e(i) = (1.0_dp + gamma) * m(i) - gamma * simplex(n,i)
             end do
-            
+       
             call single_qce(e)
+
         end subroutine expansion
         !=================================================================================
         ! Contracts the better point h of r or xn with the midpoint m to form point c
@@ -605,66 +596,30 @@ module qce
             real(dp):: amf_temp
             real(dp):: bxv_temp
             real(dp):: error
-            integer:: itemp
+            integer:: itemp, index, i
 
             amf = best_ib%amf*avogadro**2
             bxv = best_ib%bxv
             amf_temp = best_ib%amf_temp*avogadro**2
             bxv_temp = best_ib%bxv_temp
-            
-            !TODO: Find better solution for this.
-            select case (global_data%optimizer)
-            case (1)
-                amf = params(1)
-            case (10)
-                bxv = params(1)
-            case (11)
-                amf = params(1)
-                bxv = params(2)
-            case (100)
-                amf_temp = params(1)
-            case (101)
-                amf = params(1)
-                amf_temp = params(2)
-            case (110)
-                bxv = params(1)
-                amf_temp = params(2)
-            case (111)
-                amf = params(1)
-                bxv = params(2)
-                amf_temp = params(3)
-            case (1000)
-                bxv_temp = params(1)
-            case (1001)
-                amf = params(1)
-                bxv_temp = params(2)
-            case (1010)
-                bxv = params(1)
-                bxv_temp = params(2)
-            case (1011)
-                amf = params(1)
-                bxv = params(2)
-                bxv_temp = params(3)
-            case (1100)
-                amf_temp = params(1)
-                bxv_temp = params(2)
-            case (1101)
-                amf = params(1)
-                amf_temp = params(2)
-                bxv_temp = params(3)
-            case (1110)
-                bxv = params(1)
-                amf_temp = params(2)
-                bxv_temp = params(3)
-            case (1111)
-                amf = params(1)
-                bxv = params(2)
-                amf_temp = params(3)
-                bxv_temp = params(4)
-            case default
-                amf = params(1)
-                bxv = params(2)
-            end select
+
+            ! Assing the parameters to the corresponding variables.
+            index = 1
+            do i=1, size(global_data%optimizer)
+                if (global_data%optimizer(i)) then
+                    select case (i)
+                    case (1)
+                        amf = params(index)
+                    case (2)
+                        bxv = params(index)
+                    case (3)
+                        amf_temp = params(index)
+                    case (4)
+                        bxv_temp = params(index)
+                    end select
+                    index = index + 1
+                end if
+            end do            
 
             allocate(ib%temp(global_data%temp%num))
             allocate(ib%vol(global_data%temp%num))
@@ -803,7 +758,6 @@ module qce
                     reference%density, error)
                 ib%error = ib%error + reference%density_weight*error
             end if
-            ! wenn man hier auskommentiert ist man in einer endlosschleife
             if (reference%compare_isobar) then
                 call compare_isobar(ib, reference%isobar_temperature, &
                     reference%isobar_volume, error)
@@ -894,9 +848,14 @@ module qce
                     call initialize_populations(populations)
                     cycle qce_loop
                 end if
+                ! Check if vexcl * bxv is smaller than the overall volume.
+                if (bxv * global_data%vexcl >= vol) then
+                    call pmk_unphysical_argument_error("bxv", "qce")
+                end if
     
                 ! Check for convergence.
-                call check_convergence(gibbs, temp, vol, populations, lnq, converged)
+                call check_convergence(gibbs, temp, vol, global_data%press, populations, &
+                                       lnq, converged, global_data%max_deviation)
                 if (converged) exit qce_loop
             end do qce_loop
         end subroutine qce_iteration
@@ -938,6 +897,8 @@ module qce
             integer, dimension(:), allocatable :: degree
     
             allocate(degree(size(monomer)))
+            ! Degree is the maximum number of monomers of each type in a cluster.
+            ! It is increased by one, because in a polynomial of degree n, there are n+1 coefficients.
             degree(:) = global_data%degree(:) + 1
 
             ! Calculate coefficients for >> each cluster <<
@@ -965,12 +926,12 @@ module qce
 
                 end associate
             end do
-!            write(*,*) "lnq", lnq%qtot
 
-            ! Calculate coefficients for >> each possible composition <<. We simulate a multi-dimensional
+            ! (Calculate) coefficients for >> each possible composition <<. We simulate a multi-dimensional
             ! array as a linear or one-dimensional array. n_comp is the number of possible cluster compositions
             ! and thus the number of coefficients in the population polynomial (some of which may be 0).
             ! indx_clust is the position of a cluster in the array coeffs_all.
+            ! The calculated coefficients are sorted into the array.
             n_comp = 1
             do i = 1, size(degree)
                 n_comp = n_comp * degree(i)
@@ -983,10 +944,12 @@ module qce
 
             do iclust = 1, size(clusterset)
                indx_clust = clusterset(iclust)%composition(1)
+               
                do j = 2, size(monomer)
                    indx_clust = indx_clust + clusterset(iclust)%composition(j) * product(degree(:j-1))
                end do
                do i = 1, size(monomer)
+                ! why is this perm here?
                    perm = GAMMA(real(sum(clusterset(iclust)%composition)+1, dp))
                    do j = 1, size(monomer)
                        perm = perm/GAMMA(real(clusterset(iclust)%composition(j)+1, dp))
@@ -1009,7 +972,7 @@ module qce
             
             ! Solve the polynomials.
             call newton(size(degree), global_data%degree, size(coeffs_all), coeffs_all, monomer_populations, &
-                global_data%newton_iterations, success)
+                global_data%newton_iterations, success, monomer)
             
             ! Check for unphysical solution.
             if (any(monomer_populations < 0.0_dp)) success = .false.
@@ -1020,38 +983,45 @@ module qce
                 ! populations.
                 monomer_populations = monomer_populations*sum(global_data%ntot)/1.0_dp
                 call calculate_remaining_populations(populations, monomer_populations, &
-                    lnq)
+                    lnq, clusterset, monomer)
             end if
             
-
-            end subroutine calculate_populations
+        end subroutine calculate_populations
         !=================================================================================
         ! Given the monomer populations, this calculates all other populations.
         subroutine calculate_remaining_populations(populations, monomer_populations, &
-            lnq)
+            lnq, cluster_set, mono)
             type(pf_t), dimension(size(clusterset)), intent(in) :: lnq
             real(dp), dimension(size(monomer)), intent(in) :: monomer_populations
             real(dp), dimension(size(clusterset)), intent(out) :: populations
+            type(cluster_t), dimension(:), intent(in) :: cluster_set
+            integer, dimension(:), intent(in) :: mono
     
             integer:: i
             integer:: j
             real(dp):: tmp
     
             ! Assign monomer populations.
-            do i = 1, size(monomer)
-                populations(monomer(i)) = monomer_populations(i)
+            do i = 1, size(mono)
+                populations(mono(i)) = monomer_populations(i)
             end do
             ! Calculate the remaining populations.
-            do i = 1, size(clusterset)
-                associate(c => clusterset(i))
+            do i = 1, size(cluster_set)
+                associate(c => cluster_set(i))
                     if (c%monomer) cycle
                     tmp = 0.0_dp
-                    do j = 1, size(monomer)
+                    do j = 1, size(mono)
                         tmp = tmp + real(c%composition(j), dp)* &
-                            (log(monomer_populations(j)) - lnq(monomer(j))%qtot)
+                            (log(monomer_populations(j)) - lnq(mono(j))%qtot)
                     end do
                     tmp = tmp + lnq(i)%qtot
                     populations(i) = exp(tmp) * 1.0_dp
+
+                    ! If a population is infinite, warn the user.
+                    if (populations(i) >= huge(0.0_dp)) then
+                        write(*,*) 'Warning: Population of cluster ', i, ' is infinite.'
+                    end if
+                    
                 end associate
             end do
         end subroutine calculate_remaining_populations
@@ -1105,15 +1075,17 @@ module qce
         ! This subroutine checks whether the QCE iteration has converged. It checks the
         ! deviation of the Gibbs free enthalpy from the previous run. The Gibbs free
         ! enthalpy ensures that both populations and volume have converged.
-        subroutine check_convergence(gibbs, temp, vol, populations, lnq, &
-            converged)
+        subroutine check_convergence(gibbs, temp, vol, press, populations, lnq, &
+            converged, max_dev)
             use auxiliary, only: ln_factorial
-            type(pf_t), dimension(size(clusterset)), intent(in) :: lnq
+            type(pf_t), dimension(:), intent(in) :: lnq         ! size(clusterset)
             real(dp), intent(in) :: vol
+            real(dp), intent(in) :: press
             real(dp), intent(in) :: temp
             real(dp), intent(inout) :: gibbs
-            real(dp), dimension(size(clusterset)), intent(in) :: populations
+            real(dp), dimension(:), intent(in) :: populations   ! size(clusterset)
             logical, intent(out) :: converged
+            real(dp), intent(in) :: max_dev
             real(dp):: new_gibbs
             real(dp):: deviation
             integer:: iclust
@@ -1121,15 +1093,15 @@ module qce
             converged = .false.
             ! Calculate new Gibbs energy.
             new_gibbs = 0.0_dp
-            do iclust = 1, size(clusterset)
+            do iclust = 1, size(lnq)
                 new_gibbs = new_gibbs - ln_factorial(populations(iclust)) + &
                     populations(iclust)*lnq(iclust)%qtot
             end do
-            new_gibbs = -kb*temp*new_gibbs + global_data%press*vol
+            new_gibbs = -kb*temp*new_gibbs + press*vol
             deviation = new_gibbs/gibbs-1.0_dp
             gibbs = new_gibbs
     
-            if (abs(deviation) <= global_data%max_deviation) converged = .true.
+            if (abs(deviation) <= max_dev) converged = .true.
         end subroutine check_convergence
         !=================================================================================
         ! Compares to an experimental isobar.

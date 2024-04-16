@@ -123,7 +123,7 @@ module partition_functions
             real(dp):: lambda
             real(dp):: mass
             integer:: iclust
-    
+            
             do iclust = 1, size(clusterset)
                 ! Calculate the de Broglie wave length
                 mass = clusterset(iclust)%mass*amu
@@ -254,7 +254,6 @@ module partition_functions
     
             integer:: iclust
             real(dp):: emf
-
             do iclust = 1, size(clusterset)
                 associate(c => clusterset(iclust))
                     emf = -amf*real(sum(c%composition), dp)*sum(global_data%ntot)/vol

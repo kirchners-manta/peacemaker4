@@ -1,0 +1,487 @@
+[m1]
+  composition 1 0 
+  monomer
+  volume 57.590872277
+  sigma 1
+  energy 0.0
+  coordinates ../clusters/m1.xyz
+  frequencies ../clusters/m1.flist
+
+[m2-1]
+  composition 2 0 
+  sigma 1
+  energy -20.3584493746
+  coordinates ../clusters/m2-1.xyz
+  frequencies ../clusters/m2-1.flist
+
+[m3-1]
+  composition 3 0 
+  sigma 1
+  energy -60.2926270276
+  coordinates ../clusters/m3-1.xyz
+  frequencies ../clusters/m3-1.flist
+
+[m4-1]
+  composition 4 0 
+  sigma 2
+  energy -107.278955142
+  coordinates ../clusters/m4-1.xyz
+  frequencies ../clusters/m4-1.flist
+
+[m5-1]
+  composition 5 0 
+  sigma 1
+  energy -142.242360376
+  coordinates ../clusters/m5-1.xyz
+  frequencies ../clusters/m5-1.flist
+
+[m5-2]
+  composition 5 0 
+  sigma 1
+  energy -141.440782219
+  coordinates ../clusters/m5-2.xyz
+  frequencies ../clusters/m5-2.flist
+
+[m6-2]
+  composition 6 0 
+  sigma 1
+  energy -177.59506278
+  coordinates ../clusters/m6-2.xyz
+  frequencies ../clusters/m6-2.flist
+
+[m6-3]
+  composition 6 0 
+  sigma 1
+  energy -173.490183409
+  coordinates ../clusters/m6-3.xyz
+  frequencies ../clusters/m6-3.flist
+
+[m6-4]
+  composition 6 0 
+  sigma 1
+  energy -177.117187956
+  coordinates ../clusters/m6-4.xyz
+  frequencies ../clusters/m6-4.flist
+
+[m6-5]
+  composition 6 0 
+  sigma 1
+  energy -176.936191515
+  coordinates ../clusters/m6-5.xyz
+  frequencies ../clusters/m6-5.flist
+
+[m6-7]
+  composition 6 0 
+  sigma 1
+  energy -174.930793274
+  coordinates ../clusters/m6-7.xyz
+  frequencies ../clusters/m6-7.flist
+
+[m6-8]
+  composition 6 0 
+  sigma 1
+  energy -173.494425854
+  coordinates ../clusters/m6-8.xyz
+  frequencies ../clusters/m6-8.flist
+
+[w1]
+  composition 0 1 
+  monomer
+  volume 25.860786476
+  sigma 2
+  energy 0.0
+  coordinates ../clusters/w1.xyz
+  frequencies ../clusters/w1.flist
+
+[w2]
+  composition 0 2 
+  sigma 1
+  energy -20.7886230228
+  coordinates ../clusters/w2.xyz
+  frequencies ../clusters/w2.flist
+
+[w3-1]
+  composition 0 3 
+  sigma 1
+  energy -61.4142098751
+  coordinates ../clusters/w3-1.xyz
+  frequencies ../clusters/w3-1.flist
+
+[w3-2]
+  composition 0 3 
+  sigma 2
+  energy -36.7963531233
+  coordinates ../clusters/w3-2.xyz
+  frequencies ../clusters/w3-2.flist
+
+[w4-1]
+  composition 0 4 
+  sigma 2
+  energy -111.92450867
+  coordinates ../clusters/w4-1.xyz
+  frequencies ../clusters/w4-1.flist
+
+[w4-2]
+  composition 0 4 
+  sigma 1
+  energy -106.947647826
+  coordinates ../clusters/w4-2.xyz
+  frequencies ../clusters/w4-2.flist
+
+[w5-2]
+  composition 0 5 
+  sigma 1
+  energy -145.782425702
+  coordinates ../clusters/w5-2.xyz
+  frequencies ../clusters/w5-2.flist
+
+[w5-6]
+  composition 0 5 
+  sigma 1
+  energy -123.569205061
+  coordinates ../clusters/w5-6.xyz
+  frequencies ../clusters/w5-6.flist
+
+[w5-7]
+  composition 0 5 
+  sigma 1
+  energy -124.138858756
+  coordinates ../clusters/w5-7.xyz
+  frequencies ../clusters/w5-7.flist
+
+[w6-1]
+  composition 0 6 
+  sigma 1
+  energy -191.888714564
+  coordinates ../clusters/w6-1.xyz
+  frequencies ../clusters/w6-1.flist
+
+[w6-2]
+  composition 0 6 
+  sigma 1
+  energy -192.291996657
+  coordinates ../clusters/w6-2.xyz
+  frequencies ../clusters/w6-2.flist
+
+[w6-4]
+  composition 0 6 
+  sigma 1
+  energy -185.519630114
+  coordinates ../clusters/w6-4.xyz
+  frequencies ../clusters/w6-4.flist
+
+[w6-5]
+  composition 0 6 
+  sigma 1
+  energy -177.40728567
+  coordinates ../clusters/w6-5.xyz
+  frequencies ../clusters/w6-5.flist
+
+[w6-7]
+  composition 0 6 
+  sigma 1
+  energy -180.123913851
+  coordinates ../clusters/w6-7.xyz
+  frequencies ../clusters/w6-7.flist
+
+[w6-8]
+  composition 0 6 
+  sigma 1
+  energy -180.123992143
+  coordinates ../clusters/w6-8.xyz
+  frequencies ../clusters/w6-8.flist
+
+[w6-10]
+  composition 0 6 
+  sigma 1
+  energy -177.765168069
+  coordinates ../clusters/w6-10.xyz
+  frequencies ../clusters/w6-10.flist
+
+[m1w1-1]
+  composition 1 1 
+  sigma 1
+  energy -20.4806980999
+  coordinates ../clusters/m1w1-1.xyz
+  frequencies ../clusters/m1w1-1.flist
+
+[m1w1-4]
+  composition 1 1 
+  sigma 1
+  energy -20.0296397047
+  coordinates ../clusters/m1w1-4.xyz
+  frequencies ../clusters/m1w1-4.flist
+
+[m1w2-1]
+  composition 1 2 
+  sigma 1
+  energy -60.7545489227
+  coordinates ../clusters/m1w2-1.xyz
+  frequencies ../clusters/m1w2-1.flist
+
+[m1w3-1]
+  composition 1 3 
+  sigma 1
+  energy -110.041355586
+  coordinates ../clusters/m1w3-1.xyz
+  frequencies ../clusters/m1w3-1.flist
+
+[m1w4-1]
+  composition 1 4 
+  sigma 1
+  energy -145.776822394
+  coordinates ../clusters/m1w4-1.xyz
+  frequencies ../clusters/m1w4-1.flist
+
+[m1w4-7]
+  composition 1 4 
+  sigma 1
+  energy -145.796044908
+  coordinates ../clusters/m1w4-7.xyz
+  frequencies ../clusters/m1w4-7.flist
+
+[m1w4-9]
+  composition 1 4 
+  sigma 1
+  energy -142.946432262
+  coordinates ../clusters/m1w4-9.xyz
+  frequencies ../clusters/m1w4-9.flist
+
+[m1w5-2]
+  composition 1 5 
+  sigma 1
+  energy -189.152484598
+  coordinates ../clusters/m1w5-2.xyz
+  frequencies ../clusters/m1w5-2.flist
+
+[m1w5-3]
+  composition 1 5 
+  sigma 1
+  energy -190.992177252
+  coordinates ../clusters/m1w5-3.xyz
+  frequencies ../clusters/m1w5-3.flist
+
+[m1w5-4]
+  composition 1 5 
+  sigma 1
+  energy -190.354561691
+  coordinates ../clusters/m1w5-4.xyz
+  frequencies ../clusters/m1w5-4.flist
+
+[m1w5-5]
+  composition 1 5 
+  sigma 1
+  energy -191.035720348
+  coordinates ../clusters/m1w5-5.xyz
+  frequencies ../clusters/m1w5-5.flist
+
+[m1w5-6]
+  composition 1 5 
+  sigma 1
+  energy -190.47469497
+  coordinates ../clusters/m1w5-6.xyz
+  frequencies ../clusters/m1w5-6.flist
+
+[m1w5-9]
+  composition 1 5 
+  sigma 1
+  energy -190.108923114
+  coordinates ../clusters/m1w5-9.xyz
+  frequencies ../clusters/m1w5-9.flist
+
+[m2w1-1]
+  composition 2 1 
+  sigma 1
+  energy -60.3133096795
+  coordinates ../clusters/m2w1-1.xyz
+  frequencies ../clusters/m2w1-1.flist
+
+[m2w1-3]
+  composition 2 1 
+  sigma 1
+  energy -60.1795759907
+  coordinates ../clusters/m2w1-3.xyz
+  frequencies ../clusters/m2w1-3.flist
+
+[m2w2-1]
+  composition 2 2 
+  sigma 1
+  energy -108.80268912
+  coordinates ../clusters/m2w2-1.xyz
+  frequencies ../clusters/m2w2-1.flist
+
+[m2w3-1]
+  composition 2 3 
+  sigma 1
+  energy -146.182723995
+  coordinates ../clusters/m2w3-1.xyz
+  frequencies ../clusters/m2w3-1.flist
+
+[m2w3-6]
+  composition 2 3 
+  sigma 1
+  energy -145.856294278
+  coordinates ../clusters/m2w3-6.xyz
+  frequencies ../clusters/m2w3-6.flist
+
+[m2w3-7]
+  composition 2 3 
+  sigma 1
+  energy -144.806875887
+  coordinates ../clusters/m2w3-7.xyz
+  frequencies ../clusters/m2w3-7.flist
+
+[m2w4-1]
+  composition 2 4 
+  sigma 1
+  energy -190.20355106
+  coordinates ../clusters/m2w4-1.xyz
+  frequencies ../clusters/m2w4-1.flist
+
+[m2w4-4]
+  composition 2 4 
+  sigma 1
+  energy -189.349141067
+  coordinates ../clusters/m2w4-4.xyz
+  frequencies ../clusters/m2w4-4.flist
+
+[m2w4-5]
+  composition 2 4 
+  sigma 1
+  energy -185.31006467
+  coordinates ../clusters/m2w4-5.xyz
+  frequencies ../clusters/m2w4-5.flist
+
+[m2w4-6]
+  composition 2 4 
+  sigma 1
+  energy -184.747097478
+  coordinates ../clusters/m2w4-6.xyz
+  frequencies ../clusters/m2w4-6.flist
+
+[m2w4-9]
+  composition 2 4 
+  sigma 1
+  energy -189.288658649
+  coordinates ../clusters/m2w4-9.xyz
+  frequencies ../clusters/m2w4-9.flist
+
+[m3w1-1]
+  composition 3 1 
+  sigma 1
+  energy -107.542108317
+  coordinates ../clusters/m3w1-1.xyz
+  frequencies ../clusters/m3w1-1.flist
+
+[m3w1-2]
+  composition 3 1 
+  sigma 1
+  energy -107.704992777
+  coordinates ../clusters/m3w1-2.xyz
+  frequencies ../clusters/m3w1-2.flist
+
+[m3w2-1]
+  composition 3 2 
+  sigma 1
+  energy -142.074206099
+  coordinates ../clusters/m3w2-1.xyz
+  frequencies ../clusters/m3w2-1.flist
+
+[m3w3-1]
+  composition 3 3 
+  sigma 1
+  energy -183.425594523
+  coordinates ../clusters/m3w3-1.xyz
+  frequencies ../clusters/m3w3-1.flist
+
+[m3w3-3]
+  composition 3 3 
+  sigma 1
+  energy -185.863257507
+  coordinates ../clusters/m3w3-3.xyz
+  frequencies ../clusters/m3w3-3.flist
+
+[m3w3-5]
+  composition 3 3 
+  sigma 1
+  energy -180.872436961
+  coordinates ../clusters/m3w3-5.xyz
+  frequencies ../clusters/m3w3-5.flist
+
+[m3w3-7]
+  composition 3 3 
+  sigma 1
+  energy -183.500631376
+  coordinates ../clusters/m3w3-7.xyz
+  frequencies ../clusters/m3w3-7.flist
+
+[m3w3-9]
+  composition 3 3 
+  sigma 1
+  energy -183.90883271
+  coordinates ../clusters/m3w3-9.xyz
+  frequencies ../clusters/m3w3-9.flist
+
+[m4w1-2]
+  composition 4 1 
+  sigma 1
+  energy -140.98749484
+  coordinates ../clusters/m4w1-2.xyz
+  frequencies ../clusters/m4w1-2.flist
+
+[m4w1-5]
+  composition 4 1 
+  sigma 1
+  energy -141.284738504
+  coordinates ../clusters/m4w1-5.xyz
+  frequencies ../clusters/m4w1-5.flist
+
+[m4w2-1]
+  composition 4 2 
+  sigma 1
+  energy -184.069769746
+  coordinates ../clusters/m4w2-1.xyz
+  frequencies ../clusters/m4w2-1.flist
+
+[m4w2-7]
+  composition 4 2 
+  sigma 1
+  energy -184.444731802
+  coordinates ../clusters/m4w2-7.xyz
+  frequencies ../clusters/m4w2-7.flist
+
+[m4w2-8]
+  composition 4 2 
+  sigma 1
+  energy -183.970757131
+  coordinates ../clusters/m4w2-8.xyz
+  frequencies ../clusters/m4w2-8.flist
+
+[m5w1-1]
+  composition 5 1 
+  sigma 1
+  energy -183.932451362
+  coordinates ../clusters/m5w1-1.xyz
+  frequencies ../clusters/m5w1-1.flist
+
+[m5w1-6]
+  composition 5 1 
+  sigma 1
+  energy -180.471537814
+  coordinates ../clusters/m5w1-6.xyz
+  frequencies ../clusters/m5w1-6.flist
+
+[m5w1-8]
+  composition 5 1 
+  sigma 1
+  energy -185.383827158
+  coordinates ../clusters/m5w1-8.xyz
+  frequencies ../clusters/m5w1-8.flist
+
+[m5w1-9]
+  composition 5 1 
+  sigma 1
+  energy -183.033802783
+  coordinates ../clusters/m5w1-9.xyz
+  frequencies ../clusters/m5w1-9.flist
+

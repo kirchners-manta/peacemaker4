@@ -50,6 +50,8 @@ module cluster
     public :: check_clusterset
     public :: cluster_table
     public :: toml_parse
+    public :: cluster_t
+    public :: process_coordinates_record, diagonalize_3x3, center_of_mass, inertia_tensor
     !=====================================================================================
     ! The cluster_t data type, which represents a cluster. Reasonable defaults should be
     ! set here, if there are any.
@@ -364,6 +366,13 @@ module cluster
 
         !=================================================================================
         ! Processes a coordinates record.
+        ! The coordinates record is a file name. The file contains the number of atoms in
+        ! the first line, followed by an empty/comment line, followed by one line per atom.
+        ! Each line contains the atom label and the x, y, and z coordinates in Angstrom.
+        ! The total mass of the cluster is calculated and the origin is shifted to the
+        ! center of mass. The inertia tensor is calculated and diagonalized. The cluster
+        ! is classified as atom, linear, or non-linear. The moments of inertia are assigned
+        ! accordingly.
         subroutine process_coordinates_record(c, nr_args, args)
             use atomic_data, only: periodic_table
             use constants
@@ -381,15 +390,6 @@ module cluster
             real(dp), dimension(:, :), allocatable :: xyz
             real(dp), dimension(3) :: com
             real(dp), dimension(3, 3) :: inertia
-            real(dp), dimension(3, 3) :: identity
-            real(dp), dimension(3, 3) :: B
-            real(dp):: p
-            real(dp):: p1
-            real(dp):: p2
-            real(dp):: q
-            real(dp):: r
-            real(dp):: phi
-            real(dp):: tmp
             real(dp), dimension(3) :: eig
             integer:: n
     
@@ -425,80 +425,13 @@ module cluster
                 c%mass = sum(mass)
     
                 ! Calculate center of mass and shift to origin.
-                com = 0.0_dp
-                do i = 1, nr_atoms
-                    com(:) = com(:) + mass(i)*xyz(i, :)
-                end do
-                com(:) = com(:) / c%mass
-                do i = 1, nr_atoms
-                    xyz(i, :) = xyz(i, :) - com(:)
-                end do
+                call center_of_mass(nr_atoms, com, mass, xyz)
     
                 ! Calculate inertia tensor.
-                inertia = 0.0_dp
-                do i = 1, nr_atoms
-                    inertia(1,1) = inertia(1,1) + mass(i)*(xyz(i,2)**2 + xyz(i,3)**2)
-                    inertia(2,2) = inertia(2,2) + mass(i)*(xyz(i,1)**2 + xyz(i,3)**2)
-                    inertia(3,3) = inertia(3,3) + mass(i)*(xyz(i,1)**2 + xyz(i,2)**2)
-                    inertia(1,2) = inertia(1,2) - mass(i)*xyz(i,1)*xyz(i,2)
-                    inertia(1,3) = inertia(1,3) - mass(i)*xyz(i,1)*xyz(i,3)
-                    inertia(2,3) = inertia(2,3) - mass(i)*xyz(i,2)*xyz(i,3)
-                end do
-                inertia(2, 1) = inertia(1, 2)
-                inertia(3, 1) = inertia(1, 3)
-                inertia(3, 2) = inertia(2, 3)
+                call inertia_tensor(nr_atoms, inertia, mass, xyz)
     
                 ! Diagonalize inertia tensor.
-                identity = 0.0_dp
-                identity(1,1) = 1.0_dp
-                identity(2,2) = 1.0_dp
-                identity(3,3) = 1.0_dp
-                p1 = inertia(1,2)**2 + inertia(1,3)**2 + inertia(2,3)**2
-                if (p1 <= global_eps) then
-                    ! Tensor is already diagonal.
-                    eig(1) = inertia(1,1)
-                    eig(2) = inertia(2,2)
-                    eig(3) = inertia(3,3)
-                else
-                    q = (inertia(1,1) + inertia(2,2) + inertia(3,3))/3.0_dp
-                    p2 = (inertia(1,1)-q)**2 + (inertia(2,2)-q)**2 + &
-                        (inertia(3,3)-q)**2 + 2.0_dp*p1
-                    p = sqrt(p2/6.0_dp)
-                    B = (inertia(:, :) - q*identity(:, :))/p
-                    r = B(1,1)*B(2,2)*B(3,3) + B(1,2)*B(2,3)*B(3,1) + &
-                        B(1,3)*B(2,1)*B(3,2) - B(1,3)*B(2,2)*B(3,1) - &
-                        B(1,2)*B(2,1)*B(3,3) - B(1,1)*B(2,3)*B(3,2)
-                    r = 0.5_dp * r
-    
-                    if (r <= -1.0_dp) then
-                        phi = pi/3.0_dp
-                    else if (r >= 1.0_dp) then
-                        phi = 0.0_dp
-                    else
-                        phi = acos(r)/3.0_dp
-                    end if
-    
-                    eig(1) = q + 2.0_dp*p*cos(phi)
-                    eig(3) = q + 2.0_dp*p*cos(phi + (2.0_dp*pi/3.0_dp))
-                    eig(2) = 3.0_dp*q - eig(1) - eig(3)
-                end if
-    
-                ! Sort the eigenvalues.
-                if (eig(1) < eig(2)) then
-                    tmp = eig(2)
-                    eig(2) = eig(1)
-                    eig(1) = tmp
-                end if
-                if (eig(1) < eig(3)) then
-                    tmp = eig(3)
-                    eig(3) = eig(1)
-                    eig(1) = tmp
-                end if
-                if (eig(2) < eig(3)) then
-                    tmp = eig(3)
-                    eig(3) = eig(2)
-                    eig(2) = tmp
-                end if
+                call diagonalize_3x3(inertia, eig)
     
                 ! Check for atoms, linear molecules, and assign moments of inertia.
                 n = 3 - count(eig <= global_eps)
@@ -522,6 +455,129 @@ module cluster
                 call pmk_argument_count_error("coordinates", c%label)
             end if
         end subroutine process_coordinates_record
+
+        !=================================================================================
+        ! Calculation of the center of mass of a cluster.
+        ! Shifts the origin to the center of mass.
+        subroutine center_of_mass(nr_atoms, com, mass, xyz)
+            !> Number of atoms.
+            integer, intent(in) :: nr_atoms
+            !> Center of mass.
+            real(dp), dimension(3), intent(out) :: com
+            !> Masses of the atoms.
+            real(dp), dimension(:), intent(in) :: mass
+            !> Coordinates of the atoms.
+            real(dp), dimension(:, :), intent(inout) :: xyz
+
+            integer:: i
+
+            com = 0.0_dp
+            ! Calculate center of mass.
+            do i = 1, nr_atoms
+                com(:) = com(:) + mass(i)*xyz(i, :)
+            end do
+            com(:) = com(:) / sum(mass)
+
+            ! Shift to origin.
+            do i = 1, nr_atoms
+                xyz(i, :) = xyz(i, :) - com(:)
+            end do
+        end subroutine center_of_mass
+
+        !=================================================================================
+        ! Calculation of the inertia tensor of a cluster.
+        subroutine inertia_tensor(nr_atoms, inertia, mass, xyz)
+            !> Number of atoms.
+            integer, intent(in) :: nr_atoms
+            !> Inertia tensor.
+            real(dp), dimension(3, 3), intent(out) :: inertia
+            !> Masses of the atoms.
+            real(dp), dimension(:), intent(in) :: mass
+            !> Coordinates of the atoms.
+            real(dp), dimension(:, :), intent(in) :: xyz
+
+            integer:: i
+            inertia = 0.0_dp
+            do i = 1, nr_atoms
+                inertia(1,1) = inertia(1,1) + mass(i)*(xyz(i,2)**2 + xyz(i,3)**2)
+                inertia(2,2) = inertia(2,2) + mass(i)*(xyz(i,1)**2 + xyz(i,3)**2)
+                inertia(3,3) = inertia(3,3) + mass(i)*(xyz(i,1)**2 + xyz(i,2)**2)
+                inertia(1,2) = inertia(1,2) - mass(i)*xyz(i,1)*xyz(i,2)
+                inertia(1,3) = inertia(1,3) - mass(i)*xyz(i,1)*xyz(i,3)
+                inertia(2,3) = inertia(2,3) - mass(i)*xyz(i,2)*xyz(i,3)
+            end do
+            inertia(2, 1) = inertia(1, 2)
+            inertia(3, 1) = inertia(1, 3)
+            inertia(3, 2) = inertia(2, 3)
+        end subroutine inertia_tensor
+
+        !=================================================================================
+        ! Direct method for the diagonalization of a 3x3 symmetric matrix.
+        subroutine diagonalize_3x3(a, eig)
+            !> Symmetric 3x3 matrix.
+            real(dp), dimension(3, 3), intent(in) :: a
+            !> Eigenvalues.
+            real(dp), dimension(3), intent(out) :: eig
+
+            real(dp):: p1, p2, p, q, r, phi, tmp
+            real(dp), dimension(3, 3) :: identity
+            real(dp), dimension(3, 3) :: B
+
+            !> Definition of 3x3 identity matrix.
+            identity = 0.0_dp
+            identity(1,1) = 1.0_dp
+            identity(2,2) = 1.0_dp
+            identity(3,3) = 1.0_dp
+
+            p1 = a(1,2)**2 + a(1,3)**2 + a(2,3)**2
+            if (p1 <= global_eps) then
+                ! Matrix is already diagonal.
+                eig(1) = a(1,1)
+                eig(2) = a(2,2)
+                eig(3) = a(3,3)
+            else
+                q = (a(1,1) + a(2,2) + a(3,3))/3.0_dp
+                p2 = (a(1,1)-q)**2 + (a(2,2)-q)**2 + &
+                    (a(3,3)-q)**2 + 2.0_dp*p1
+                p = sqrt(p2/6.0_dp)
+                B = (a(:, :) - q*identity(:, :))/p
+                r = B(1,1)*B(2,2)*B(3,3) + B(1,2)*B(2,3)*B(3,1) + &
+                    B(1,3)*B(2,1)*B(3,2) - B(1,3)*B(2,2)*B(3,1) - &
+                    B(1,2)*B(2,1)*B(3,3) - B(1,1)*B(2,3)*B(3,2)
+                r = 0.5_dp * r
+
+                if (r <= -1.0_dp) then
+                    phi = pi/3.0_dp
+                else if (r >= 1.0_dp) then
+                    phi = 0.0_dp
+                else
+                    phi = acos(r)/3.0_dp
+                end if
+
+                eig(1) = q + 2.0_dp*p*cos(phi)
+                eig(3) = q + 2.0_dp*p*cos(phi + (2.0_dp*pi/3.0_dp))
+                eig(2) = 3.0_dp*q - eig(1) - eig(3)
+            end if
+
+            ! Sort the eigenvalues.
+            if (eig(1) < eig(2)) then
+                tmp = eig(2)
+                eig(2) = eig(1)
+                eig(1) = tmp
+            end if
+            if (eig(1) < eig(3)) then
+                tmp = eig(3)
+                eig(3) = eig(1)
+                eig(1) = tmp
+            end if
+            if (eig(2) < eig(3)) then
+                tmp = eig(3)
+                eig(3) = eig(2)
+                eig(2) = tmp
+            end if
+
+        end subroutine diagonalize_3x3
+
 
         !=================================================================================
         ! Reads frequencies from a frequency file. A frequency file is similar to an

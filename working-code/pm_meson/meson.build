@@ -1,4 +1,6 @@
-project('peacemaker', 'fortran',
+project(
+  'peacemaker', 
+  'fortran',
   version : '0.1',
   default_options : ['warning_level=3'])
 
@@ -29,10 +31,32 @@ tomlf_dep = dependency(
   default_options: ['default_library=static'],
 )
 
-exe = executable('peacemaker', sources, 
-                 fortran_args : ['-cpp', '-fopenmp', '-flto', '-O3'],
-                 link_args: ['-fopenmp', '-flto', '-O3'],
-                 dependencies : [tomlf_dep],
-                install : true)
+fortran_args = ['-cpp', '-fopenmp', '-flto', '-O3']
+link_args = ['-fopenmp', '-flto', '-O3']
+dependencies = [tomlf_dep]
 
-test('basic', exe)
+lib = library(
+  'peacemaker',
+  sources,
+  version: meson.project_version(),
+  dependencies: dependencies,
+  fortran_args: fortran_args,
+  link_args: link_args,
+  link_language: 'fortran'
+)
+
+proj_dep = declare_dependency(
+  version: meson.project_version(),
+  link_with: lib
+)
+
+exe = executable(
+  meson.project_name(),
+  sources, 
+  fortran_args: fortran_args,
+  link_args: link_args,
+  dependencies: dependencies,
+  install : true
+)
+
+subdir('test')

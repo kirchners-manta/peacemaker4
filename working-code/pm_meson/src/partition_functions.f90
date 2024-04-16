@@ -31,9 +31,15 @@ module partition_functions
     !=====================================================================================
     ! Public entities
     public :: calculate_lnq
+    public :: calculate_lnqtrans, calculate_lnqvib, calculate_lnqrot, calculate_lnqelec, &
+              calculate_lnqint
     public :: update_lnq
     public :: calculate_dlnq
+    public :: calculate_dlnqtrans, calculate_dlnqvib, calculate_dlnqrot, calculate_dlnqelec, &
+              calculate_dlnqint
     public :: calculate_ddlnq
+    public :: calculate_ddlnqtrans, calculate_ddlnqvib, calculate_ddlnqrot, calculate_ddlnqelec, &
+              calculate_ddlnqint
     public :: pf_t
     !=====================================================================================
     ! Data type representing a cluster partition function.
@@ -51,11 +57,11 @@ module partition_functions
             real(dp), intent(in) :: vol
             real(dp), intent(in) :: temp
     
-            call calculate_lnqtrans(lnq(:)%qtrans, bxv, temp, vol)
-            call calculate_lnqvib(lnq(:)%qvib, temp)
-            call calculate_lnqrot(lnq(:)%qrot, temp)
-            call calculate_lnqelec(lnq(:)%qelec, temp)
-            call calculate_lnqint(lnq(:)%qint, amf, temp, vol)
+            call calculate_lnqtrans(lnq(:)%qtrans, bxv, temp, vol, clusterset, global_data%vexcl)
+            call calculate_lnqvib(lnq(:)%qvib, temp, clusterset, global_data%rotor_cutoff)
+            call calculate_lnqrot(lnq(:)%qrot, temp, clusterset)
+            call calculate_lnqelec(lnq(:)%qelec, temp, clusterset)
+            call calculate_lnqint(lnq(:)%qint, amf, temp, vol, clusterset, global_data%ntot)
             lnq(:)%qtot = lnq(:)%qtrans + lnq(:)%qvib + lnq(:)%qrot + lnq(:)%qelec + &
                 lnq(:)%qint
         end subroutine calculate_lnq
@@ -68,8 +74,8 @@ module partition_functions
             real(dp), intent(in) :: temp
             real(dp), intent(in) :: vol
     
-            call calculate_lnqtrans(lnq(:)%qtrans, bxv, temp, vol)
-            call calculate_lnqint(lnq(:)%qint, amf, temp, vol)
+            call calculate_lnqtrans(lnq(:)%qtrans, bxv, temp, vol, clusterset, global_data%vexcl)
+            call calculate_lnqint(lnq(:)%qint, amf, temp, vol, clusterset, global_data%ntot)
             lnq(:)%qtot = lnq(:)%qtrans + lnq(:)%qvib + lnq(:)%qrot + lnq(:)%qelec + &
                 lnq(:)%qint
         end subroutine update_lnq
@@ -84,11 +90,11 @@ module partition_functions
             real(dp), intent(in) :: temp
             real(dp), intent(in) :: vol
     
-            call calculate_dlnqtrans(dlnq(:)%qtrans, bxv, bxv_temp, temp, vol)
-            call calculate_dlnqvib(dlnq(:)%qvib, temp)
-            call calculate_dlnqrot(dlnq(:)%qrot, temp)
-            call calculate_dlnqelec(dlnq(:)%qelec, temp)
-            call calculate_dlnqint(dlnq(:)%qint, temp, amf, amf_temp, vol)
+            call calculate_dlnqtrans(dlnq(:)%qtrans, bxv, bxv_temp, temp, vol, global_data%vexcl)
+            call calculate_dlnqvib(dlnq(:)%qvib, temp, clusterset, global_data%rotor_cutoff)
+            call calculate_dlnqrot(dlnq(:)%qrot, temp, clusterset)
+            call calculate_dlnqelec(dlnq(:)%qelec, temp, clusterset)
+            call calculate_dlnqint(dlnq(:)%qint, temp, amf, amf_temp, vol, clusterset, global_data%ntot)
             dlnq(:)%qtot = dlnq(:)%qtrans + dlnq(:)%qvib + dlnq(:)%qrot + &
                 dlnq(:)%qelec + dlnq(:)%qint
         end subroutine calculate_dlnq
@@ -103,43 +109,54 @@ module partition_functions
             real(dp), intent(in) :: temp
             real(dp), intent(in) :: vol
     
-            call calculate_ddlnqtrans(ddlnq(:)%qtrans, bxv, bxv_temp, temp, vol)
-            call calculate_ddlnqvib(ddlnq(:)%qvib, temp)
-            call calculate_ddlnqrot(ddlnq(:)%qrot, temp)
-            call calculate_ddlnqelec(ddlnq(:)%qelec, temp)
-            call calculate_ddlnqint(ddlnq(:)%qint, temp, amf, amf_temp, vol)
+            call calculate_ddlnqtrans(ddlnq(:)%qtrans, bxv, bxv_temp, temp, vol, global_data%vexcl)
+            call calculate_ddlnqvib(ddlnq(:)%qvib, temp, clusterset, global_data%rotor_cutoff)
+            call calculate_ddlnqrot(ddlnq(:)%qrot, temp, clusterset)
+            call calculate_ddlnqelec(ddlnq(:)%qelec, temp, clusterset)
+            call calculate_ddlnqint(ddlnq(:)%qint, temp, amf, amf_temp, vol, clusterset, global_data%ntot)
             ddlnq(:)%qtot = ddlnq(:)%qtrans + ddlnq(:)%qvib + ddlnq(:)%qrot + &
                 ddlnq(:)%qelec + ddlnq(:)%qint
         end subroutine calculate_ddlnq
         !=================================================================================
         ! Calculates the translational cluster partition function.
         ! q_trans = (2*pi*m*kb*T/h^2)^1.5*V
-        subroutine calculate_lnqtrans(lnq, bxv, temp, vol)
+        subroutine calculate_lnqtrans(lnq, bxv, temp, vol, cluster_set, v_excl)
             real(dp), dimension(:), intent(out) :: lnq
             real(dp), intent(in) :: vol
             real(dp), intent(in) :: temp
             real(dp), intent(in) :: bxv
+            type(cluster_t), dimension(:), intent(in) :: cluster_set
+            real(dp), intent(in) :: v_excl
     
             real(dp):: lambda
             real(dp):: mass
             integer:: iclust
     
-            do iclust = 1, size(clusterset)
+            do iclust = 1, size(cluster_set)
                 ! Calculate the de Broglie wave length
-                mass = clusterset(iclust)%mass*amu
+                mass = cluster_set(iclust)%mass*amu
                 lambda = planck/sqrt(2.0_dp*pi*mass*kb*temp)
     
                 ! Calculate the partition function
-                lnq(iclust) = log(vol-bxv*global_data%vexcl) - 3.0_dp*log(lambda)
+                lnq(iclust) = log(vol-bxv*v_excl) - 3.0_dp*log(lambda)
             end do
+            
+            ! If a value is infinite, warn the user.
+            if (any(lnq >= huge(0.0_dp))) then
+                write(*,*) 'Warning: The translational partition function of one cluster'
+                write(*,*) '         is infinite.'
+            end if
+
         end subroutine calculate_lnqtrans
         !=================================================================================
         ! Calculates the vibrational cluster partition function.
         ! edit: q_vib is the product, the sum occurs due to the logarithm
         ! q_vib = product over all nu: exp[-h*nu/(2*kb*T)]/{1-exp[-h*nu/(kb*T)]}
-        subroutine calculate_lnqvib(lnq, temp)
+        subroutine calculate_lnqvib(lnq, temp, cluster_set, rotor_cutoff)
             real(dp), dimension(:), intent(out) :: lnq
             real(dp), intent(in) :: temp
+            type(cluster_t), dimension(:), intent(in) :: cluster_set
+            real(dp), intent(in) :: rotor_cutoff
     
             integer:: iclust
             integer:: ifreq, imoment
@@ -151,13 +168,13 @@ module partition_functions
             
             free_rotator = .false.
             w = 1.0_dp
-            if (global_data%rotor_cutoff > 0.0_dp) free_rotator = .true.
+            if (rotor_cutoff > 0.0_dp) free_rotator = .true.
 
             ! TODO: Check atoms.
             factor = planck*100.0_dp*speed_of_light/kb
-            do iclust = 1, size(clusterset)
-                associate(f => clusterset(iclust)%frequencies, q => lnq(iclust), &
-                    x => clusterset(iclust)%anharmonicity, c => clusterset(iclust))
+            do iclust = 1, size(cluster_set)
+                associate(f => cluster_set(iclust)%frequencies, q => lnq(iclust), &
+                    x => cluster_set(iclust)%anharmonicity, c => cluster_set(iclust))
                     q = 0.0_dp
                     q_ho = 0.0_dp
                     q_fr = 0.0_dp
@@ -184,7 +201,7 @@ module partition_functions
                                 emoi = moi * Bav/(moi + Bav)
                                 t_rot = hbar**2/(2.0_dp*emoi*kb)
                                 q_fr = log(sqrt(pi*temp/t_rot)/real(c%sigma, dp))
-                                w = 1.0_dp/(1.0_dp + (global_data%rotor_cutoff/f(ifreq))**4)
+                                w = 1.0_dp/(1.0_dp + (rotor_cutoff/f(ifreq))**4)
                             end if
                             
                             q = q + w * q_ho + (1.0_dp - w) * q_fr
@@ -192,22 +209,30 @@ module partition_functions
                     end do
                 end associate
             end do
+
+            ! If a value is infinite, warn the user.
+            if (any(lnq >= huge(0.0_dp))) then
+                write(*,*) 'Warning: The vibrational partition function of one cluster'
+                write(*,*) '         is infinite.'
+            end if
+
         end subroutine calculate_lnqvib
         !=================================================================================
         ! Calculates the rotational cluster partition function.
         ! q_rot = (1/sigma)*(T/t_rot)                               --- linear
         ! q_rot = sqrt(pi)/sigma*(T^3/(t_rot1*t_rot2*t_rot3))^(1/2) --- nonlinear
         ! q_rot = 1                                                 --- atom
-        subroutine calculate_lnqrot(lnq, temp)
+        subroutine calculate_lnqrot(lnq, temp, cluster_set)
             real(dp), dimension(:), intent(out) :: lnq
             real(dp), intent(in) :: temp
+            type(cluster_t), dimension(:), intent(in) :: cluster_set
     
             integer:: iclust
             integer:: imoment
             real(dp):: t_rot
     
-            do iclust = 1, size(clusterset)
-                associate(c => clusterset(iclust))
+            do iclust = 1, size(cluster_set)
+                associate(c => cluster_set(iclust))
                     if (c%atom) then
                         lnq(iclust) = 0.0_dp
                     else
@@ -233,53 +258,87 @@ module partition_functions
                     end if
                 end associate
             end do
+
+            ! If a value is infinite, warn the user.
+            if (any(lnq >= huge(0.0_dp))) then
+                write(*,*) 'Warning: The rotational partition function of one cluster'
+                write(*,*) '         is infinite.'
+            end if
+
         end subroutine calculate_lnqrot
         !=================================================================================
         ! Calculates the electronic cluster partition function.
         ! q_elec = exp(-dE/(kb*T))
-        subroutine calculate_lnqelec(lnq, temp)
+        subroutine calculate_lnqelec(lnq, temp, cluster_set)
             real(dp), dimension(:), intent(out) :: lnq
             real(dp), intent(in) :: temp
+            type(cluster_t), dimension(:), intent(in) :: cluster_set
     
             ! The adiabatic interaction energy is in units of kJ/mol.
-            lnq(:) = (-1000.0_dp/avogadro)*clusterset(:)%energy/(kb*temp)
+            lnq(:) = (-1000.0_dp/avogadro)*cluster_set(:)%energy/(kb*temp)
+
+            ! If a value is infinite, warn the user.
+            if (any(lnq >= huge(0.0_dp))) then
+                write(*,*) 'Warning: The electronic partition function of one cluster'
+                write(*,*) '         is infinite.'
+            end if
+
         end subroutine calculate_lnqelec
         !=================================================================================
         ! Calculates the mean field partition function.
-        subroutine calculate_lnqint(lnq, amf, temp, vol)
+        subroutine calculate_lnqint(lnq, amf, temp, vol, cluster_set, ntot)
             real(dp), dimension(:), intent(out) :: lnq
             real(dp), intent(in) :: vol
             real(dp), intent(in) :: amf
             real(dp), intent(in) :: temp
+            type(cluster_t), dimension(:), intent(in) :: cluster_set
+            real(dp), dimension(:), intent(in) :: ntot
     
             integer:: iclust
             real(dp):: emf
-
-            do iclust = 1, size(clusterset)
-                associate(c => clusterset(iclust))
-                    emf = -amf*real(sum(c%composition), dp)*sum(global_data%ntot)/vol
+            
+            do iclust = 1, size(cluster_set)
+                associate(c => cluster_set(iclust))
+                    emf = -amf*real(sum(c%composition), dp)*sum(ntot)/vol
                     lnq(iclust) = -emf / (kb*temp)
                 end associate
             end do
 
+            ! If a value is infinite, warn the user.
+            if (any(lnq >= huge(0.0_dp))) then
+                write(*,*) 'Warning: The mean field partition function of one cluster'
+                write(*,*) '         is infinite.'
+            end if
+
         end subroutine calculate_lnqint
         !=================================================================================
         ! Calculates the temperature derivative of the translational partition function.
-        subroutine calculate_dlnqtrans(dlnq, bxv, bxv_temp, temp, vol)
+        subroutine calculate_dlnqtrans(dlnq, bxv, bxv_temp, temp, vol, vexcl)
             real(dp), dimension(:), intent(out) :: dlnq
             real(dp), intent(in) :: bxv
             real(dp), intent(in) :: bxv_temp
             real(dp), intent(in)  :: temp
             real(dp), intent(in) :: vol
+            real(dp), intent(in) :: vexcl
     
-            dlnq(:) = 1.5_dp/temp + &
-                     (global_data%vexcl * bxv_temp)/(-vol+bxv*global_data%vexcl)
+            ! Fails if -vol+bxv*vexcl is zero.
+            dlnq(:) = 1.5_dp/temp + (vexcl * bxv_temp)/(-vol+bxv*vexcl)
+
+            ! If a value is infinite, warn the user.
+            if (any(dlnq >= huge(0.0_dp))) then
+                write(*,*) 'Warning: The temperature derivative of the translational'
+                write(*,*) '         partition function of one cluster is infinite.'
+            end if
+
+
         end subroutine calculate_dlnqtrans
         !=================================================================================
         ! Calculates the temperature derivative of the vibrational partition function.
-        subroutine calculate_dlnqvib(dlnq, temp)
+        subroutine calculate_dlnqvib(dlnq, temp, cluster_set, rotor_cutoff)
             real(dp), dimension(:), intent(out) :: dlnq
             real(dp), intent(in)  :: temp
+            type(cluster_t), dimension(:), intent(in) :: cluster_set
+            real(dp), intent(in) :: rotor_cutoff
     
             integer :: iclust
             integer:: ifreq
@@ -292,9 +351,9 @@ module partition_functions
     
             ! TODO: Check atoms.
             factor = planck*100.0_dp*speed_of_light/kb
-            do iclust = 1, size(clusterset)
-                associate(f => clusterset(iclust)%frequencies, q => dlnq(iclust), &
-                        x => clusterset(iclust)%anharmonicity)
+            do iclust = 1, size(cluster_set)
+                associate(f => cluster_set(iclust)%frequencies, q => dlnq(iclust), &
+                        x => cluster_set(iclust)%anharmonicity)
                     q = 0.0_dp
                     q_ho = 0.0_dp
                     q_fr = 0.0_dp
@@ -317,23 +376,31 @@ module partition_functions
                             ! Free rotator approximation by Grimme.
                             q_fr = 0.5_dp/temp
                             
-                            w = 1.0_dp/(1.0_dp + (global_data%rotor_cutoff/f(ifreq))**4)
+                            w = 1.0_dp/(1.0_dp + (rotor_cutoff/f(ifreq))**4)
                             q = q + w * q_ho + (1.0_dp - w) * q_fr
                         end if
                     end do
                 end associate
             end do
+
+            ! If a value is infinite, warn the user.
+            if (any(dlnq >= huge(0.0_dp))) then
+                write(*,*) 'Warning: The temperature derivative of the vibrational'
+                write(*,*) '         partition function of one cluster is infinite.'
+            end if
+
         end subroutine calculate_dlnqvib
         !=================================================================================
         ! Calculates the temperature derivative of the rotational partition function.
-        subroutine calculate_dlnqrot(dlnq, temp)
+        subroutine calculate_dlnqrot(dlnq, temp, cluster_set)
             real(dp), dimension(:), intent(out) :: dlnq
             real(dp), intent(in)  :: temp
+            type(cluster_t), dimension(:), intent(in) :: cluster_set
 
             integer :: iclust
     
-            do iclust = 1, size(clusterset)
-                associate(c => clusterset(iclust), q => dlnq(iclust))
+            do iclust = 1, size(cluster_set)
+                associate(c => cluster_set(iclust), q => dlnq(iclust))
                     if (c%atom) then
                         q = 0.0_dp
                     else if (c%linear) then
@@ -346,57 +413,88 @@ module partition_functions
                     end if
                 end associate
             end do
+
+            ! If a value is infinite, warn the user.
+            if (any(dlnq >= huge(0.0_dp))) then
+                write(*,*) 'Warning: The temperature derivative of the rotational'
+                write(*,*) '         partition function of one cluster is infinite.'
+            end if
+
         end subroutine calculate_dlnqrot
         !=================================================================================
         ! Calculates the temperature derivative of the electronic partition function.
-        subroutine calculate_dlnqelec(dlnq, temp)
+        subroutine calculate_dlnqelec(dlnq, temp, cluster_set)
             real(dp), dimension(:), intent(out) :: dlnq
             real(dp), intent(in)  :: temp
+            type(cluster_t), dimension(:), intent(in) :: cluster_set
     
             ! The adiabatic interaction energy is in units of kJ/mol.
-            dlnq(:) = (1000.0_dp/avogadro)*clusterset(:)%energy/(kb*temp**2)
+            dlnq(:) = (1000.0_dp/avogadro)*cluster_set(:)%energy/(kb*temp**2)
+
+            ! If a value is infinite, warn the user.
+            if (any(dlnq >= huge(0.0_dp))) then
+                write(*,*) 'Warning: The temperature derivative of the electronic'
+                write(*,*) '         partition function of one cluster is infinite.'
+            end if
+
         end subroutine calculate_dlnqelec
         !=================================================================================
         ! Calculates the temperature derivative of the mean field partition function.
-        subroutine calculate_dlnqint(dlnq, temp, amf, amf_temp, vol)
+        subroutine calculate_dlnqint(dlnq, temp, amf, amf_temp, vol, cluster_set, ntot)
             real(dp), dimension(:), intent(out) :: dlnq
             real(dp), intent(in)  :: temp
             real(dp), intent(in)  :: amf
             real(dp), intent(in)  :: amf_temp
             real(dp), intent(in)  :: vol
+            type(cluster_t), dimension(:), intent(in) :: cluster_set
+            real(dp), dimension(:), intent(in) :: ntot
     
             integer :: iclust
             real(dp):: emf
     
-            do iclust = 1, size(clusterset)
-                associate(c => clusterset(iclust))
-                    emf = -real(sum(c%composition), dp)*sum(global_data%ntot)/vol * &
-                          (amf - temp * amf_temp)
+            do iclust = 1, size(cluster_set)
+                associate(c => cluster_set(iclust))
+                    emf = -real(sum(c%composition), dp)*sum(ntot)/vol * (amf - temp * amf_temp)
                     dlnq(iclust) = emf / (kb*temp**2)
                 end associate
             end do
+
+            ! If a value is infinite, warn the user.
+            if (any(dlnq >= huge(0.0_dp))) then
+                write(*,*) 'Warning: The temperature derivative of the mean field'
+                write(*,*) '         partition function of one cluster is infinite.'
+            end if
 
         end subroutine calculate_dlnqint
         !=================================================================================
         ! Calculates the second temperature derivative of the translational partition
         ! function.
-        subroutine calculate_ddlnqtrans(dlnq, bxv, bxv_temp, temp, vol)
+        subroutine calculate_ddlnqtrans(dlnq, bxv, bxv_temp, temp, vol, vexcl)
             real(dp), dimension(:), intent(out) :: dlnq
             real(dp), intent(in) :: bxv
             real(dp), intent(in) :: bxv_temp
             real(dp), intent(in)  :: temp
             real(dp), intent(in) :: vol
+            real(dp), intent(in) :: vexcl
 
             dlnq(:) = -1.5_dp/temp**2 - &
-                     (global_data%vexcl * bxv_temp)**2/(-vol+bxv*global_data%vexcl)**2
-!            write(*,*) temp, vol, bxv*global_data%vexcl
+                     (vexcl * bxv_temp)**2/(-vol+bxv*vexcl)**2
+
+            ! If a value is infinite, warn the user.
+            if (any(dlnq >= huge(0.0_dp))) then
+                write(*,*) 'Warning: The second temperature derivative of the translational'
+                write(*,*) '         partition function of one cluster is infinite.'
+            end if
+
         end subroutine calculate_ddlnqtrans
         !=================================================================================
         ! Calculates the second temperature derivative of the vibrational partition
         ! function.
-        subroutine calculate_ddlnqvib(dlnq, temp)
+        subroutine calculate_ddlnqvib(dlnq, temp, cluster_set, rotor_cutoff)
             real(dp), dimension(:), intent(out) :: dlnq
             real(dp), intent(in)  :: temp
+            type(cluster_t), dimension(:), intent(in) :: cluster_set
+            real(dp), intent(in) :: rotor_cutoff
     
             integer :: iclust
             integer:: ifreq
@@ -409,9 +507,9 @@ module partition_functions
     
             ! TODO: Check atoms.
             factor = planck*100.0_dp*speed_of_light/kb
-            do iclust = 1, size(clusterset)
-                associate(f => clusterset(iclust)%frequencies, q => dlnq(iclust), &
-                        x => clusterset(iclust)%anharmonicity)
+            do iclust = 1, size(cluster_set)
+                associate(f => cluster_set(iclust)%frequencies, q => dlnq(iclust), &
+                        x => cluster_set(iclust)%anharmonicity)
                     q = 0.0_dp
                     q_ho = 0.0_dp
                     q_fr = 0.0_dp
@@ -440,24 +538,32 @@ module partition_functions
                             ! Free rotator approximation by Grimme.
                             q_fr = -0.5_dp/temp**2
                             
-                            w = 1.0_dp/(1.0_dp + (global_data%rotor_cutoff/f(ifreq))**4)
+                            w = 1.0_dp/(1.0_dp + (rotor_cutoff/f(ifreq))**4)
                             q = q + w * q_ho + (1.0_dp - w) * q_fr
                         end if
                     end do
                 end associate
             end do
+
+            ! If a value is infinite, warn the user.
+            if (any(dlnq >= huge(0.0_dp))) then
+                write(*,*) 'Warning: The second temperature derivative of the vibrational'
+                write(*,*) '         partition function of one cluster is infinite.'
+            end if
+
         end subroutine calculate_ddlnqvib
         !=================================================================================
         ! Calculates the second temperature derivative of the rotational partition
         ! function.
-        subroutine calculate_ddlnqrot(dlnq, temp)
+        subroutine calculate_ddlnqrot(dlnq, temp, cluster_set)
             real(dp), dimension(:), intent(out) :: dlnq
             real(dp), intent(in)  :: temp
+            type(cluster_t), dimension(:), intent(in) :: cluster_set
 
             integer :: iclust
     
-            do iclust = 1, size(clusterset)
-                associate(c => clusterset(iclust), q => dlnq(iclust))
+            do iclust = 1, size(cluster_set)
+                associate(c => cluster_set(iclust), q => dlnq(iclust))
                     if (c%atom) then
                         q = 0.0_dp
                     else if (c%linear) then
@@ -470,37 +576,60 @@ module partition_functions
                     end if
                 end associate
             end do
+
+            ! If a value is infinite, warn the user.
+            if (any(dlnq >= huge(0.0_dp))) then
+                write(*,*) 'Warning: The second temperature derivative of the rotational'
+                write(*,*) '         partition function of one cluster is infinite.'
+            end if
+
         end subroutine calculate_ddlnqrot
         !=================================================================================
         ! Calculates the second temperature derivative of the electronic partition
         ! function.
-        subroutine calculate_ddlnqelec(dlnq, temp)
+        subroutine calculate_ddlnqelec(dlnq, temp, cluster_set)
             real(dp), dimension(:), intent(out) :: dlnq
             real(dp), intent(in)  :: temp
+            type(cluster_t), dimension(:), intent(in) :: cluster_set
     
             ! The adiabatic interaction energy is in units of kJ/mol.
-            dlnq(:) = - (2000.0_dp/avogadro)*clusterset(:)%energy/(kb*temp**3)
+            dlnq(:) = - (2000.0_dp/avogadro)*cluster_set(:)%energy/(kb*temp**3)
+
+            ! If a value is infinite, warn the user.
+            if (any(dlnq >= huge(0.0_dp))) then
+                write(*,*) 'Warning: The second temperature derivative of the electronic'
+                write(*,*) '         partition function of one cluster is infinite.'
+            end if
+
         end subroutine calculate_ddlnqelec
         !=================================================================================
         ! Calculates the second temperature derivative of the the mean field partition
         ! function.
-        subroutine calculate_ddlnqint(dlnq, temp, amf, amf_temp, vol)
+        subroutine calculate_ddlnqint(dlnq, temp, amf, amf_temp, vol, cluster_set, ntot)
             real(dp), dimension(:), intent(out) :: dlnq
             real(dp), intent(in)  :: temp
             real(dp), intent(in)  :: amf
             real(dp), intent(in)  :: amf_temp
             real(dp), intent(in)  :: vol
+            type(cluster_t), dimension(:), intent(in) :: cluster_set
+            real(dp), dimension(:), intent(in) :: ntot
     
             integer :: iclust
             real(dp):: emf
     
-            do iclust = 1, size(clusterset)
-                associate(c => clusterset(iclust))
-                    emf = -real(sum(c%composition), dp)*sum(global_data%ntot)/vol * &
+            do iclust = 1, size(cluster_set)
+                associate(c => cluster_set(iclust))
+                    emf = -real(sum(c%composition), dp)*sum(ntot)/vol * &
                          (amf - temp * amf_temp)
                     dlnq(iclust) = -2.0_dp*emf/(kb*temp**3)
                 end associate
             end do
+
+            ! If a value is infinite, warn the user.
+            if (any(dlnq >= huge(0.0_dp))) then
+                write(*,*) 'Warning: The second temperature derivative of the mean field'
+                write(*,*) '         partition function of one cluster is infinite.'
+            end if
 
         end subroutine calculate_ddlnqint
         !=================================================================================

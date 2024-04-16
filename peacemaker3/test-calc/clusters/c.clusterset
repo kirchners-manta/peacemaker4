@@ -1,0 +1,44 @@
+[c1]
+  composition 1 
+  monomer
+  volume 93.5026985
+  sigma 3
+  energy 0.0
+  coordinates ../clusters/c1.xyz
+  frequencies ../clusters/c1.flist
+
+[c2-1]
+  composition 2 
+  sigma 1
+  energy -15.5475913794
+  coordinates ../clusters/c2-1.xyz
+  frequencies ../clusters/c2-1.flist
+
+[c3-4]
+  composition 3 
+  sigma 1
+  energy -38.5287486792
+  coordinates ../clusters/c3-4.xyz
+  frequencies ../clusters/c3-4.flist
+
+[c3-5]
+  composition 3 
+  sigma 1
+  energy -38.3549529768
+  coordinates ../clusters/c3-5.xyz
+  frequencies ../clusters/c3-5.flist
+
+[c3-7]
+  composition 3 
+  sigma 1
+  energy -38.2832119323
+  coordinates ../clusters/c3-7.xyz
+  frequencies ../clusters/c3-7.flist
+
+[c3-9]
+  composition 3 
+  sigma 1
+  energy -38.1005706867
+  coordinates ../clusters/c3-9.xyz
+  frequencies ../clusters/c3-9.flist
+
