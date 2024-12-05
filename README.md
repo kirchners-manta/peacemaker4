@@ -1,6 +1,21 @@
 # Peacemaker 4
 
-**This project is under development and not yet ready for use.**
+## Running Peacemaker
+
+Requirements:
+```meson``` and ```ninja``` are required to build the project. 
+[meson](https://mesonbuild.com/)
+[ninja](https://ninja-build.org/)
+
+Building the project:
+```cd working-code/pm_meson```
+```meson build```
+```cd build```
+```ninja```
+
+Peacemaker is run by
+
+```$ peacemaker [input] [clusterset]```
 
 # Setup for (old) Peacemaker 3
 
@@ -21,19 +36,6 @@ A version suitable for development and debugging can be built by running
 ```$ make debug```
 
 Note: Older versions of gfortran are subject to a bug which prevents OpenMP parallelization. If you receive the error message “Attempting to allocate already allocated variable ‘ib’ ”, compile without OpenMP support, or upgrade to a newer compiler version.
-
-## Running Peacemaker
-
-Requirements:
-```meson``` and ```ninja``` are required to build the project. 
-[meson](https://mesonbuild.com/)
-[ninja](https://ninja-build.org/)
-
-Building the project:
-```cd working-code/pm_meson```
-```meson build```
-```cd build```
-```ninja```
 
 Peacemaker is run by
 
