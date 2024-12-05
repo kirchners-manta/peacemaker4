@@ -4,14 +4,14 @@
 
 Requirements:
 ```meson``` and ```ninja``` are required to build the project. 
-[meson](https://mesonbuild.com/)
-[ninja](https://ninja-build.org/)
+* [meson](https://mesonbuild.com/)
+* [ninja](https://ninja-build.org/)
 
 Building the project:
-```cd working-code/pm_meson```
-```meson build```
-```cd build```
-```ninja```
+* ```cd working-code/pm_meson```
+* ```meson build```
+* ```cd build```
+* ```ninja```
 
 Peacemaker is run by
 
