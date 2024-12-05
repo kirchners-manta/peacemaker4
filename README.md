@@ -24,6 +24,17 @@ Note: Older versions of gfortran are subject to a bug which prevents OpenMP para
 
 ## Running Peacemaker
 
+Requirements:
+```meson``` and ```ninja``` are required to build the project. 
+[meson](https://mesonbuild.com/)
+[ninja](https://ninja-build.org/)
+
+Building the project:
+```cd working-code/pm_meson```
+```meson build```
+```cd build```
+```ninja```
+
 Peacemaker is run by
 
 ```$ peacemaker [input] [clusterset]```
