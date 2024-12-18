@@ -17,6 +17,14 @@ Peacemaker is run by
 
 ```$ peacemaker [input] [clusterset]```
 
+Write 
+```build/test/tester```
+to run the test unit tests.
+
+Use
+```tools/convert2toml/...```
+to convert the old input files to the new toml format.
+
 # Setup for (old) Peacemaker 3
 
 Peacemaker program for Quantum Cluster Equilibrium calculations
