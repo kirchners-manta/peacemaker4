@@ -11,21 +11,21 @@ Before compiling Peacemaker, make sure that the following dependencies are insta
 * Ninja: [Ninja Build system](https://ninja-build.org/)
 
 To compile Peacemaker, follow these steps:
-1. Clone the repository:
-> ```git clone git@github.com:kirchners-manta/peacemaker4.git```
+1. Clone the repository:</p>
+ ```git clone git@github.com:kirchners-manta/peacemaker4.git```
 
-2. Change to the directory:
-> ```cd peacemaker4/pm4```
+2. Change to the directory:</p>
+ ```cd peacemaker4/pm4```
 
-3. Create a build directory:
-> ```meson setup build```
+3. Create a build directory:</p>
+ ```meson setup build```
 
-4. Compile the project:
-> ```ninja -C build```
+4. Compile the project:</p>
+ ```ninja -C build```
 
-1. Run the automated tests and the unit tests:
-> ```ninja -C build test```
-> ```build/test/tester```
+1. Run the automated tests and the unit tests:</p>
+ ```ninja -C build test```
+ ```build/test/tester```
 
 ## Running Peacemaker
 Peacemaker is run by
@@ -36,7 +36,7 @@ where `[input]` is the location of the input file and `[clusterset]` is the loca
 
 ## Conversion of input files from Peacemaker 3 to Peacemaker 4
 Use
-> ```tools/convert2toml/clusterset2toml.py [clusterset] [clusterset.toml]```
-and
-> ```tools/convert2toml/QCEinput2toml.py [input] [input.toml]```
+```tools/convert2toml/clusterset2toml.py [clusterset] [clusterset.toml]```</p>
+and </p>
+```tools/convert2toml/QCEinput2toml.py [input] [input.toml]```</p>
 to convert the clusterset and input files from Peacemaker 3 to the new TOML format.
