@@ -35,8 +35,8 @@ Peacemaker is run by
 where `[input]` is the location of the input file and `[clusterset]` is the location of the clusterset file. The structure of both files is explained in Section 4 of the [manual](manual/manual.pdf).
 
 ## Conversion of input files from Peacemaker 3 to Peacemaker 4
-Use </p>
-```tools/convert2toml/clusterset2toml.py [clusterset] [clusterset.toml]```</p>
-and </p>
-```tools/convert2toml/QCEinput2toml.py [input] [input.toml]```</p>
+Use </br>
+```tools/convert2toml/clusterset2toml.py [clusterset] [clusterset.toml]```</br>
+and </br>
+```tools/convert2toml/QCEinput2toml.py [input] [input.toml]```</br>
 to convert the clusterset and input files from Peacemaker 3 to the new TOML format.
