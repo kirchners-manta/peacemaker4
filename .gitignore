@@ -1,1 +1,5 @@
-src/*.mod
+build/
+*.mod
+test-drive/
+toml-f/
+test-drive.wrap

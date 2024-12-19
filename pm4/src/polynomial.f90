@@ -30,7 +30,7 @@ module polynomial
     private
     !=====================================================================================
     ! Public entities.
-    public :: newton
+    public :: newton, horner
     public :: solve_polynomial3
     !=====================================================================================
     ! Convergence criterion in the Newton algorithm.
@@ -41,7 +41,7 @@ module polynomial
         ! The Newton-Raphson algorithm for the simultaneous solution of n n-dimensional 
         ! polynomials. For dimensions 1-3, the inverse of the Jacobi matrix is calculated
         ! directly. For higher dimensions an LU-decomposition is called.
-        subroutine newton(n, d, l, coeffs, x, iterations, success)
+        subroutine newton(n, d, l, coeffs, x, iterations, success, mono)
             integer, intent(in) :: n                    ! Dimension of system
             integer, dimension(n), intent(in) :: d      ! Degree of each dimension
             integer :: l                                 ! Length of coeffs
@@ -49,6 +49,8 @@ module polynomial
             real(dp), dimension(n), intent(inout) :: x
             integer, intent(in) :: iterations
             logical, intent(out) :: success
+            integer, dimension(:), intent(in) :: mono
+
 
             integer :: i, j
             real(dp), dimension(n) :: p, dx, xnew
@@ -57,7 +59,10 @@ module polynomial
 
                 l = l/n
             newton_loop: do i = 1, iterations
+
                 do j = 1, n
+                    ! The horner subroutine is called for the calculation of the polynomial and its derivative
+                    ! at the current point x.
                     call horner(n, d, l, coeffs((j-1)*l:j*l-1), x, p(j), pdiff(:, j))
                 end do
                 pdiff = transpose(pdiff)
@@ -68,7 +73,7 @@ module polynomial
                     return
                 end if
                 
-                select case (size(monomer))
+                select case (size(mono))
                     case (1)
                         dx = -p/pdiff(1,1)
                     case (2)
@@ -217,7 +222,10 @@ module polynomial
 
         end subroutine lu_dcmp
         !=================================================================================
-        ! Solves a third order polynomial.
+        ! Solves a third order polynomial. (Cardano's method)
+        ! a_3 x³ + a_2 x² + a_1 x + a_0 = 0.
+        ! The soubroutine fails if the coefficient of the cubic term is zero since we devide by it.
+        ! The subroutine fails if a_1 and a_2 are both zero.
         subroutine solve_polynomial3(coeffs, roots)
             real(dp), dimension(0:3), intent(in) :: coeffs
             complex(dp), dimension(3), intent(out) :: roots
@@ -227,7 +235,7 @@ module polynomial
             complex(dp), parameter :: one_third = cmplx(1.0_dp/3.0_dp, 0.0_dp, dp)
             real(dp), parameter :: two_power_one_third = 2.0_dp**(1.0_dp/3.0_dp)
             real(dp), parameter :: sqrt3 = sqrt(3.0_dp)
-            
+
             roots = (0.0_dp, 0.0_dp)
             cof = (0.0_dp, 0.0_dp)
             
@@ -255,17 +263,30 @@ module polynomial
             integer, intent(in) :: n, l                     ! number of dimensions and length of c
             integer, dimension(n), intent(in) :: d          ! degree of each dimension
             real(dp), dimension(0:l-1), intent(in) :: c     ! coefficients
-            real(dp), dimension(n), intent(in) :: x
-            real(dp), intent(out) :: p
-            real(dp), dimension(n), intent(out) :: pdiff
+            real(dp), dimension(n), intent(in) :: x         ! point at which to evaluate polynomial
+            real(dp), intent(out) :: p                      ! value of polynomial at x
+            real(dp), dimension(n), intent(out) :: pdiff    ! derivative of polynomial at x
 
             integer :: i, j, m, o
             real(dp) :: b
             real(dp), dimension(n-1) :: bdiff
 
+            !write(*,*) "n = ", n
+            !write(*,*) "d = ", d
+            !write(*,*) "l = ", l
+            !write(*,*) "c = ", c
+
+            ! Base case: 1D polynomial
             if (n == 1) then
+                ! The coefficient of the highest power is stored in p.
                 p = c(d(1))
+                ! The derivative is initialized to zero.
                 pdiff = 0.0_dp
+                ! Iteration over decreasing powers.
+                ! In each iteration, the current value of p is multiplied by x and the next
+                ! coefficient is added. (This is Horner's scheme. -> Transforms the polynomial
+                ! into a sum of products.)
+                ! The derivative is obtained using the chain rule.
                 do i = d(1)-1, 0, -1
                     pdiff = x(1)*pdiff + p
                     p = p*x(1) + c(i)
@@ -273,13 +294,15 @@ module polynomial
                 return
             end if
 
+            ! Recursive case: nD polynomial
+            ! The number of coefficients for the recursion is calculated.
+            ! This is the total number of monomials in the polynomial in all dimensions except the last.
             m = 1
             do i = 1, n-1
                 m = m * (d(i)+1)
             end do
             m = m * d(n)
             
-
             call horner(n-1, d(1:n-1), size(c(m:)), c(m:), x(1:n-1), b, bdiff)
             p = b
             do i=1, n-1

@@ -1,35 +1,42 @@
-# Peacemaker 4
+# Peacemaker 4 
+**The Quantum Cluster Equilibrium Approach to Liquid Phase Properties**
 
-**This project is under development and not yet ready for use.**
+QCE theory applies statistical mechanics to quantum-chemically optimized clusters to obtain the partition function of the system and any quantity that can be derived therefrom. 
+Peacemaker works with pure substances and multicomponent mixtures.
 
-# Setup for (old) Peacemaker 3
-
-Peacemaker program for Quantum Cluster Equilibrium calculations
 ## Compiling Peacemaker
-Peacemaker is a modern FORTRAN code and thus requires a modern FORTRAN compiler. We recommend a recent version of gfortran which is used for active development. Peacemaker can be built by running
+Before compiling Peacemaker, make sure that the following dependencies are installed:
 
-```$ make release```
+* Meson: [Meson Build system](https://mesonbuild.com/)
+* Ninja: [Ninja Build system](https://ninja-build.org/)
 
-which should produce a run time optimized binary called `peacemaker`. In case of errors, adjust the makefile to your compiler. We recommend the following compiler flags or your compiler’s equivalents:
+To compile Peacemaker, follow these steps:
+1. Clone the repository:</p>
+ ```git clone git@github.com:kirchners-manta/peacemaker4.git```
 
-* `-O3 highest` optimization level that guarantees standard compliance
-* `-fopenmp OpenMP` parallelization
-* `-flto` link-time optimization
+2. Change to the directory:</p>
+ ```cd peacemaker4/pm4```
 
-A version suitable for development and debugging can be built by running
+3. Create a build directory:</p>
+ ```meson setup build```
 
-```$ make debug```
+4. Compile the project:</p>
+ ```ninja -C build```
 
-Note: Older versions of gfortran are subject to a bug which prevents OpenMP parallelization. If you receive the error message “Attempting to allocate already allocated variable ‘ib’ ”, compile without OpenMP support, or upgrade to a newer compiler version.
+1. Run the automated tests and the unit tests:</p>
+ ```ninja -C build test```
+ ```build/test/tester```
 
 ## Running Peacemaker
-
 Peacemaker is run by
 
 ```$ peacemaker [input] [clusterset]```
 
-where `[input]` is the location of the input file and `[clusterset]` is the location of the clusterset file. The structure of both files is explained in Section 4 of the [manual](manual/manual.pdf). If Peacemaker was compiled with OpenMP parallelization, it can be run in parallel by
+where `[input]` is the location of the input file and `[clusterset]` is the location of the clusterset file. The structure of both files is explained in Section 4 of the [manual](manual/manual.pdf).
 
-```$ OMP_NUM_THREADS=[N] peacemaker [input] [clusterset]```
-
-In this case, `[N]` specifies the number of threads to run with.
+## Conversion of input files from Peacemaker 3 to Peacemaker 4
+Use </p>
+```tools/convert2toml/clusterset2toml.py [clusterset] [clusterset.toml]```</p>
+and </p>
+```tools/convert2toml/QCEinput2toml.py [input] [input.toml]```</p>
+to convert the clusterset and input files from Peacemaker 3 to the new TOML format.
