@@ -1,5 +1,5 @@
 # Peacemaker 4 
-# --The Quantum Cluster Equilibrium Approach to Liquid Phase Properties--
+**The Quantum Cluster Equilibrium Approach to Liquid Phase Properties**
 
 QCE theory applies statistical mechanics to quantum-chemically optimized clusters to obtain the partition function of the system and any quantity that can be derived therefrom. 
 Peacemaker works with pure substances and multicomponent mixtures.
