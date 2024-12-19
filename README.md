@@ -15,17 +15,17 @@ To compile Peacemaker, follow these steps:
 > ```git clone git@github.com:kirchners-manta/peacemaker4.git```
 
 2. Change to the directory:
-```cd peacemaker4/pm4```
+> ```cd peacemaker4/pm4```
 
 3. Create a build directory:
-```meson setup build```
+> ```meson setup build```
 
 4. Compile the project:
-```ninja -C build```
+> ```ninja -C build```
 
 1. Run the automated tests and the unit tests:
-```ninja -C build test```
-```build/test/tester```
+> ```ninja -C build test```
+> ```build/test/tester```
 
 ## Running Peacemaker
 Peacemaker is run by
@@ -36,7 +36,7 @@ where `[input]` is the location of the input file and `[clusterset]` is the loca
 
 ## Conversion of input files from Peacemaker 3 to Peacemaker 4
 Use
-```tools/convert2toml/clusterset2toml.py [clusterset] [clusterset.toml]```
+> ```tools/convert2toml/clusterset2toml.py [clusterset] [clusterset.toml]```
 and
-```tools/convert2toml/QCEinput2toml.py [input] [input.toml]```
+> ```tools/convert2toml/QCEinput2toml.py [input] [input.toml]```
 to convert the clusterset and input files from Peacemaker 3 to the new TOML format.
