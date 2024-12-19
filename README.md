@@ -12,7 +12,7 @@ Before compiling Peacemaker, make sure that the following dependencies are insta
 
 To compile Peacemaker, follow these steps:
 1. Clone the repository:
-```git clone git@github.com:kirchners-manta/peacemaker4.git```
+> ```git clone git@github.com:kirchners-manta/peacemaker4.git```
 
 2. Change to the directory:
 ```cd peacemaker4/pm4```
