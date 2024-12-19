@@ -24,7 +24,7 @@ To compile Peacemaker, follow these steps:
  ```ninja -C build```
 
 1. Run the automated tests and the unit tests:</p>
- ```ninja -C build test```
+ ```ninja -C build test```</br>
  ```build/test/tester```
 
 ## Running Peacemaker
