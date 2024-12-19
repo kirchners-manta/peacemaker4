@@ -302,11 +302,6 @@ module polynomial
                 m = m * (d(i)+1)
             end do
             m = m * d(n)
-
-            !write(*,*) "m = ", m
-            !write(*,*) "d(1:n-1) = ", d(1:n-1)
-            !write(*,*) "l = ", size(c(m:))
-            !write(*,*) "c(m:) = ", c(m:)
             
             call horner(n-1, d(1:n-1), size(c(m:)), c(m:), x(1:n-1), b, bdiff)
             p = b
