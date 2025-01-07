@@ -449,15 +449,21 @@ module input
             end if
         
             ! monomer_amounts
+            ! EvD: bug fix wouldn't parse for pure compounds id real was given, should work now
+            allocate(input%monomer_amounts(pmk_input%components))
+            call get_value(child, "monomer_amounts", input%monomer_amounts(1))
             call get_value(child, "monomer_amounts", array)
             if (associated(array)) then
-                allocate(input%monomer_amounts(len(array)))
+                ! allocate(input%monomer_amounts(len(array)))
+                if(size(input%monomer_amounts) .ne. pmk_input%components) then
+                    write(*, '(4X,A)') 'Warning: mismatch in components and monomer amounts in input file'
+                end if
                 do ival = 1, size(input%monomer_amounts)
                   call get_value(array, ival, input%monomer_amounts(ival))
                 end do
                 call get_value(child, "reverse", reverse, .false.)
                 if (reverse) input%monomer_amounts(:) = input%monomer_amounts(size(input%monomer_amounts):1:-1)
-            else
+            elseif (pmk_input%components .ne. 1) then
                 input%monomer_amounts = 1.0_dp/real(pmk_input%components, dp) ! in mol
             end if
           

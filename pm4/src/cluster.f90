@@ -209,11 +209,14 @@ module cluster
                         !> Check for the monomer flag.
                         call get_value(child, "isMonomer", clusterset(i)%monomer, .false.)
                         c%monomer = clusterset(i)%monomer
+
+                        !> Read the volume
                         !> If the cluster is a monomer, read the volume.
-                        if (clusterset(i)%monomer) then
-                            call get_value(child, "volume", clusterset(i)%volume, 0.0_dp)
-                            c%volume = clusterset(i)%volume
-                        end if
+                        !> EvD edit: allow to read volume for each cluster
+                        !>if (clusterset(i)%monomer) then
+                        call get_value(child, "volume", clusterset(i)%volume, 0.0_dp)
+                        c%volume = clusterset(i)%volume
+                        !>end if
 
                         !> Get moments of inertia and mass from xyz file.
                         call get_value(child, "coordinates", path_string)
@@ -297,16 +300,22 @@ module cluster
                 end if
             end do
 
+            !> EvD edit: check cluster volumes. If they are 0 (default) calculate from
+            !> monomer volumes
             !> Calculate cluster volumes, assuming that everything is alright. We will
             !  check for errors later.
             do i = 1, nr_clusters
                 if (clusterset(i)%monomer) cycle
-                clusterset(i)%volume = 0.0_dp
-                do j = 1, pmk_input%components
-                    clusterset(i)%volume = clusterset(i)%volume + &
-                        real(clusterset(i)%composition(j), dp) * &
-                        clusterset(monomer(j))%volume
-                end do
+                if (clusterset(i)%volume == 0.0_dp) then
+                    write(*,*)'debug: volume for cluster ',i,' not given, calculating from monomers'
+                    do j = 1, pmk_input%components
+                        clusterset(i)%volume = clusterset(i)%volume + &
+                            real(clusterset(i)%composition(j), dp) * &
+                            clusterset(monomer(j))%volume
+                    end do
+                else
+                    write(*,*)'debug: volume for cluster ',i,' given, nothing to be done'
+                end if
             end do
 
         end subroutine process_clusterset
