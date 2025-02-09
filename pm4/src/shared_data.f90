@@ -40,7 +40,7 @@ module shared_data
         type(range_t) :: amf, bxv, temp
         type(range_t) :: amf_temp, bxv_temp
         real(dp), dimension(:), allocatable :: monomer_amounts
-        logical :: progress_bar, imode
+        logical :: progress_bar, imode, solid
         logical, dimension(4) :: optimizer
     end type global_data_t
     !=====================================================================================

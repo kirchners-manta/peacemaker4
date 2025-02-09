@@ -307,14 +307,11 @@ module cluster
             do i = 1, nr_clusters
                 if (clusterset(i)%monomer) cycle
                 if (clusterset(i)%volume == 0.0_dp) then
-                    write(*,*)'debug: volume for cluster ',i,' not given, calculating from monomers'
                     do j = 1, pmk_input%components
                         clusterset(i)%volume = clusterset(i)%volume + &
                             real(clusterset(i)%composition(j), dp) * &
                             clusterset(monomer(j))%volume
                     end do
-                else
-                    write(*,*)'debug: volume for cluster ',i,' given, nothing to be done'
                 end if
             end do
 
@@ -428,10 +425,14 @@ module cluster
                 end do
     
                 ! Assign masses and calculate total mass.
+                ! total mass is for translational partition function, hence
+                ! Pseudoatom should not be counted here
+                c%mass = 0.0_dp
                 do i = 1, nr_atoms
                     mass(i) = periodic_table%mass(label(i))
+                    if (label(i) .ne. "Q") c%mass=c%mass+mass(i)
                 end do
-                c%mass = sum(mass)
+!                c%mass = sum(mass)
     
                 ! Calculate center of mass and shift to origin.
                 call center_of_mass(nr_atoms, com, mass, xyz)

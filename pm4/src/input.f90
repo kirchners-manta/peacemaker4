@@ -76,7 +76,7 @@ module input
         real(dp) :: max_deviation, volume_damping_factor, rotor_cutoff
         integer :: qce_iterations, newton_iterations, grid_iterations
         character(len=:), allocatable :: optimizer_helper
-        logical :: imode
+        logical :: imode, solid
         logical, dimension(4) :: optimizer
 
         ! Input read from the [reference] section.
@@ -133,6 +133,7 @@ module input
             pmk_input%grid_iterations = 1
             pmk_input%optimizer = .false.
             pmk_input%imode = .false.
+            pmk_input%solid = .false.
 
             ! Defaults for the [reference] section.
             ! Changed to .true. for testing purposes.
@@ -466,6 +467,9 @@ module input
             elseif (pmk_input%components .ne. 1) then
                 input%monomer_amounts = 1.0_dp/real(pmk_input%components, dp) ! in mol
             end if
+
+            !> solid system?
+            call get_value(child, "solid", input%solid, .false.)
           
             !------------------------------------------------------------------------
             !> Read [reference] section

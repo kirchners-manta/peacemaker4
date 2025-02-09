@@ -55,7 +55,7 @@ module atomic_data
             use constants
             class(periodic_table_t):: table
 
-            table%n = 110
+            table%n = 111
             allocate(table%elements(table%n))
 
             table%elements( 1) = element_t( 1, "H ",  1.008)
@@ -168,6 +168,7 @@ module atomic_data
             table%elements(108) = element_t(108, "Zn", 65.39)
             table%elements(109) = element_t(109, "Zr", 91.224)
             table%elements(110) = element_t(110, "Xx", 0.0)
+            table%elements(111) = element_t(111, "Q", 10000.0)
             
         end subroutine periodic_table_init
         !=================================================================================

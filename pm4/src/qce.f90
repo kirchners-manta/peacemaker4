@@ -85,6 +85,7 @@ module qce
             global_data%grid_iterations = pmk_input%grid_iterations
             global_data%optimizer = pmk_input%optimizer
             global_data%imode = pmk_input%imode
+            global_data%solid = pmk_input%solid
             global_data%amf = pmk_input%amf
             global_data%bxv = pmk_input%bxv
             global_data%amf_temp = pmk_input%amf_temp
@@ -699,7 +700,7 @@ module qce
                 
                 ! Perform QCE iteration.
                 call qce_iteration(0.0_dp, bxv, ib%temp(itemp), v0, vdamp, vol, &
-                    gibbs, populations(:), lnq(:), 1, converged)
+                    gibbs, populations(:), lnq(:), 1, converged, global_data%solid)
                 ! Copy results.
                 ib%gibbs(itemp) = gibbs
                 ib%vol(itemp) = vol
@@ -729,7 +730,7 @@ module qce
                 bxv = ib%bxv + ib%temp(itemp) * ib%bxv_temp
 
                 call qce_iteration(amf, bxv, ib%temp(itemp), v0, vdamp, vol, &
-                    gibbs, populations(:), lnq(:), 2, converged)
+                    gibbs, populations(:), lnq(:), 2, converged, global_data%solid)
                 ! Copy results, if necessary.
                 if (converged) then
                     ib%solution(itemp) = ib%solution(itemp) + 10 ! Note below.
@@ -786,7 +787,7 @@ module qce
         !=================================================================================
         ! Performs multiple QCE iterations and checks for convergence.
         subroutine qce_iteration(amf, bxv, temp, v0, vdamp, vol, gibbs, populations, &
-            lnq, cyclus, converged)
+            lnq, cyclus, converged, solid)
             real(dp), intent(in) :: amf
             real(dp), intent(in) :: bxv
             real(dp), intent(in) :: v0
@@ -798,6 +799,7 @@ module qce
             real(dp), dimension(size(clusterset)), intent(out) :: populations
             integer, intent(in) :: cyclus
             logical, intent(out) :: converged
+            logical, intent(in) :: solid
     
             integer:: iteration
             logical:: success
@@ -836,6 +838,7 @@ module qce
     
                 ! Calculate new volume.
                 old_vol = vol
+                if(solid) call calculate_vexcl(populations)
                 call calculate_volume(vol, vdamp, amf, bxv, temp, populations, success)
                 if (.not. success) then
                     ! We couldn't get any physical volume and can't proceed to
@@ -1071,6 +1074,25 @@ module qce
                 success = .false.
             end if
         end subroutine calculate_volume
+        !=================================================================================
+        ! This subroutine calculates the excluded volume, if cluster volumes are
+        ! user-defined. If the cluster volume is not the multiple of monomer volumes
+        ! it is population dependent and needs to be recalculated after solving the 
+        ! populations
+        subroutine calculate_vexcl(populations)
+            real(dp), dimension(size(clusterset)), intent(in) :: populations
+
+            integer:: i,j
+            real(dp) :: factor
+            real(dp) :: vlocal
+            
+            global_data%vexcl = 0.0_dp
+            do i = 1, size(populations)
+              global_data%vexcl = global_data%vexcl + populations(i)*clusterset(i)%volume
+            end do
+            global_data%vexcl = global_data%vexcl*1.0e-30_dp
+
+        end subroutine calculate_vexcl
         !=================================================================================
         ! This subroutine checks whether the QCE iteration has converged. It checks the
         ! deviation of the Gibbs free enthalpy from the previous run. The Gibbs free
