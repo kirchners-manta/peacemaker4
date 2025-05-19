@@ -3,3 +3,10 @@ build/
 test-drive/
 toml-f/
 test-drive.wrap
+*.fls
+*.log
+*.aux
+*.gz
+*.toc
+*.fdb_latexmk
+*.out
