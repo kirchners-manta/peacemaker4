@@ -84,7 +84,7 @@ module input
         real(dp) :: ref_phase_transition, ref_density, ref_density_temperature
         real(dp) :: ref_phase_transition_weight, ref_density_weight, ref_isobar_weight
         real(dp), dimension(:), allocatable :: ref_isobar_temperature, ref_isobar_volume
-        character(len=:), allocatable :: ref_isobar_file_helper
+        character(len=:), allocatable :: ref_isobar_path
         type(varying_string) :: ref_isobar_file
 
         ! Input read from the [output] section.
@@ -136,11 +136,10 @@ module input
             pmk_input%solid = .false.
 
             ! Defaults for the [reference] section.
-            ! Changed to .true. for testing purposes.
-            pmk_input%compare = .true.
+            pmk_input%compare = .false.
             pmk_input%compare_isobar = .false.
             pmk_input%compare_density = .true.
-            pmk_input%compare_phase_transition = .true.
+            pmk_input%compare_phase_transition = .false.
             pmk_input%ref_isobar_weight = 1.0_dp
             pmk_input%ref_density_weight = 1.0_dp
             pmk_input%ref_phase_transition_weight = 1.0_dp
@@ -167,7 +166,6 @@ module input
 
             ! Overwrite the default values with user-specified values.
             call read_data(table, pmk_input)
-            call convert_helpers(pmk_input)
 
         end subroutine process_input
 
@@ -226,7 +224,7 @@ module input
                     call get_value(array, 3, input%amf%num)
                     call set_range(input%amf, input%amf%first, input%amf%last, input%amf%num)
                 else
-                    call pmk_argument_error("amf", "qce")
+                    call pmk_argument_count_error("amf", "qce")
                 end if  
             else 
                 call set_range(pmk_input%amf, 0.0_dp, 0.0_dp, 1) ! in Jm^3/mol^2
@@ -244,7 +242,7 @@ module input
                     call get_value(array, 3, input%amf_temp%num)
                     call set_range(input%amf_temp, input%amf_temp%first, input%amf_temp%last, input%amf_temp%num)
                 else
-                    call pmk_argument_error("amf_temp", "qce")
+                    call pmk_argument_count_error("amf_temp", "qce")
                 end if  
             else 
                 call set_range(pmk_input%amf_temp, 0.0_dp, 0.0_dp, 1) ! in Jm^3/(K mol^2)
@@ -262,7 +260,7 @@ module input
                     call get_value(array, 3, input%bxv%num)
                     call set_range(input%bxv, input%bxv%first, input%bxv%last, input%bxv%num)
                 else
-                    call pmk_argument_error("bxv", "qce")
+                    call pmk_argument_count_error("bxv", "qce")
                 end if  
             else 
                 call set_range(pmk_input%bxv, 1.0_dp, 1.0_dp, 1)
@@ -281,7 +279,7 @@ module input
                     call get_value(array, 3, input%bxv_temp%num)
                     call set_range(input%bxv_temp, input%bxv_temp%first, input%bxv_temp%last, input%bxv_temp%num)
                 else
-                    call pmk_argument_error("bxv_temp", "qce")
+                    call pmk_argument_count_error("bxv_temp", "qce")
                 end if  
             else 
                 call set_range(pmk_input%bxv_temp, 0.0_dp, 0.0_dp, 1) ! in 1/K
@@ -525,22 +523,21 @@ module input
                     input%ref_density_weight = 1.0_dp
                 end if
             
-                !> reference isobar 
-                ! if reference isobar is given, compare_isobar is set to true
-                call get_value(child, "isobar", array, requested=.false.)
-                if (associated(array)) then
+                !> reference isobar file
+                call get_value(child, "isobar_file", input%ref_isobar_path)
+                if (allocated(input%ref_isobar_path)) then
                     input%compare = .true.
                     input%compare_isobar = .true.
-                    if (len(array) == 1) then 
-                        call get_value(array, 1, input%ref_isobar_file_helper)
-                    else if (len(array) == 2) then
-                        call get_value(array, 1, input%ref_isobar_file_helper)
-                        call get_value(array, 2, input%ref_isobar_weight)
-                    else
-                        call pmk_argument_count_error("isobar", "reference")
-                    end if
+                    input%ref_isobar_file = trim(input%ref_isobar_path)
+                    call read_isobar_file()
                 else
                     input%compare_isobar = .false.
+                end if
+
+                !> reference isobar weight
+                if (allocated(input%ref_isobar_path)) then
+                    call get_value(child, "isobar_weight", input%ref_isobar_weight, 1.0_dp)
+                else
                     input%ref_isobar_weight = 1.0_dp
                 end if
 
@@ -579,24 +576,45 @@ module input
             call get_value(child, "progress_bar", input%progress_bar, .true.)
               
         end subroutine read_data
+
+        !=================================================================================
+        ! Read the isobar file.
+        subroutine read_isobar_file()
+            integer :: my_unit, ios, n, i
+            character(:), allocatable :: fn
+
+            ! Open unit.
+            allocate(fn, source = char(pmk_input%ref_isobar_file))
+            open(newunit = my_unit, file = fn, action = 'read', status = 'old', &
+                iostat = ios)
+            if (ios /= 0) call pmk_error("could not open '" // fn // "'")
+
+            ! Count lines.
+            n = 0
+            count_loop: do
+                read(my_unit, *, iostat = ios)
+                if (ios /= 0) exit count_loop
+                n = n + 1
+            end do count_loop
+            rewind(my_unit)
+            if (n == 0) call pmk_error("'" // fn // "' is empty")
+
+            ! Read frequencies.
+            allocate(pmk_input%ref_isobar_temperature(n))
+            allocate(pmk_input%ref_isobar_volume(n))
+            read_loop: do i = 1, n
+                read(my_unit, *, iostat = ios) pmk_input%ref_isobar_temperature(i), &
+                    pmk_input%ref_isobar_volume(i)
+                if (ios > 0) then
+                    call pmk_error("could not read '" // fn // "'")
+                else if (ios < 0) then
+                    exit read_loop
+                end if
+            end do read_loop
+
+            close(my_unit)
+        end subroutine read_isobar_file
         
-        !> Subroutine to convert helpers in range_t
-        subroutine convert_helpers(input)
-            type(input_data), intent(inout) :: input
-            integer :: i
-
-            if (allocated(input%ref_isobar_file_helper)) then
-                do i = 1, len(input%ref_isobar_file_helper)
-                    if (input%ref_isobar_file_helper(i:i) == ' ') then
-                      input%ref_isobar_file_helper(i:i) = '_'
-                    end if
-                end do
-            end if
-            input%ref_isobar_file = trim(input%ref_isobar_file_helper)
-
-        end subroutine convert_helpers
-
-
         !=================================================================================
         ! Performs sanity checks on the input.
         subroutine check_input()
