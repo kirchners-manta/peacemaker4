@@ -51,7 +51,7 @@
 \tableofcontents
 \pagebreak
 
-
+%||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||%
 \section{Compiling Peacemaker}
 
 Peacemaker is a modern FORTRAN code and thus requires a modern FORTRAN compiler.
@@ -89,18 +89,19 @@ We recommend the following compiler flags or your compiler's equivalents:
 \end{addmargin}
 
 Note: Older versions of gfortran are subject to a bug which prevents OpenMP parallelization.
-If you receive the error message ``Attempting to allocate already allocated variable `ib' '', compile without OpenMP support, or upgrade to a newer compiler version.
+If you receive the error message ``Attempting to allocate already allocated variable `ib' '', 
+compile without OpenMP support, or upgrade to a newer compiler version.
 
-
-\newpage
+%||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||%
 \section{Running Peacemaker}
 
 Peacemaker is run by
 \begin{addmargin}[1cm]{0cm}
     \ttfamily
-    \$ peacemaker [input] [clusterset]
+    \$ \colorbox{yellow}{peacemaker [QCE-input] [clusterset-file]}
 \end{addmargin}
-where \texttt{[input]} is the location of the qce-input file and \texttt{[clusterset]} is the location of the clusterset file.
+where \texttt{[QCE-input]} is the location of the QCE-input file and \texttt{[clusterset-file]} 
+is the location of the clusterset file.
 The structure of both files will be explained in \cref{sec:config}.
 
 If Peacemaker was compiled with OpenMP parallelization, it can be run in parallel by
@@ -110,124 +111,292 @@ If Peacemaker was compiled with OpenMP parallelization, it can be run in paralle
 \end{addmargin}
 In this case, \texttt{[N]} specifies the number of threads to run with.
 
+\newpage
+
 \section{Parallelization Strategy}
 
 Peacemaker parallelizes the $\amf$, $\bxv$ sampling.
 The workload is shared among all available threads.
-Thus almost perfect parallel efficiency can be expected for large sampling ranges (or a fine grid), but no speedup should be expected
+Thus almost perfect parallel efficiency can be expected for large sampling ranges (or a fine grid), 
+but no speedup should be expected
 if a very large number of clusters or many temperatures are investigated.
 
 \section{Peacemaker Configuration Files}
 \label{sec:config}
 
-Both the input and the clusterset file share a common format which shall be briefly explained here.
-The general structure of any of those files is:
+Both the input and the clusterset file are stuctured according to the \textbf{toml format}.
+The toml format is a simple, human-readable configuration file format.
+For more information visit: \url{https://toml.io/en/}\\
+An example document is shown below:
 
+\noindent\fbox{\begin{minipage}{0.8\textwidth}\vspace{0.1cm}
 \begin{addmargin}[1cm]{0cm}
     \ttfamily
     \begin{minipage}{\textwidth}
         [section1]
         \begin{addmargin}[1cm]{0cm}
-            keyword1 argument1 argument2 ...\#\ comment \\
-            keyword2 argument1 argument2 ...\\
-            ...
+            keyword1 = "argument1"      \hspace{0.8cm}\textcolor{teal}{\#\ string} \\
+            keyword2 = "path/to/file"   \hspace{0.2cm}\textcolor{teal}{\#\ string} \\
+            keyword3 = true             \hspace{2.2cm}\textcolor{teal}{\#\ boolean} \\
+            ... \vspace{0.2cm}
         \end{addmargin}
     \end{minipage}
 
     \begin{minipage}{\textwidth}
         [section2]
         \begin{addmargin}[1cm]{0cm}
-            keyword1 argument1 argument2 ... \\
-            keyword2 argument1 argument2 ... \\
-            ...
+            keyword1 = 1                \hspace{2.8cm}\textcolor{teal}{\#\ integer} \\
+            keyword2 = [0.0, 2.0, 201]  \textcolor{teal}{\#\ array of floats} \\
+            ... \vspace{0.2cm}
         \end{addmargin}
     \end{minipage}
 
     \begin{minipage}{\textwidth}
-        ...
+        ... \vspace{0.1cm}
     \end{minipage}
 
 \end{addmargin}
+\end{minipage}}
 
 Thus there are sections, which shall be embraced in brackets, keywords, arguments, and comments.
 Section labels are unique.
 Keywords within a section are unique.
 Arguments are optional.
-Comments may start anywhere and are introduced by the number sign \#.
+\textcolor{teal}{Comments} may start anywhere and are introduced by the number sign \#.
 All elements are case sensitive.
 
-\section{The Peacemaker Input File}
+\newpage
+
+%||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||%
+\section{The Peacemaker QCE-Input File}
 \label{sec:input}
 
-\subsection{Examples}
+All sections and their associated keywords are explained in the following.
 
-The following input file will run a QCE "single point" calculation for a one-component system using the clusterset specified in the command line and explained in section~\vref{sec:clusterset}.
+\subsection*{[system]}
+\addcontentsline{toc}{subsection}{Section [system]}\vspace{-0.3cm}
+
+\begin{description}
+    \item[components = N] \hfill \\
+        The number of components in the system.
+        Currently only 1 (pure) and 2 (binary) are supported.
+        Note that although it is possible to run a pure system as binary system, where the amount of 
+        one of the species is set to zero, we strongly encourage you to run such calculations as a pure system.
+        Results will be the same in either case, but slow convergence may arise for some temperatures 
+        if the amount of monomers of one component is sufficiently small.
+        Optional. Default: 1
+\end{description}
+
+\subsection*{[qce]}
+\addcontentsline{toc}{subsection}{Section [qce]}\vspace{-0.3cm}
+
+\begin{description}
+    \item[amf = A]
+    \item[amf = [A, B, N]] \hfill \\
+        The mean field parameter $\amf$ in units of \si{\joule\cubic\meter\per\mole\squared}.
+        Can be specified either as a single value A, or as a range A, B, N, where A is the start, B the end, 
+        and N the number of data points (including both boundaries).
+        For multi-component mixtures, this keyword is equivalent to \texttt{amf\_mix}.
+        Optional. Default: 0.0
+        \vspace{0.1cm}
+%    \item[amf\_pure A B C ...] \hfill \\
+%        The pure-component mean field parameters $\amf^{a}$, $\amf^{b}$, ..., $\amf^{n}$ in units of \si{\joule\cubic\meter\per\mole\squared}.
+%        May be specified for multi-component mixtures only.
+%        Optional. If unspecified, $\amf^a = \amf^b = ... = \amf^n = \amf^{ab...n}$ is used.
+%        \vspace{0.1cm}
+%    \item[amf\_mix A]
+%    \item[amf\_mix A B N] \hfill \\
+%        The mixed-species mean field parameter $\amf^{ab}$ in units of \si{\joule\cubic\meter\per\mole\squared}.
+%        Can be specified either as a single value A, or as a range A, B, N, where A is the start, B the end, and N the number of data points (including both boundaries).
+%        For multi-component mixtures, this keyword is equivalent to \texttt{amf}.
+%        Optional. Default: 0.0
+%        \vspace{0.1cm}
+    \item[bxv = A]
+    \item[bxv = [A, B, N]] \hfill \\
+        The exclusion volume scaling parameter $\bxv$.
+        Can be specified either as a single value A, or as a range A, B, N, where A is the start, B the end, 
+        and N the number of data points (including both boundaries).
+        Optional. Default: 1.0
+        \vspace{0.1cm}
+%    \item[bxv\_pure A B] \hfill \\
+%        The pure-component exclusion volume scaling parameters $\bxv^{a}$ and $\bxv^{b}$.
+%        May be specified for binary mixtures only.
+%        Optional. Default: 1.0
+%        \vspace{0.1cm}
+    \item[amf\_temp = A]
+    \item[amf\_temp = [A, B, N]] \hfill \\
+        The linear temperature dependence parameter $a_\mathrm{mf,temp}$ of the mean field.
+        \textbf{Experimental! Do not use.}
+        Optional. Default: 0.0
+        \vspace{0.1cm}
+    \item[bxv\_temp = A]
+    \item[bxv\_temp = [A, B, N]] \hfill \\
+        The linear temperature dependence parameter $b_\mathrm{xv,temp}$ of the exclusion volume.
+        \textbf{Experimental! Do not use.}
+        Optional. Default: 0.0
+        \vspace{0.1cm}
+    \item[grid\_iterations = A] \hfill \\
+        The number of iterations for the parameter sampling if a sampling grid is specified.
+        With each iteration, the grid center is moved to the best parameter pair and the grid size is decreased 
+        with a factor of 0.2.
+        Optional. Default: 1
+    \item[rotor\_cutoff = A] \hfill \\
+        The cutoff frequency in cm$^{-1}$ at which the RRHO-correction for low frequencies will be used.
+        To limit their influence on the entropy, vibrational modes with a frequency below A will be treated as 
+        hindered rotations, employing a switching function to smooth the transition between harmonic oscillator 
+        and rigid rotator. If set to 0, no correction will be applied.
+        Optional. Default: 0
+    \item[optimizer = ["amf", "bxv", "amf\_temp", "bxv\_temp"]] \hfill \\
+        Enables the Nelder--Mead algorithm for parameter optimization.
+        The parameters to be optimized can be given as a list of strings in an arbitrary order.
+        By default, no optimization is performed.
+    \item[max\_deviation = A] \hfill \\
+        The maximum relative deviation of the Gibbs energy.
+        Used to check convergence of the QCE iteration.
+        A QCE cycle has converged, if \[\left|\frac{G(\text{current step}) - G(\text{last step})}{G(\text{last step})}\right| < A.\]
+        Optional. Default: 1.0e-9
+        \vspace{0.1cm}
+    \item[volume\_damping\_factor = A] \hfill \\
+        The volume damping factor used to damp the initial volume guess if one of the polynomials did not converge.
+        Shall be between 0 and 1.
+        Damping is performed by $\gamma_V = 1 \pm A$, depending on the mode of the temperature loop.
+        Optional. Default: 0.01
+        \vspace{0.1cm}
+    \item[qce\_iterations = N] \hfill \\
+        The maximum number of iterations in a QCE cycle.
+        Optional. Default: 100
+        \vspace{0.1cm}
+    \item[newton\_iterations = N] \hfill \\
+        The maximum number of iterations in a Newton--Raphson cycle.
+        Optional. Default: 500
+\end{description}
+
+\subsection*{[reference]}
+\addcontentsline{toc}{subsection}{Section [reference]}\vspace{-0.3cm}
+
+This section is optional.
+It enables comparison to experimental reference data.
+It is disabled by default.
+Further details on parameter sampling are given in section~\vref{sec:sampling}.
+
+\begin{description}
+    \item[density A B]
+    \item[density A B C] \hfill \\
+        Reference density B in units of \si{\gram\per\cubic\centi\meter} at reference temperature 
+        A in \si{\kelvin} and an optional error weight C.
+        Optional.
+        \vspace{0.1cm}
+    \item[isobar P]
+    \item[isobar P A] \hfill \\
+        Path to an isobar file P and an optional error weight A.
+        Isobar files contain two columns representing the temperature in \si{\kelvin} and volume 
+        in \si{\liter}.
+        Optional.
+        \vspace{0.1cm}
+    \item[phase\_transition A]
+    \item[phase\_transition A B] \hfill \\
+        Reference temperature of phase transition A in units of \si{\kelvin} and an optional error 
+        weight B.
+        Optional.
+\end{description}
+
+\subsection*{[output]}
+\addcontentsline{toc}{subsection}{Section [output]}\vspace{-0.3cm}
+
+This section is optional.
+It enables output control.
+It is disabled by default.
+
+\begin{description}
+    \item[contributions]
+    \item[contributions <helmholtz|internal|entropy|cv>] \hfill \\
+        Enables the output of contributions of each degree of freedom to the thermodynamic functions.
+        If no arguments are given, contribution output is enabled for all possible thermodynamic quantities.
+        If arguments are specified, contribution output is only enabled for the selected thermodynamic quantities.
+        Optional.
+    \item[progress]
+    \item[noprogress] \hfill \\
+        Enables or disables the progress bar.
+        Optional. Default: enabled.
+\end{description}
+
+\newpage
+\subsection*{Example QCE-Inputs}
+\addcontentsline{toc}{subsection}{Example QCE-Inputs}\vspace{-0.3cm}
+In the following, you find three examples of input files, for different purposes.
+
+\subsubsection*{Single Point Calculation}\vspace{-0.3cm}
+The input file shown bellow will run a QCE "single point" calculation for a one-component system 
+using the clusterset specified in the command line and explained in \cref{sec:clusterset}.
 Default options are used in most cases.
 
 \
-
+\noindent\fbox{\begin{minipage}{0.7\textwidth}\vspace{0.1cm}
 \begin{addmargin}[1cm]{0cm}
     \ttfamily
     \begin{minipage}{\textwidth}
         [qce]
         \begin{addmargin}[1cm]{0cm}
-            amf 0.1 \# J*m\^{}3/mol\^{}2 \\
-            bxv 1.3
+            amf = 0.1 \textcolor{teal}{\#\ J*m\^{}3/mol\^{}2} \\
+            bxv = 1.3 \vspace{0.1cm}
         \end{addmargin}
-    \end{minipage}
+    \end{minipage}\vspace{0.2cm}
 
     \begin{minipage}{\textwidth}
         [ensemble]
         \begin{addmargin}[1cm]{0cm}
-            temperature 200.0 400.0 201 \# K \\
-            pressure 1.01325 \# bar \\
-            monomer\_amounts 1.0 \# mol
+            temperature = [200.0, 400.0, 201] \textcolor{teal}{\#\ K} \\
+            pressure = 1.01325 \textcolor{teal}{\#\ bar} \\
+            monomer\_amounts = 1.0 \textcolor{teal}{\#\ mol} 
         \end{addmargin}
-    \end{minipage}
+    \end{minipage}\vspace{0.1cm}
 \end{addmargin}
 
+\end{minipage}}
 \
 
-The following input will perform an $\amf$, $\bxv$ parameter sampling for a pure substance.
+\subsubsection*{Parameter sampling}\vspace{-0.3cm}
+This input will perform an $\amf$, $\bxv$ parameter sampling for a pure substance.
 Reference data are provided by an isobar file.
-Further details on parameter sampling are explained in section~\vref{sec:sampling}.
+Further details on parameter sampling are explained in \cref{sec:sampling}.
 
 \
-
+\noindent\fbox{\begin{minipage}{0.7\textwidth}\vspace{0.1cm}
 \begin{addmargin}[1cm]{0cm}
     \ttfamily
     \begin{minipage}{\textwidth}
         [system]
         \begin{addmargin}[1cm]{0cm}
-            components 1
+            components = 1
         \end{addmargin}
-    \end{minipage}
+    \end{minipage} \vspace{0.2cm}
 
     \begin{minipage}{\textwidth}
         [qce]
         \begin{addmargin}[1cm]{0cm}
-            amf 0.0 0.5 101 \# J*m\^{}3/mol\^{}2 \\
-            bxv 1.0 2.0 101
+            amf = [0.0, 0.5, 101] \textcolor{teal}{\# J*m\^{}3/mol\^{}2} \\
+            bxv = [1.0, 2.0, 101]
         \end{addmargin}
-    \end{minipage}
+    \end{minipage} \vspace{0.2cm}
 
     \begin{minipage}{\textwidth}
         [ensemble]
         \begin{addmargin}[1cm]{0cm}
-            temperature 200.0 400.0 201 \# K \\
-            pressure 1.01325 \# bar \\
-            monomer\_amounts 1.0 \# mol
+            temperature = [200.0, 400.0, 201] \textcolor{teal}{\# K} \\
+            pressure = 1.01325 \textcolor{teal}{\# bar} \\
+            monomer\_amounts  = 1.0 \textcolor{teal}{\# mol}
         \end{addmargin}
-    \end{minipage}
+    \end{minipage} \vspace{0.2cm}
 
     \begin{minipage}{\textwidth}
         [reference]
         \begin{addmargin}[1cm]{0cm}
-            isobar isobar.dat
+            isobar = "isobar.dat"
         \end{addmargin}
-    \end{minipage}
-\end{addmargin}
+    \end{minipage} \vspace{0.1cm}
 
+\end{addmargin}
+\end{minipage}}
 \
 
 %The following input will perform an $\amf^{\mathrm{mix}}$ parameter sampling for a binary mixture.
@@ -272,12 +441,13 @@ Further details on parameter sampling are explained in section~\vref{sec:samplin
 %\end{addmargin}
 %
 %\
-
-The following input will perform an $\amf$, $\bxv$ parameter optimization for a ternary mixture, following a rough sampling on a small grid.
+\subsubsection*{Parameter optimization}\vspace{-0.3cm}
+The following input will perform an $\amf$, $\bxv$ parameter optimization for a ternary mixture, following a 
+rough sampling on a small grid.
 Reference data are provided by a density at \SI{298.15}{K} and a temperature of phase transition.
 
 \
-
+\noindent\fbox{\begin{minipage}{0.7\textwidth}\vspace{0.1cm}
 \begin{addmargin}[1cm]{0cm}
     \ttfamily
     \begin{minipage}{\textwidth}
@@ -285,186 +455,40 @@ Reference data are provided by a density at \SI{298.15}{K} and a temperature of 
         \begin{addmargin}[1cm]{0cm}
             components 3
         \end{addmargin}
-    \end{minipage}
+    \end{minipage}\vspace{0.2cm}
 
     \begin{minipage}{\textwidth}
         [qce]
         \begin{addmargin}[1cm]{0cm}
-            amf 0.0 2.0 11 \# J*m\^{}3/mol\^{}2 \\
-            bxv 0.5 1.5 11 \\
-            grid\_iterations 2 \\
-            optimizer 11
+            amf = [0.0, 2.0, 11] \textcolor{teal}{\# J*m\^{}3/mol\^{}2} \\
+            bxv = [0.5, 1.5, 11] \\
+            grid\_iterations = 2 \\
+            optimizer = ["amf", "bxv"] \\
         \end{addmargin}
-    \end{minipage}
+    \end{minipage}\vspace{0.2cm}
 
     \begin{minipage}{\textwidth}
         [ensemble]
         \begin{addmargin}[1cm]{0cm}
-            temperature 273.15 400.15 128 \# K \\
-            pressure 1.01325 \# bar \\
-            monomer\_amounts 0.6 0.1 0.3 \# mol
+            temperature = [273.15, 400.15, 128] \textcolor{teal}{\# K} \\
+            pressure = 1.01325 \textcolor{teal}{\# bar} \\
+            monomer\_amounts = [0.6, 0.1, 0.3] \textcolor{teal}{\# mol}
         \end{addmargin}
-    \end{minipage}
+    \end{minipage}\vspace{0.2cm}
 
     \begin{minipage}{\textwidth}
         [reference]
         \begin{addmargin}[1cm]{0cm}
-            density 298.15 0.9248 \# K; g/cm\^{}3 \\
-            phase\_transition 332.61 \# K
+            density = [298.15, 0.9248] \textcolor{teal}{\# K; g/cm\^{}3} \\
+            phase\_transition = 332.61 \textcolor{teal}{\# K}
         \end{addmargin}
-    \end{minipage}
+    \end{minipage}\vspace{0.1cm}
 \end{addmargin}
-
+\end{minipage}}
 \
 
-While hopefully self-explaining, all sections and their associated keywords shall be explained in the following.
-
-\subsection{Section [system]}
-
-\begin{description}
-    \item[components N] \hfill \\
-        The number of components in the system.
-        Currently only 1 (pure) and 2 (binary) are supported.
-        Note that although it is possible to run a pure system as binary system, where the amount of one of the species is set to zero, we strongly encourage you to run such calculations as a pure system.
-        Results will be the same in either case, but slow convergence may arise for some temperatures if the amount of monomers of one component is sufficiently small.
-        Optional. Default: 1
-\end{description}
-
-\subsection{Section [qce]}
-
-\begin{description}
-    \item[amf A]
-    \item[amf A B N] \hfill \\
-        The mean field parameter $\amf$ in units of \si{\joule\cubic\meter\per\mole\squared}.
-        Can be specified either as a single value A, or as a range A, B, N, where A is the start, B the end, and N the number of data points (including both boundaries).
-        For multi-component mixtures, this keyword is equivalent to \texttt{amf\_mix}.
-        Optional. Default: 0.0
-        \vspace{0.1cm}
-%    \item[amf\_pure A B C ...] \hfill \\
-%        The pure-component mean field parameters $\amf^{a}$, $\amf^{b}$, ..., $\amf^{n}$ in units of \si{\joule\cubic\meter\per\mole\squared}.
-%        May be specified for multi-component mixtures only.
-%        Optional. If unspecified, $\amf^a = \amf^b = ... = \amf^n = \amf^{ab...n}$ is used.
-%        \vspace{0.1cm}
-%    \item[amf\_mix A]
-%    \item[amf\_mix A B N] \hfill \\
-%        The mixed-species mean field parameter $\amf^{ab}$ in units of \si{\joule\cubic\meter\per\mole\squared}.
-%        Can be specified either as a single value A, or as a range A, B, N, where A is the start, B the end, and N the number of data points (including both boundaries).
-%        For multi-component mixtures, this keyword is equivalent to \texttt{amf}.
-%        Optional. Default: 0.0
-%        \vspace{0.1cm}
-    \item[bxv A]
-    \item[bxv A B N] \hfill \\
-        The exclusion volume scaling parameter $\bxv$.
-        Can be specified either as a single value A, or as a range A, B, N, where A is the start, B the end, and N the number of data points (including both boundaries).
-        Optional. Default: 1.0
-        \vspace{0.1cm}
-%    \item[bxv\_pure A B] \hfill \\
-%        The pure-component exclusion volume scaling parameters $\bxv^{a}$ and $\bxv^{b}$.
-%        May be specified for binary mixtures only.
-%        Optional. Default: 1.0
-%        \vspace{0.1cm}
-    \item[amf\_temp A]
-    \item[amf\_temp A B N] \hfill \\
-        The linear temperature dependence parameter $a_\mathrm{mf,temp}$ of the mean field.
-        \textbf{Experimental! Do not use.}
-        Optional. Default: 0.0
-        \vspace{0.1cm}
-    \item[bxv\_temp A]
-    \item[bxv\_temp A B N] \hfill \\
-        The linear temperature dependence parameter $b_\mathrm{xv,temp}$ of the exclusion volume.
-        \textbf{Experimental! Do not use.}
-        Optional. Default: 0.0
-        \vspace{0.1cm}
-    \item[grid\_iterations A] \hfill \\
-        The number of iterations for the parameter sampling if a sampling grid is specified.
-        With each iteration, the grid center is moved to the best parameter pair and the grid size is decreased with a factor of 0.2.
-        Optional. Default: 1
-    \item[rotor\_cutoff A] \hfill \\
-        The cutoff frequency in cm$^{-1}$ at which the RRHO-correction for low frequencies will be used.
-        To limit their influence on the entropy, vibrational modes with a frequency below A will be treated as hindered rotations, employing a switching function to smooth the transition between harmonic oscillator and rigid rotator. If set to 0, no correction will be applied.
-        Optional. Default: 0
-    \item[optimizer A] \hfill \\
-        Enables the Nelder--Mead algorithm for parameter optimization.
-        A is a 4 bit number that specifies which parameters should be optimized.
-        Each optimizable parameter is assigned a specific value:
-        \begin{table}[h!]
-        \hspace{1cm}
-        \begin{tabular}{lr}
-        $a_\mathrm{mf}$      &    1 \\
-        $b_\mathrm{xv}$      &   10 \\
-        $a_\mathrm{mf,temp}$ &  100 \\
-        $b_\mathrm{xv,temp}$ & 1000 \\
-        \end{tabular}
-        \end{table}
-        
-        A is the sum of the values associated with the parameters that should be optimized, i.e., to optimize $a_\mathrm{mf}$ and $b_\mathrm{xv}$ it should be set to 11.
-        \textbf{All settings except 0 and 11 should currently be considered experimental.}
-        Optional. Default: 0
-    \item[max\_deviation A] \hfill \\
-        The maximum relative deviation of the Gibbs energy.
-        Used to check convergence of the QCE iteration.
-        A QCE cycle has converged, if \[\left|\frac{G(\text{current step}) - G(\text{last step})}{G(\text{last step})}\right| < A.\]
-        Optional. Default: 1.0e-9
-        \vspace{0.1cm}
-    \item[volume\_damping\_factor A] \hfill \\
-        The volume damping factor used to damp the initial volume guess if one of the polynomials did not converge.
-        Shall be between 0 and 1.
-        Damping is performed by $\gamma_V = 1 \pm A$, depending on the mode of the temperature loop.
-        Optional. Default: 0.01
-        \vspace{0.1cm}
-    \item[qce\_iterations N] \hfill \\
-        The maximum number of iterations in a QCE cycle.
-        Optional. Default: 100
-        \vspace{0.1cm}
-    \item[newton\_iterations N] \hfill \\
-        The maximum number of iterations in a Newton--Raphson cycle.
-        Optional. Default: 500
-\end{description}
-
-\subsection{Section [reference]}
-
-This section is optional.
-It enables comparison to experimental reference data.
-It is disabled by default.
-Further details on parameter sampling are given in section~\vref{sec:sampling}.
-
-\begin{description}
-    \item[density A B]
-    \item[density A B C] \hfill \\
-        Reference density B in units of \si{\gram\per\cubic\centi\meter} at reference temperature A in \si{\kelvin} and an optional error weight C.
-        Optional.
-        \vspace{0.1cm}
-    \item[isobar P]
-    \item[isobar P A] \hfill \\
-        Path to an isobar file P and an optional error weight A.
-        Isobar files contain two columns representing the temperature in \si{\kelvin} and volume in \si{\liter}.
-        Optional.
-        \vspace{0.1cm}
-    \item[phase\_transition A]
-    \item[phase\_transition A B] \hfill \\
-        Reference temperature of phase transition A in units of \si{\kelvin} and an optional error weight B.
-        Optional.
-\end{description}
-
-\subsection{Section [output]}
-
-This section is optional.
-It enables output control.
-It is disabled by default.
-
-\begin{description}
-    \item[contributions]
-    \item[contributions <helmholtz|internal|entropy|cv>] \hfill \\
-        Enables the output of contributions of each degree of freedom to the thermodynamic functions.
-        If no arguments are given, contribution output is enabled for all possible thermodynamic quantities.
-        If arguments are specified, contribution output is only enabled for the selected thermodynamic quantities.
-        Optional.
-    \item[progress]
-    \item[noprogress] \hfill \\
-        Enables or disables the progress bar.
-        Optional. Default: enabled.
-\end{description}
-
+\newpage
+%||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||%
 \section{The Peacemaker Clusterset File}
 \label{sec:clusterset}
 
@@ -569,8 +593,10 @@ All output files contain the temperature in \si{K} in column 1.
         Possible quantities are: Helmholtz free energy, internal energy, entropy, heat capacity at constant volume.
         \vspace{0.1cm}
     \item[xxx\_clusters.dat] \hfill \\
-        Contains the contributions of each cluster to the quantity denoted by xxx divided by its absolute population (meaning these are cluster specific quantities).
-        Possible quantities are: the partition function and its derivatives, the indistinguishability contribution, Helmholtz free energy, internal energy, Gibbs energy, enthalpy entropy, heat capacity at constant volume and pressure.
+        Contains the contributions of each cluster to the quantity denoted by xxx divided by its absolute 
+        population (meaning these are cluster specific quantities).
+        Possible quantities are: the partition function and its derivatives, the indistinguishability contribution, 
+        Helmholtz free energy, internal energy, Gibbs energy, enthalpy entropy, heat capacity at constant volume and pressure.
         \vspace{0.1cm}
     \item[populations.dat] \hfill \\
         Contains populations of each cluster in the order they were specified in the clusterset.
@@ -589,10 +615,12 @@ All output files contain the temperature in \si{K} in column 1.
         Concentrations are not monomer normalized.
 \end{description}
 
+%||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||%
 \section{Parameter Sampling}
 \label{sec:sampling}
 
-Peacemaker performs $\amf$, $\bxv$ parameter sampling on a grid, which can be specified in the [qce] section of the input file.
+Peacemaker performs $\amf$, $\bxv$ parameter sampling on a grid, which can be specified in the [qce] 
+section of the input file.
 For each pair, the quality of the resulting isobar is compared to certain experimental quantities.
 The following options are available for this purpose: single density, isobar, temperature of phase transition.
 The isobar quality is computed according to the following equation.
@@ -605,10 +633,12 @@ Any combination of the experimental data above can be chosen.
 The relative importance of each quantity can be specified by the weight $w$.
 
 Isobars are specified by an isobar file.
-This file shall contain two columns of numbers: temperatures in \si{K} in column one and volumes in \si{\cubic\deci\meter} in column two.
+This file shall contain two columns of numbers: temperatures in \si{K} in column one and volumes in 
+\si{\cubic\deci\meter} in column two.
 All temperatures must be within the temperature range specified in the [qce] section.
 There are no requirements on the order of the temperatures.
 Temperatures may be included multiple times to put special weight on them.
-If a reference temperature is not equal to the temperature specified by the temperature range in the [qce] section, linear interpolation between the two closest temperatures is performed.
+If a reference temperature is not equal to the temperature specified by the temperature range in the 
+[qce] section, linear interpolation between the two closest temperatures is performed.
 
 \end{document}
