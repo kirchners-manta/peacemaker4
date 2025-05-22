@@ -52,6 +52,43 @@
 \pagebreak
 
 %||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||%
+\section{What is Peacemaker?}
+\label{sec:peacemaker}
+Peacemaker uses the laws of statistical thermodynamics to calculate the thermodynamic properties of
+pure liquids and liquid mixtures.
+It is based on the \textbf{Q}uantum \textbf{C}luster \textbf{E}quilibrium (QCE) method, which is 
+the idea, that the liquid bulk system can be described as a dense distribution of statistically
+reoccurring molecular cluster motifs.
+
+\textbf{What you need to provide in order to use Peacemaker:}\vspace{-0.2cm}
+\begin{itemize}[noitemsep]
+    \item A set of clusters, which are representative for the system you want to investigate.
+    \item The vibrational frequencies of the clusters.
+    \item The volumes for the monomers.
+    \item The molar amounts of the clusters.
+    \item The adiabatic interaction energy of the clusters in units of \si{\kilo\joule\per\mole}.\vspace{-0.2cm}
+    \begin{equation*}
+        \hspace{-2.2cm}\Delta_\mathrm{bind} \epsilon(t_i w_j) = \epsilon(t_i w_j) - i \cdot \epsilon(t_1) - j \cdot \epsilon(w_1)
+    \end{equation*}
+\end{itemize}
+
+\textbf{What you get in return:}\vspace{-0.2cm}
+\begin{itemize}[noitemsep]
+    \item The Gibbs free energy of the system in units of \si{\kilo\joule}.
+    \item The Helmholtz free energy of the system in units of \si{\kilo\joule}.
+    \item The internal energy of the system in units of \si{\kilo\joule}.
+    \item The enthalpy of the system in units of \si{\kilo\joule}.
+    \item The entropy of the system in units of \si{\joule\per\kelvin}.
+    \item The heat capacity at constant volume in units of \si{\joule\per\kelvin}.
+    \item The heat capacity at constant pressure in units of \si{\joule\per\kelvin}.
+    \item The volume of the system in units of \si{\deci\meter\cubed}.
+    \item The populations of each cluster.
+    \item The concentrations of each cluster in units of \si{\mole\per\liter}.
+    \item A set of contributions for each degree of freedom to the thermodynamic quantities.
+    \item A set of contributions for each cluster to the thermodynamic quantities.
+\end{itemize}
+
+%||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||%
 \section{Compiling Peacemaker}
 
 Peacemaker is a modern FORTRAN code and thus requires a modern FORTRAN compiler.
