@@ -7,7 +7,7 @@
 \usepackage{listings}
 \usepackage{siunitx}
 \usepackage{enumitem}
-\usepackage{hyperref}
+\usepackage[colorlinks=true,urlcolor=purple]{hyperref}
 \usepackage{varioref}
 \usepackage{amsmath}
 \usepackage{pdfpages}
@@ -70,7 +70,7 @@ reoccurring molecular cluster motifs.
     \begin{equation*}
         \hspace{-2.2cm}\Delta_\mathrm{bind} \epsilon(t_i w_j) = \epsilon(t_i w_j) - i \cdot \epsilon(t_1) - j \cdot \epsilon(w_1)
     \end{equation*}
-\end{itemize}
+\end{itemize}\vspace{-0.2cm}
 
 \textbf{What you get in return:}\vspace{-0.2cm}
 \begin{itemize}[noitemsep]
@@ -86,8 +86,15 @@ reoccurring molecular cluster motifs.
     \item The concentrations of each cluster in units of \si{\mole\per\liter}.
     \item A set of contributions for each degree of freedom to the thermodynamic quantities.
     \item A set of contributions for each cluster to the thermodynamic quantities.
-\end{itemize}
+\end{itemize}\vspace{0.32cm}
 
+\begin{figure}[h!]
+    \centering
+    \makebox[\textwidth][c]{\includegraphics[width=1.13\textwidth]{pm.png}}
+    \label{fig:peacemaker}
+\end{figure}
+
+\newpage
 %||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||%
 \section{Compiling Peacemaker}
 
