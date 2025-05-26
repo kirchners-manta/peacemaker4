@@ -161,7 +161,7 @@ If Peacemaker was compiled with OpenMP parallelization, it can be run in paralle
 \end{addmargin}
 In this case, \texttt{[N]} specifies the number of threads to run with.
 
-
+\newpage
 %||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||%
 %\section{Parallelization Strategy}
 %
@@ -232,6 +232,7 @@ They can be run by typing the following commands in a terminal:
     \$ python3 clusterset2toml.py [clusterset] [clusterset-toml]~.
 \end{addmargin}
 
+\newpage
 %||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||%
 \section{The Peacemaker QCE-Input File}
 \label{sec:input}
@@ -450,48 +451,7 @@ Further details on parameter sampling are explained in \cref{sec:sampling}.
 \end{minipage}}
 \
 
-%The following input will perform an $\amf^{\mathrm{mix}}$ parameter sampling for a binary mixture.
-%Reference data are provided by a density at \SI{298.15}{K} and a temperature of phase transition.
-%
-%\
-%
-%\begin{addmargin}[1cm]{0cm}
-%    \ttfamily
-%    \begin{minipage}{\textwidth}
-%        [system]
-%        \begin{addmargin}[1cm]{0cm}
-%            components 2
-%        \end{addmargin}
-%    \end{minipage}
-%
-%    \begin{minipage}{\textwidth}
-%        [qce]
-%        \begin{addmargin}[1cm]{0cm}
-%            bxv\_pure 1.2 1.6 \\
-%            amf\_pure 0.2 0.8 \# J*m\^{}3/mol\^{}2 \\
-%            amf\_mix 0.0 0.5 101 \# J*m\^{}3/mol\^{}2
-%        \end{addmargin}
-%    \end{minipage}
-%
-%    \begin{minipage}{\textwidth}
-%        [ensemble]
-%        \begin{addmargin}[1cm]{0cm}
-%            temperature 200.0 400.0 201 \# K \\
-%            pressure 1.01325 \# bar \\
-%            monomer\_amounts 0.5 0.5 \# mol
-%        \end{addmargin}
-%    \end{minipage}
-%
-%    \begin{minipage}{\textwidth}
-%        [reference]
-%        \begin{addmargin}[1cm]{0cm}
-%            density 298.15 1.023 \# K; g/cm\^{}3 \\
-%            phase\_transition 373.15 \# K
-%        \end{addmargin}
-%    \end{minipage}
-%\end{addmargin}
-%
-%\
+\newpage
 \subsubsection*{Parameter optimization}\vspace{-0.3cm}
 The following input will perform an $\amf$, $\bxv$ parameter optimization for a ternary mixture, following a 
 rough sampling on a small grid.
@@ -543,41 +503,12 @@ Reference data are provided by a density at \SI{298.15}{K} and a temperature of 
 \section{The Peacemaker Clusterset File}
 \label{sec:clusterset}
 
-\subsection{Example}
-
+\subsection{Structure}
 Clusterset files are structured like input files.
 A section provides all necessary information about a cluster.
 The section label is used as cluster label.
 Cluster data may be acquired with the help of the tools provided with this distribution of Peacemaker.
 See the tools/README file for further information.
-
-\clearpage
-\begin{addmargin}[1cm]{0cm}
-    \ttfamily
-    [Cluster 1]
-    \begin{addmargin}[1cm]{0cm}
-        monomer \\
-        composition 1 \\
-        sigma 2 \\
-        coordinates /home/user/clusters/cluster1.xyz \\
-        frequencies /home/user/clusters/cluster1.flist \\
-        energy 0.0 \\
-        volume 60.0 \\
-        frequency\_scale 0.97
-    \end{addmargin}
-    [Cluster 2]
-    \begin{addmargin}[1cm]{0cm}
-        composition 3 \\
-        sigma 3 \\
-        coordinates /home/user/clusters/cluster2.xyz \\
-        frequencies /home/user/clusters/cluster2.flist \\
-        energy -20.0 \\
-        frequency\_scale 0.97
-    \end{addmargin}
-    ...
-\end{addmargin}
-
-\subsection{Details}
 
 \begin{description}
     \item[monomer] \hfill \\
@@ -615,6 +546,38 @@ See the tools/README file for further information.
         The anharmonicity constant.
         Optional.
 \end{description}
+
+\subsection{Example}
+
+
+
+\clearpage
+\begin{addmargin}[1cm]{0cm}
+    \ttfamily
+    [Cluster 1]
+    \begin{addmargin}[1cm]{0cm}
+        monomer \\
+        composition 1 \\
+        sigma 2 \\
+        coordinates /home/user/clusters/cluster1.xyz \\
+        frequencies /home/user/clusters/cluster1.flist \\
+        energy 0.0 \\
+        volume 60.0 \\
+        frequency\_scale 0.97
+    \end{addmargin}
+    [Cluster 2]
+    \begin{addmargin}[1cm]{0cm}
+        composition 3 \\
+        sigma 3 \\
+        coordinates /home/user/clusters/cluster2.xyz \\
+        frequencies /home/user/clusters/cluster2.flist \\
+        energy -20.0 \\
+        frequency\_scale 0.97
+    \end{addmargin}
+    ...
+\end{addmargin}
+
+
 
 \section{Peacemaker Output Files}
 
