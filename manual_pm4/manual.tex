@@ -136,17 +136,23 @@ Note: Older versions of gfortran are subject to a bug which prevents OpenMP para
 If you receive the error message ``Attempting to allocate already allocated variable `ib' '', 
 compile without OpenMP support, or upgrade to a newer compiler version.
 
+\newpage
 %||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||%
 \section{Running Peacemaker}
+Two input files are required to run Peacemaker.
+The first is the \textbf{QCE-input file}, which contains all necessary information about the system 
+to be investigated as well as the parameters to be sampled.
+The second is the \textbf{clusterset file}, which contains the paths to the structure and the frequency 
+files of each cluster, as well as information about the clusters, such as their composition or energy.
+More details on the structure of these files are given in the following sections.
 
 Peacemaker is run by
 \begin{addmargin}[1cm]{0cm}
     \ttfamily
-    \$ \colorbox{yellow}{peacemaker [QCE-input] [clusterset-file]}
+    \$ \colorbox{yellow}{peacemaker [QCE-input] [clusterset]}
 \end{addmargin}
-where \texttt{[QCE-input]} is the location of the QCE-input file and \texttt{[clusterset-file]} 
+where \texttt{[QCE-input]} is the location of the QCE-input file and \texttt{[clusterset]} 
 is the location of the clusterset file.
-The structure of both files will be explained in \cref{sec:config}.
 
 If Peacemaker was compiled with OpenMP parallelization, it can be run in parallel by
 \begin{addmargin}[1cm]{0cm}
@@ -155,16 +161,19 @@ If Peacemaker was compiled with OpenMP parallelization, it can be run in paralle
 \end{addmargin}
 In this case, \texttt{[N]} specifies the number of threads to run with.
 
-\newpage
 
-\section{Parallelization Strategy}
+%||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||%
+%\section{Parallelization Strategy}
+%
+%\textbf{Erklären was das ist!}
+%
+%Peacemaker parallelizes the $\amf$, $\bxv$ sampling.
+%The workload is shared among all available threads.
+%Thus almost perfect parallel efficiency can be expected for large sampling ranges (or a fine grid), 
+%but no speedup should be expected
+%if a very large number of clusters or many temperatures are investigated.
 
-Peacemaker parallelizes the $\amf$, $\bxv$ sampling.
-The workload is shared among all available threads.
-Thus almost perfect parallel efficiency can be expected for large sampling ranges (or a fine grid), 
-but no speedup should be expected
-if a very large number of clusters or many temperatures are investigated.
-
+%||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||%
 \section{Peacemaker Configuration Files}
 \label{sec:config}
 
@@ -209,7 +218,19 @@ Arguments are optional.
 \textcolor{teal}{Comments} may start anywhere and are introduced by the number sign \#.
 All elements are case sensitive.
 
-\newpage
+If you want to use QCE-input and clusterset files from previous versions of Peacemaker, they need
+to be converted to the toml format.
+Two tools are provided to do this:
+\begin{itemize}[noitemsep]
+    \item \texttt{tools/convert2toml/QCEinput2toml.py} 
+    \item \texttt{tools/convert2toml/clusterset2toml.py} ~.
+\end{itemize}
+They can be run by typing the following commands in a terminal:
+\begin{addmargin}[1cm]{0cm}
+    \ttfamily
+    \$ python3 QCEinput2toml.py [QCE-input] [QCE-input-toml] \\
+    \$ python3 clusterset2toml.py [clusterset] [clusterset-toml]~.
+\end{addmargin}
 
 %||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||%
 \section{The Peacemaker QCE-Input File}
@@ -223,7 +244,7 @@ All sections and their associated keywords are explained in the following.
 \begin{description}
     \item[components = N] \hfill \\
         The number of components in the system.
-        Currently only 1 (pure) and 2 (binary) are supported.
+        N = 1 for a pure system, N = 2 for a binary mixture, N = 3 for a ternary mixture, etc.
         Note that although it is possible to run a pure system as binary system, where the amount of 
         one of the species is set to zero, we strongly encourage you to run such calculations as a pure system.
         Results will be the same in either case, but slow convergence may arise for some temperatures 
@@ -240,21 +261,8 @@ All sections and their associated keywords are explained in the following.
         The mean field parameter $\amf$ in units of \si{\joule\cubic\meter\per\mole\squared}.
         Can be specified either as a single value A, or as a range A, B, N, where A is the start, B the end, 
         and N the number of data points (including both boundaries).
-        For multi-component mixtures, this keyword is equivalent to \texttt{amf\_mix}.
         Optional. Default: 0.0
         \vspace{0.1cm}
-%    \item[amf\_pure A B C ...] \hfill \\
-%        The pure-component mean field parameters $\amf^{a}$, $\amf^{b}$, ..., $\amf^{n}$ in units of \si{\joule\cubic\meter\per\mole\squared}.
-%        May be specified for multi-component mixtures only.
-%        Optional. If unspecified, $\amf^a = \amf^b = ... = \amf^n = \amf^{ab...n}$ is used.
-%        \vspace{0.1cm}
-%    \item[amf\_mix A]
-%    \item[amf\_mix A B N] \hfill \\
-%        The mixed-species mean field parameter $\amf^{ab}$ in units of \si{\joule\cubic\meter\per\mole\squared}.
-%        Can be specified either as a single value A, or as a range A, B, N, where A is the start, B the end, and N the number of data points (including both boundaries).
-%        For multi-component mixtures, this keyword is equivalent to \texttt{amf}.
-%        Optional. Default: 0.0
-%        \vspace{0.1cm}
     \item[bxv = A]
     \item[bxv = [A, B, N]] \hfill \\
         The exclusion volume scaling parameter $\bxv$.
@@ -262,21 +270,18 @@ All sections and their associated keywords are explained in the following.
         and N the number of data points (including both boundaries).
         Optional. Default: 1.0
         \vspace{0.1cm}
-%    \item[bxv\_pure A B] \hfill \\
-%        The pure-component exclusion volume scaling parameters $\bxv^{a}$ and $\bxv^{b}$.
-%        May be specified for binary mixtures only.
-%        Optional. Default: 1.0
-%        \vspace{0.1cm}
     \item[amf\_temp = A]
     \item[amf\_temp = [A, B, N]] \hfill \\
         The linear temperature dependence parameter $a_\mathrm{mf,temp}$ of the mean field.
-        \textbf{Experimental! Do not use.}
+        The specification is similar to the one for $\amf$.
+        This is an experimental feature and should only be used with care.
         Optional. Default: 0.0
         \vspace{0.1cm}
     \item[bxv\_temp = A]
     \item[bxv\_temp = [A, B, N]] \hfill \\
         The linear temperature dependence parameter $b_\mathrm{xv,temp}$ of the exclusion volume.
-        \textbf{Experimental! Do not use.}
+        The specification is similar to the one for $\bxv$.
+        This is an experimental feature and should only be used with care.
         Optional. Default: 0.0
         \vspace{0.1cm}
     \item[grid\_iterations = A] \hfill \\
@@ -304,7 +309,7 @@ All sections and their associated keywords are explained in the following.
         The volume damping factor used to damp the initial volume guess if one of the polynomials did not converge.
         Shall be between 0 and 1.
         Damping is performed by $\gamma_V = 1 \pm A$, depending on the mode of the temperature loop.
-        Optional. Default: 0.01
+        Optional. Default:~0.01
         \vspace{0.1cm}
     \item[qce\_iterations = N] \hfill \\
         The maximum number of iterations in a QCE cycle.
@@ -321,24 +326,24 @@ All sections and their associated keywords are explained in the following.
 This section is optional.
 It enables comparison to experimental reference data.
 It is disabled by default.
-Further details on parameter sampling are given in section~\vref{sec:sampling}.
+Further details on parameter sampling are given in \cref{sec:sampling}.
 
 \begin{description}
-    \item[density A B]
-    \item[density A B C] \hfill \\
+    \item[density = [A, B]]
+    \item[density =  [A, B, C]] \hfill \\
         Reference density B in units of \si{\gram\per\cubic\centi\meter} at reference temperature 
         A in \si{\kelvin} and an optional error weight C.
         Optional.
         \vspace{0.1cm}
-    \item[isobar P]
-    \item[isobar P A] \hfill \\
+    \item[isobar\_file  = "P"]
+    \item[isobar\_weight = A] \hfill \\
         Path to an isobar file P and an optional error weight A.
         Isobar files contain two columns representing the temperature in \si{\kelvin} and volume 
         in \si{\liter}.
         Optional.
         \vspace{0.1cm}
-    \item[phase\_transition A]
-    \item[phase\_transition A B] \hfill \\
+    \item[phase\_transition = A]
+    \item[phase\_transition = [A, B]] \hfill \\
         Reference temperature of phase transition A in units of \si{\kelvin} and an optional error 
         weight B.
         Optional.
