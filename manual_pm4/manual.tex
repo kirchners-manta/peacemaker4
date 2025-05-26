@@ -257,28 +257,28 @@ All sections and their associated keywords are explained in the following.
 
 \begin{description}
     \item[amf = A]
-    \item[amf = [A, B, N]] \hfill \\
+    \item[amf = \mbox{[A, B, N]}] \hfill \\
         The mean field parameter $\amf$ in units of \si{\joule\cubic\meter\per\mole\squared}.
         Can be specified either as a single value A, or as a range A, B, N, where A is the start, B the end, 
         and N the number of data points (including both boundaries).
         Optional. Default: 0.0
         \vspace{0.1cm}
     \item[bxv = A]
-    \item[bxv = [A, B, N]] \hfill \\
+    \item[bxv = \mbox{[A, B, N]}] \hfill \\
         The exclusion volume scaling parameter $\bxv$.
         Can be specified either as a single value A, or as a range A, B, N, where A is the start, B the end, 
         and N the number of data points (including both boundaries).
         Optional. Default: 1.0
         \vspace{0.1cm}
     \item[amf\_temp = A]
-    \item[amf\_temp = [A, B, N]] \hfill \\
+    \item[amf\_temp = \mbox{[A, B, N]}] \hfill \\
         The linear temperature dependence parameter $a_\mathrm{mf,temp}$ of the mean field.
         The specification is similar to the one for $\amf$.
         This is an experimental feature and should only be used with care.
         Optional. Default: 0.0
         \vspace{0.1cm}
     \item[bxv\_temp = A]
-    \item[bxv\_temp = [A, B, N]] \hfill \\
+    \item[bxv\_temp = \mbox{[A, B, N]}] \hfill \\
         The linear temperature dependence parameter $b_\mathrm{xv,temp}$ of the exclusion volume.
         The specification is similar to the one for $\bxv$.
         This is an experimental feature and should only be used with care.
@@ -295,7 +295,7 @@ All sections and their associated keywords are explained in the following.
         hindered rotations, employing a switching function to smooth the transition between harmonic oscillator 
         and rigid rotator. If set to 0, no correction will be applied.
         Optional. Default: 0
-    \item[optimizer = ["amf", "bxv", "amf\_temp", "bxv\_temp"]] \hfill \\
+    \item[optimizer = \mbox{["amf", "bxv", "amf\_temp", "bxv\_temp"]}] \hfill \\
         Enables the Nelder--Mead algorithm for parameter optimization.
         The parameters to be optimized can be given as a list of strings in an arbitrary order.
         By default, no optimization is performed.
@@ -329,8 +329,8 @@ It is disabled by default.
 Further details on parameter sampling are given in \cref{sec:sampling}.
 
 \begin{description}
-    \item[density = [A, B]]
-    \item[density =  [A, B, C]] \hfill \\
+    \item[density = \mbox{[A, B]}]
+    \item[\mbox{density = \mbox{[A, B, C]}}] \hfill \\
         Reference density B in units of \si{\gram\per\cubic\centi\meter} at reference temperature 
         A in \si{\kelvin} and an optional error weight C.
         Optional.
@@ -343,7 +343,7 @@ Further details on parameter sampling are given in \cref{sec:sampling}.
         Optional.
         \vspace{0.1cm}
     \item[phase\_transition = A]
-    \item[phase\_transition = [A, B]] \hfill \\
+    \item[phase\_transition = \mbox{[A, B]}] \hfill \\
         Reference temperature of phase transition A in units of \si{\kelvin} and an optional error 
         weight B.
         Optional.
@@ -358,13 +358,15 @@ It is disabled by default.
 
 \begin{description}
     \item[contributions]
-    \item[contributions <helmholtz|internal|entropy|cv>] \hfill \\
+    \item[helmholtz\_contributions = true/false] \hfill 
+    \item[internal\_contributions = true/false] \hfill 
+    \item[entropy\_contributions = true/false] \hfill 
+    \item[cv\_contributions = true/false] \hfill \\
         Enables the output of contributions of each degree of freedom to the thermodynamic functions.
         If no arguments are given, contribution output is enabled for all possible thermodynamic quantities.
         If arguments are specified, contribution output is only enabled for the selected thermodynamic quantities.
         Optional.
-    \item[progress]
-    \item[noprogress] \hfill \\
+    \item[progress\_bar = true/false] \hfill \\
         Enables or disables the progress bar.
         Optional. Default: enabled.
 \end{description}
