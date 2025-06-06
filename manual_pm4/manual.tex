@@ -65,7 +65,7 @@ reoccurring molecular cluster motifs.
     \item A set of clusters, which are representative for the system you want to investigate.
     \item The vibrational frequencies of the clusters.
     \item The volumes for the monomers.
-    \item The molar amounts of the clusters.
+    \item The molar amounts of the components in your system.
     \item The adiabatic interaction energy of the clusters in units of \si{\kilo\joule\per\mole}.\vspace{-0.2cm}
     \begin{equation*}
         \hspace{-2.2cm}\Delta_\mathrm{bind} \epsilon(t_i w_j) = \epsilon(t_i w_j) - i \cdot \epsilon(t_1) - j \cdot \epsilon(w_1)
@@ -121,7 +121,7 @@ Optionally, you can run the tests with
     \$ build/test/tester
 \end{addmargin}
 
-A run time optimized binary called peacemaker is created in the build directory.
+A run time optimized binary called \textbf{peacemaker} is created in the build directory.
 In case of errors, adjust the meson.build to your compiler.
 We recommend the following compiler flags or your compiler's equivalents:
 \begin{addmargin}[1cm]{0cm}
@@ -188,25 +188,19 @@ An example document is shown below:
     \begin{minipage}{\textwidth}
         [section1]
         \begin{addmargin}[1cm]{0cm}
-            keyword1 = "argument1"      \hspace{0.8cm}\textcolor{teal}{\#\ string} \\
-            keyword2 = "path/to/file"   \hspace{0.2cm}\textcolor{teal}{\#\ string} \\
-            keyword3 = true             \hspace{2.2cm}\textcolor{teal}{\#\ boolean} \\
-            ... \vspace{0.2cm}
+            keyword1 = "argument1"      \hspace{0.8cm}\textcolor{teal}{\#\ comment} \\
+            keyword2 = "path/to/file"   \\
+            keyword3 = true             
         \end{addmargin}
-    \end{minipage}
+    \end{minipage}\vspace{0.2cm}
 
     \begin{minipage}{\textwidth}
         [section2]
         \begin{addmargin}[1cm]{0cm}
-            keyword1 = 1                \hspace{2.8cm}\textcolor{teal}{\#\ integer} \\
-            keyword2 = [0.0, 2.0, 201]  \textcolor{teal}{\#\ array of floats} \\
-            ... \vspace{0.2cm}
+            keyword1 = 1                 \\
+            keyword2 = [0.0, 2.0, 201] 
         \end{addmargin}
-    \end{minipage}
-
-    \begin{minipage}{\textwidth}
-        ... \vspace{0.1cm}
-    \end{minipage}
+    \end{minipage}\vspace{0.2cm}
 
 \end{addmargin}
 \end{minipage}}
@@ -216,7 +210,15 @@ Section labels are unique.
 Keywords within a section are unique.
 Arguments are optional.
 \textcolor{teal}{Comments} may start anywhere and are introduced by the number sign \#.
-All elements are case sensitive.
+All elements are case sensitive.\\
+The following types of arguments are used in the peacemaker configuration files:
+\begin{itemize}[noitemsep]
+    \item \textbf{Strings}\hspace{3.9cm}: enclosed in double quotes, e.g. "argument1".
+    \item \textbf{Booleans}\hspace{3.6cm}: true or false.
+    \item \textbf{Integers}\hspace{3.7cm}: numbers without quotes, e.g. 1.
+    \item \textbf{Floats}\hspace{4.1cm}: numbers with a decimal point, e.g. 0.5.
+    \item \textbf{Lists of floats or integers}:numbers in square brackets, e.g. [0.0, 2.0, 201].
+\end{itemize}
 
 If you want to use QCE-input and clusterset files from previous versions of Peacemaker, they need
 to be converted to the toml format.
@@ -238,6 +240,7 @@ They can be run by typing the following commands in a terminal:
 \label{sec:input}
 
 All sections and their associated keywords are explained in the following.
+As described above, the following format is used:
 
 \subsection*{[system]}
 \addcontentsline{toc}{subsection}{Section [system]}\vspace{-0.3cm}
