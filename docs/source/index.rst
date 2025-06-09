@@ -1,12 +1,10 @@
-.. figure:: figures/title_picture.jpg
+.. figure:: figures/title_picture.png
    :width: 800
    :align: center
    :figclass: spaced-figure
 
-Peacemaker 4 Documentation
-########################
-
 Welcome to Peacemaker 4's documentation!
+
 Peacemaker uses the laws of statistical thermodynamics to calculate the thermodynamic properties 
 of pure liquids and liquid mixtures.
 It is based on the **Q**\uantum **C**\luster **E**\quilibrium (**QCE**) theory, which is the idea, that 
