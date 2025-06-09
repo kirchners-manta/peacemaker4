@@ -1,4 +1,4 @@
-Compiling Peacemaker 4
+Compiling Peacemaker 
 -----------------------------
 Peacemaker is a modern FORTRAN code and thus requires a modern FORTRAN compiler.
 We recommend a recent version of gfortran which is used for active development. 
@@ -55,7 +55,7 @@ We recommend the following compiler flags for optimal performance:
    compile without OpenMP support, or upgrade to a newer compiler version.
 
 
-Running Peacemaker 4
+Running Peacemaker 
 -----------------------------
 Two input files are required to run Peacemaker.
 The first is the **QCE-input file**, which contains all necessary information about the system 
@@ -65,12 +65,14 @@ files of each cluster, as well as information about the clusters, such as their 
 More details on the structure of these files are given in the following sections.
 
 Peacemaker can be run from the command line as follows:
+
 .. code-block:: bash
 
    peacemaker <QCE-input file> <clusterset file> 
 
 If Peacemaker was compiled with OpenMP support, it can be run in parallel by specifying the number of 
 threads:
+
 .. code-block:: bash
 
    OMP\_NUM_THREADS=<number of threads> peacemaker <QCE-input file> <clusterset file> 
