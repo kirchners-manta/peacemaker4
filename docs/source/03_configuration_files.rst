@@ -76,7 +76,7 @@ shown in the example above.
     The mean field parameter :math:`a_{mf}` in units of :math:`\mathrm{J m^3 mol^{-2}}`.
     Can be specified either as a single value **A**, or as a range of three values, where **min** is the start, 
     **max** the end, and **steps** the number of data points (including both boundaries).
-    Optional. Default: 0.0
+    *Optional. Default: 0.0*
 
 | **bxv = [A]**
 | **bxv = [min, max, steps]**
@@ -84,7 +84,7 @@ shown in the example above.
     The exclusion volume scaling parameter :math:`b_{xv}`.
     Can be specified either as a single value **A**, or as a range of three values, where **min** is the start,
     **max** the end, and **steps** the number of data points (including both boundaries).
-    Optional. Default: 1.0
+    *Optional. Default: 1.0*
 
 | **amf_temp = [A]**
 | **amf_temp = [min, max, steps]**
@@ -92,7 +92,7 @@ shown in the example above.
     The linear temperature dependence parameter :math:`a_{mf,temp}` of the mean field.
     The specification is similar to the one for :math:`a_{mf}`.
     This is an experimental feature and should only be used with care.
-    Optional. Default: 0.0
+    *Optional. Default: 0.0*
 
 | **bxv_temp = [A]**
 | **bxv_temp = [min, max, steps]**
@@ -100,14 +100,14 @@ shown in the example above.
     The linear temperature dependence parameter :math:`b_{xv,temp}` of the exclusion volume.
     The specification is similar to the one for :math:`b_{xv}`.
     This is an experimental feature and should only be used with care.
-    Optional. Default: 0.0
+    *Optional. Default: 0.0*
 
 | **grid_iterations = N**
 
     The number of iterations for the parameter sampling if a sampling grid is specified.
     With each iteration, the grid center is moved to the best parameter pair and the grid size is decreased 
     with a factor of 0.2.
-    Optional. Default: 1
+    *Optional. Default: 1*
 
 | **rotor_cutoff = A**
 
@@ -115,17 +115,20 @@ shown in the example above.
     To limit their influence on the entropy, vibrational modes with a frequency below A will be treated as 
     hindered rotations, employing a switching function to smooth the transition between harmonic oscillator 
     and rigid rotator. If set to 0, no correction will be applied.
-    Optional. Default: 0
+    *Optional. Default: 0*
 
-| **optimizer = ["amf", "bxv", "amf_temp", "bxv_temp"]**
+| **optimizer = ["amf", ~"bxv", ~"amf_temp", ~"bxv_temp"]**
 
     Enables the Nelder-Mead algorithm for parameter optimization.
     Possible values are:
-    - "amf": Optimize only the mean field parameter :math:`a_{mf}`.
-    - "bxv": Optimize only the exclusion volume scaling parameter :math:`b_{xv}`.
-    - "amf_temp": Optimize only the linear temperature dependence of the mean field parameter :math:`a_{mf,temp}`.
-    - "bxv_temp": Optimize only the linear temperature dependence of the exclusion volume :math:`b_{xv,temp}`.
+
+    * "amf": Optimize only the mean field parameter :math:`a_{mf}`.
+    * "bxv": Optimize only the exclusion volume scaling parameter :math:`b_{xv}`.
+    * "amf_temp": Optimize only the linear temperature dependence of the mean field parameter :math:`a_{mf,temp}`.
+    * "bxv_temp": Optimize only the linear temperature dependence of the exclusion volume :math:`b_{xv,temp}`.
+    
     Parameters can be given in any combination and order.
+    By default, no optimization is performed.
 
 | **max_deviation = A**
 
@@ -134,25 +137,25 @@ shown in the example above.
     A QCE cycle has converged, if 
 
     .. math::
-        \frac{|G_{i} - G_{i-1}|}{|G_{i-1}|} < A .
+        |\frac{G_{i} - G_{i-1}}{G_{i-1}}| < A .
 
     where :math:`G_i` is the Gibbs energy of the i-th iteration.
-    Optional. Default: 1.0e-9
+    *Optional. Default: 1.0e-9*
 
 | **volume_damping_factor = A**
 
     The volume damping factor used to damp the initial volume guess if one of the polynomials did not converge.
     Shall be between 0 and 1.
     Damping is performed by :math:`\gamma_V = 1 \pm A`, depending on the mode of the temperature loop.
-    Optional. Default: 0.01
+    *Optional. Default: 0.01*
 
 | **qce_iterations = N**
 
     The maximum number of iterations in a QCE cycle.
-    Optional. Default: 100
+    *Optional. Default: 100*
 
 | **newton_iterations = N**
 
     The maximum number of iterations in the Newton-Raphson cycle used to solve the n d-dimensional population
-    polynomial equations
-    Optional. Default: 100
+    polynomial equations.<br>
+    *Optional. Default: 100*
