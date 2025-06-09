@@ -70,8 +70,8 @@ shown in the example above.
 
 [qce]
 ------------------------------
-**amf = [A]** <br>
-**amf = [min, max, steps]**
+| **amf = [A]** 
+| **amf = [min, max, steps]**
 
     The mean field parameter ``amf`` in units of :math:`\mathrm{J\cdot m^3 \cdot mol^{-2}}`.
     Can be specified either as a single value A, or as a range min, max, steps, where min is the start, 
