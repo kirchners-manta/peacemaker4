@@ -1,5 +1,3 @@
-What is Peacemaker?
-###########
 Peacemaker uses the laws of statistical thermodynamics to calculate the thermodynamic properties 
 of pure liquids and liquid mixtures.
 It is based on the **Q**uantum **C**luster **E**quilibrium (QCE) theory, which is the idea, that 
