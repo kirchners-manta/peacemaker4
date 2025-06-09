@@ -3,7 +3,7 @@
 # -- Project information
 
 project = 'Peacemaker 4'
-copyright = '2024, Kirchner group'
+copyright = '2025, Kirchner group'
 author = 'Kirchner group'
 
 release = '2025'

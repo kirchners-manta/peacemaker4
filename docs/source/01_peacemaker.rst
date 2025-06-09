@@ -13,9 +13,6 @@ What you need to provide in order to use Peacemaker
 - The volumes for the monomers
 - The molar amounts of the components in your system
 - The adiabatic interaction energy of the clusters 
-.. math::
-
-    \Delta_{bild}\epsilon(t_i w_j) = \epsilon(t_i w_j) - i\epsilon(t_1) - j\epsilon(w_1)
 
 What you get from Peacemaker
 ***********
@@ -37,3 +34,6 @@ What you get from Peacemaker
     :align: center
 
     Peacemaker
+
+Where to find our Publications
+***********
