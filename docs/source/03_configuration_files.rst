@@ -99,14 +99,12 @@ shown in the example above.
        The cutoff frequency in :math:`cm^{-1}` at which the RRHO-correction for low frequencies will be used. To limit their influence on the entropy, vibrational modes with a frequency below A will be treated as hindered rotations, employing a switching function to smooth the transition between harmonic oscillator and rigid rotator. If set to 0, no correction will be applied.
        *Optional. Default: 0*
 
-    **optimizer = ["amf", "bxv", "amf_temp", "bxv_temp"]**
+    **optimizer = ["amf",  "bxv",  "amf_temp",  "bxv_temp"]**
        Enables the Nelder-Mead algorithm for parameter optimization. Possible values are:
-
-       * "amf": Optimize the mean field parameter :math:`a_{mf}`.
-       * "bxv": Optimize the exclusion volume scaling parameter :math:`b_{xv}`.
-       * "amf_temp": Optimize the linear temperature dependence of the mean field parameter :math:`a_{mf,temp}`.
-       * "bxv_temp": Optimize the linear temperature dependence of the exclusion volume :math:`b_{xv,temp}`.
-
+       **"amf"**: Optimize the mean field parameter :math:`a_{mf}`.
+       **"bxv"**: Optimize the exclusion volume scaling parameter :math:`b_{xv}`.
+       **"amf_temp"**: Optimize the linear temperature dependence of the mean field parameter :math:`a_{mf,temp}`.
+       **"bxv_temp"**: Optimize the linear temperature dependence of the exclusion volume parameter :math:`b_{xv,temp}`.
        Parameters can be given in any combination and order. By default, no optimization is performed.
 
     **max_deviation = A**
