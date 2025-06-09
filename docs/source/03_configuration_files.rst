@@ -30,6 +30,9 @@ Since the values can have different types, they are presented in different ways:
 * Numbers are written as is, e.g., `3.14`.
 * Arrays are enclosed in square brackets, e.g., `[1, 2, 3]`.
 
+Input files from earlier versions of Peacemaker
+------------------------------
+
 If you want to use QCE-input files and clusterset files from earlier versions of Peacemaker,
 you can convert them to the toml format using the the following python scripts, located in the
 ``tools/convert2toml`` directory of the peacemaker4 repository:
@@ -43,3 +46,26 @@ These scripts can be used from the command line as follows:
 
    python QCEinput2toml.py <QCE-input file> <output toml file>
    python clusterset2toml.py <clusterset file> <output toml file>
+
+
+QCE input file
+================
+The QCE input file is a toml file that contains all necessary information about the system to be 
+investigated and the parameters to be sampled.
+In the following, all sections and key-value pairs of the QCE input file are explained in detail.
+Sections are defined by square brackets, and key-value pairs are separated by an equal sign as 
+shown in the example above.
+
+[system]
+------------------------------
+components = N
+
+.. centered:: 
+
+   The number of components in the system.
+    N = 1 for a pure system, N = 2 for a binary mixture, N = 3 for a ternary mixture, etc.
+    Note that although it is possible to run a pure system as binary system, where the amount of 
+    one of the species is set to zero, we strongly encourage you to run such calculations as a pure system.
+    Results will be the same in either case, but slow convergence may arise for some temperatures 
+    if the amount of monomers of one component is sufficiently small.
+    Optional. Default: 1
