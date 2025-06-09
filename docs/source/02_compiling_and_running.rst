@@ -46,10 +46,31 @@ In case of errors, you can adjust the ``meson.build`` to suit your system config
 We recommend the following compiler flags for optimal performance:
 
 * ``-O3`` highest optimization level that guarantees standard compliance
-* ``-fopenmp``OpenMP parallelization
-* ``-flto``link-time optimization
+* ``-fopenmp`` OpenMP parallelization
+* ``-flto`` link-time optimization
 
 .. note::
    Older versions of gfortran are subject to a bug which prevents OpenMP parallelization.
    If you receive the error message ``Attempting to allocate already allocated variable **ib** ``, 
    compile without OpenMP support, or upgrade to a newer compiler version.
+
+
+Running Peacemaker 4
+-----------------------------
+Two input files are required to run Peacemaker.
+The first is the **QCE-input file**, which contains all necessary information about the system 
+to be investigated as well as the parameters to be sampled.
+The second is the **clusterset file**, which contains the paths to the structure and the frequency 
+files of each cluster, as well as information about the clusters, such as their composition or energy.
+More details on the structure of these files are given in the following sections.
+
+Peacemaker can be run from the command line as follows:
+.. code-block:: bash
+
+   peacemaker <QCE-input file> <clusterset file> 
+
+If Peacemaker was compiled with OpenMP support, it can be run in parallel by specifying the number of 
+threads:
+.. code-block:: bash
+
+   OMP\_NUM_THREADS=<number of threads> peacemaker <QCE-input file> <clusterset file> 
