@@ -13,18 +13,33 @@ An example of a toml file, which is actually a QCE input file, is shown below:
 .. code-block:: toml
 
    [system]
-    components = 1
+        components = 1
 
     [qce]
-     amf = [0.0, 0.5, 101]
-     bxv = [1.0, 2.0, 101]
+        amf = [0.0, 0.5, 101]
+        bxv = [1.0, 2.0, 101]
 
    [ensemble]
-    temperature = 298.15
-    pressure = 101325.0
-    monomer_amounts = 1.0
+        temperature = 298.15
+        pressure = 101325.0
+        monomer_amounts = 1.0
 
 Since the values can have different types, they are presented in different ways:
-- Strings are enclosed in double quotes, e.g., `"example"`.
-- Numbers are written as is, e.g., `3.14`.
-- Arrays are enclosed in square brackets, e.g., `[1, 2, 3]`.
+
+* Strings are enclosed in double quotes, e.g., `"example"`.
+* Numbers are written as is, e.g., `3.14`.
+* Arrays are enclosed in square brackets, e.g., `[1, 2, 3]`.
+
+If you want to use QCE-input files and clusterset files from earlier versions of Peacemaker,
+you can convert them to the toml format using the the following python scripts, located in the
+``tools/convert2toml`` directory of the peacemaker4 repository:
+
+* QCEinput2toml.py
+* clusterset2toml.py
+
+These scripts can be used from the command line as follows:
+
+.. code-block:: bash
+
+   python QCEinput2toml.py <QCE-input file> <output toml file>
+   python clusterset2toml.py <clusterset file> <output toml file>
