@@ -29,3 +29,9 @@ molecular cluster motifs.
    :caption: Configuration files
 
    03_configuration_files
+
+.. toctree::
+   :maxdepth: 3
+   :caption: Output files
+
+   04_output

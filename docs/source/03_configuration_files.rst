@@ -256,3 +256,77 @@ Reference data are provided by a density at :math:`298.15 K` and a temperature o
     [reference]
         density = [298.15, 0.9248]
         phase_transition = 332.61
+
+
+Clusterset file
+========================
+The clusterset file is a toml file that contains the paths to the structure and frequency files 
+of each cluster, as well as information about the clusters, such as their composition or energy.
+
+Here, the sections are the clusters, which are defined by square brackets, and the key-value pairs
+within those sections are equivalent for each cluster.
+The clusterset file is structured as follows:
+.. code-block:: toml
+
+    [cluster1]
+        isMonomer = true/false
+        composition = [N, M, ...]
+        sigma = N
+        coordinates = "path/to/structure/file1.xyz"
+        frequencies = "path/to/frequency/file1.dat"
+        energy = A
+        volume = A
+        frequency_scale = A
+        anharmonicity = A
+
+    [cluster2]
+        isMonomer = true/false
+        composition = [N, M, ...]
+        sigma = N
+        coordinates = "path/to/structure/file2.xyz"
+        frequencies = "path/to/frequency/file2.dat"
+        energy = A
+        volume = A
+        frequency_scale = A
+        anharmonicity = A
+
+    ...
+
+The Keywords are explained in detail below:
+
+.. line-block::
+    **isMonomer = true/false**
+        Specifies whether the cluster is a monomer or not. If set to true, the cluster is treated as a monomer.
+        *Optional but must be present once for each component. Default: false*
+
+    **composition = [N, M, ...]**
+        The composition of the cluster as an array of integers, where each integer represents the number of molecules of a certain type in the cluster.
+        *Required.*
+
+    **sigma = N**
+        The rotational symmetry number of the cluster.
+        *Optional. Default: 1*
+
+    **coordinates = "path/to/structure/file1.xyz"**
+        The path to the structure file of the cluster in XYZ format. Units are Angstrom.
+        *Required.*
+
+    **frequencies = "path/to/frequency/file1.dat"**
+        Path to a frequency file. It contains the number of frequencies in line 1, followed by a comment line, followed by one frequency per line. Units are :math:`cm^{-1}`.
+        *Required.*
+
+    **energy = A**
+        The adiabatic interaction energy of the cluster in units of :math:`\mathrm{kJ mol^{-1}}` (negative energies represent stable clusters).
+        *Required.*
+
+    **volume = A**
+        The volume of the cluster in units of :math:`\mathrm{A^3}`.
+        Must only be specified for monomers.
+
+    **frequency_scale = a**
+        The frequency scaling factor for the cluster. This is used to scale the frequencies of the cluster.
+        *Optional. Default: 1.0*
+
+    **anharmonicity = A**
+        Anharmonicity constant for the cluster.
+        *Optional. Default: 0.0*
