@@ -66,13 +66,13 @@ More details on the structure of these files are given in the following sections
 
 Peacemaker can be run from the command line as follows:
 
-.. code-block:: bash
+   .. code-block:: bash
 
    peacemaker <QCE-input file> <clusterset file> 
 
 If Peacemaker was compiled with OpenMP support, it can be run in parallel by specifying the number of 
 threads:
 
-.. code-block:: bash
+   .. code-block:: bash
 
    OMP\_NUM_THREADS=<number of threads> peacemaker <QCE-input file> <clusterset file> 
