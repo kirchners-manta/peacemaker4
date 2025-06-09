@@ -3,7 +3,7 @@
    :align: center
    :figclass: spaced-figure
 
-Welcome to Peacemaker 4's documentation!
+**Welcome to the Peacemaker 4 documentation!**
 
 Peacemaker uses the laws of statistical thermodynamics to calculate the thermodynamic properties 
 of pure liquids and liquid mixtures.
