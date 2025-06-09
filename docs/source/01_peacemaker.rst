@@ -37,3 +37,46 @@ What you get from Peacemaker
 
 Where to find our Publications
 ***********
+On our `webpage <https://www.chemie.uni-bonn.de/kirchner/de/publications>`_ you can find all publications 
+of the Kirchner group.
+The publications related to Peacemaker are listed below:
+
+Please always cite the following publication when using Peacemaker:
+
+* Michael von Domaros, Eva Perlt, Johannes Ingenmey, Gwydyon Marchelli, Barbara Kirchner:  
+  *"Peacemaker 2: Making clusters talk about binary mixtures and neat liquids"*.  
+  *SoftwareX* (2018).
+
+* Barbara Kirchner, Christian Spickermann, Sebastian B. C. Lehmann, Eva Perlt,  
+  Johanna Langner, Michael von Domaros, Patricia Reuther, Frank Uhlig, Miriam Kohagen,  
+  Marc Brüssel:  
+  *"What can clusters tell us about the bulk? PEACEMAKER: Extended quantum cluster equilibrium calculations"*.  
+  *Comput. Phys. Commun.* 182 (2011), 1428.
+
+* Barbara Kirchner:  
+  *"Cooperative versus dispersion effects: What is more important in an associated liquid such as water?"*  
+  *J. Chem. Phys.* 123 (2005), 204116.
+
+For multicomponent mixtures, please cite:
+
+* Tom Frömbgen, Katrin Drysch, Paul Zaby, Jürgen Dölz, Johannes Ingenmey, Barbara Kirchner:  
+  *"Quantum Cluster Equilibrium Theory for Multicomponent Liquids"*.  
+  *J. Chem. Theory Comput.* 20 (2024), 1838-1846.
+
+For binary mixtures, please cite:
+
+* Marc Brüssel, Eva Perlt, Sebastian B. C. Lehmann, Michael von Domaros, Barbara Kirchner:  
+  *"Binary systems from quantum cluster equilibrium theory"*.  
+  *J. Chem. Phys.* 135 (2011), 194113.
+
+For anharmonicities, please cite:
+
+* Michael von Domaros, Eva Perlt:  
+  *"Anharmonic effects in the quantum cluster equilibrium method"*.  
+  *J. Chem. Phys.* 146 (2017), 154502.
+
+For acid constants, please cite:
+
+* Eva Perlt, Michael von Domaros, Barbara Kirchner, Ralf Ludwig, Frank Weinhold:  
+  *"Predicting the ionic product of water"*.  
+  *Sci. Rep.* 7 (2017), 10244.
