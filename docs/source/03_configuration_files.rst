@@ -149,13 +149,13 @@ shown in the example above.
     Damping is performed by :math:`\gamma_V = 1 \pm A`, depending on the mode of the temperature loop.
     *Optional. Default: 0.01*
 
-| **qce_iterations = N**
 
+.. line-block::
+    **qce_iterations = N**
     The maximum number of iterations in a QCE cycle.
     *Optional. Default: 100*
 
-| **newton_iterations = N**
-
+    **newton_iterations = N**
     The maximum number of iterations in the Newton-Raphson cycle used to solve the n d-dimensional population
-    polynomial equations.<br>
+    polynomial equations.
     *Optional. Default: 100*
