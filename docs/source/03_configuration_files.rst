@@ -101,16 +101,17 @@ shown in the example above.
 
     **optimizer = ["amf",  "bxv",  "amf_temp",  "bxv_temp"]**
        Enables the Nelder-Mead algorithm for parameter optimization. Possible values are:
-       **"amf"**: Optimize the mean field parameter :math:`a_{mf}`.
-       **"bxv"**: Optimize the exclusion volume scaling parameter :math:`b_{xv}`.
-       **"amf_temp"**: Optimize the linear temperature dependence of the mean field parameter :math:`a_{mf,temp}`.
-       **"bxv_temp"**: Optimize the linear temperature dependence of the exclusion volume parameter :math:`b_{xv,temp}`.
+       **"amf"**: Optimize the mean field parameter :math:`a_{mf}`
+       **"bxv"**: Optimize the exclusion volume scaling parameter :math:`b_{xv}`
+       **"amf_temp"**: Optimize the linear temperature dependence of the mean field parameter :math:`a_{mf,temp}`
+       **"bxv_temp"**: Optimize the linear temperature dependence of the exclusion volume parameter :math:`b_{xv,temp}`
        Parameters can be given in any combination and order. By default, no optimization is performed.
 
     **max_deviation = A**
        The maximum relative deviation of the Gibbs energy. Used to check convergence of the QCE iteration. A QCE cycle has converged, if 
 
        .. math::
+        
            |\frac{G_{i} - G_{i-1}}{G_{i-1}}| < A .
 
        where :math:`G_i` is the Gibbs energy of the i-th iteration.
