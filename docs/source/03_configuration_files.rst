@@ -274,7 +274,7 @@ The clusterset file is structured as follows:
         composition = [N, M, ...]
         sigma = N
         coordinates = "path/to/structure/file1.xyz"
-        frequencies = "path/to/frequency/file1.dat"
+        frequencies = "path/to/frequency/file1.flist"
         energy = A
         volume = A
         frequency_scale = A
@@ -285,7 +285,7 @@ The clusterset file is structured as follows:
         composition = [N, M, ...]
         sigma = N
         coordinates = "path/to/structure/file2.xyz"
-        frequencies = "path/to/frequency/file2.dat"
+        frequencies = "path/to/frequency/file2.flist"
         energy = A
         volume = A
         frequency_scale = A
@@ -307,11 +307,11 @@ The Keywords are explained in detail below:
         The rotational symmetry number of the cluster.
         *Optional. Default: 1*
 
-    **coordinates = "path/to/structure/file1.xyz"**
+    **coordinates = "path/to/structure/file.xyz"**
         The path to the structure file of the cluster in XYZ format. Units are Angstrom.
         *Required.*
 
-    **frequencies = "path/to/frequency/file1.dat"**
+    **frequencies = "path/to/frequency/file.flist"**
         Path to a frequency file. It contains the number of frequencies in line 1, followed by a comment line, followed by one frequency per line. Units are :math:`cm^{-1}`.
         *Required.*
 

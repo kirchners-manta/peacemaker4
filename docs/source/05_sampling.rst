@@ -1,3 +1,6 @@
+Determination of the isobar quality
+=================================================
+
 Peacemaker performs :math:`a_{mf}`, :math:`b_{xv}` parameter sampling on a grid, which can be specified in the ``[qce]`` section of the input file.  
 For each pair, the quality of the resulting isobar is compared to certain experimental quantities.  
 The following options are available for this purpose: single density, isobar, temperature of phase transition.  
