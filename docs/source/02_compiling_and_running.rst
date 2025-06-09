@@ -1,4 +1,4 @@
-Compiling Peacemaker 
+Compiling 
 -----------------------------
 Peacemaker is a modern FORTRAN code and thus requires a modern FORTRAN compiler.
 We recommend a recent version of gfortran which is used for active development. 
@@ -55,7 +55,7 @@ We recommend the following compiler flags for optimal performance:
    compile without OpenMP support, or upgrade to a newer compiler version.
 
 
-Running Peacemaker 
+Running 
 -----------------------------
 Two input files are required to run Peacemaker.
 The first is the **QCE-input file**, which contains all necessary information about the system 

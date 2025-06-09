@@ -20,7 +20,7 @@ molecular cluster motifs.
 
 .. toctree::
    :maxdepth: 3
-   :caption: Compiling and Running Peacemaker
+   :caption: Compiling and Running
 
    02_compiling_and_running
 
