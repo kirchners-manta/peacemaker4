@@ -32,7 +32,7 @@ What you get from Peacemaker
 - A set of contributions for each degree of freedom to the thermodynamic quantities
 - A set of contributions for each cluster to the thermodynamic quantities
 
-.. figure:: figures/pm.svg
+.. figure:: figures/pm.png
     :width: 400
     :align: center
 
