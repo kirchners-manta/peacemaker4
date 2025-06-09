@@ -33,7 +33,7 @@ What you get from Peacemaker
 - A set of contributions for each cluster to the thermodynamic quantities
 
 .. figure:: figures/pm.png
-    :width: 400
+    :width: 800
     :align: center
 
     Peacemaker
