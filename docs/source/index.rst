@@ -1,7 +1,8 @@
 .. figure:: figures/title_picture.png
    :width: 800
    :align: center
-   :figclass: spaced-figure
+
+<br>
 
 **Welcome to the Peacemaker 4 documentation!**
 
