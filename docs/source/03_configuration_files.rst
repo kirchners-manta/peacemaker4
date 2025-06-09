@@ -12,14 +12,14 @@ An example of a toml file, which is actually a QCE input file, is shown below:
 
 .. code-block:: toml
 
-   [system]
+    [system]
         components = 1
 
     [qce]
         amf = [0.0, 0.5, 101]
         bxv = [1.0, 2.0, 101]
 
-   [ensemble]
+    [ensemble]
         temperature = 298.15
         pressure = 101325.0
         monomer_amounts = 1.0
