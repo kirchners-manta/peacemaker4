@@ -61,7 +61,7 @@ shown in the example above.
 **components = N**
 
     The number of components in the system.
-    N = 1 for a pure system, N = 2 for a binary mixture, N = 3 for a ternary mixture, etc.
+    N&=&1 for a pure system, N&=&2 for a binary mixture, N&=&3 for a ternary mixture, etc.
     Note that although it is possible to run a pure system as binary system, where the amount of 
     one of the species is set to zero, we strongly encourage you to run such calculations as a pure system.
     Results will be the same in either case, but slow convergence may arise for some temperatures 
