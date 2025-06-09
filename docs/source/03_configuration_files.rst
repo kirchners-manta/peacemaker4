@@ -291,7 +291,6 @@ The clusterset file is structured as follows:
         frequency_scale = A
         anharmonicity = A
 
-    ...
 
 The Keywords are explained in detail below:
 
