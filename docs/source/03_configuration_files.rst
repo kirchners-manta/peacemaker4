@@ -266,6 +266,7 @@ of each cluster, as well as information about the clusters, such as their compos
 Here, the sections are the clusters, which are defined by square brackets, and the key-value pairs
 within those sections are equivalent for each cluster.
 The clusterset file is structured as follows:
+
 .. code-block:: toml
 
     [cluster1]

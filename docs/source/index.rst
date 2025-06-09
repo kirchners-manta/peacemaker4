@@ -35,3 +35,9 @@ molecular cluster motifs.
    :caption: Output files
 
    04_output
+
+.. toctree::
+   :maxdepth: 3
+   :caption: Sampling
+
+   05_sampling
