@@ -1,5 +1,5 @@
 Peacemaker 4
-================
+#######
 Welcome to Peacemaker 4's documentation!
 
 .. toctree::
