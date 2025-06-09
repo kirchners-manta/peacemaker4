@@ -152,10 +152,9 @@ shown in the example above.
 
 .. line-block::
     **qce_iterations = N**
-    The maximum number of iterations in a QCE cycle.
-    *Optional. Default: 100*
+        The maximum number of iterations in a QCE cycle.
+        *Optional. Default: 100*
 
     **newton_iterations = N**
-    The maximum number of iterations in the Newton-Raphson cycle used to solve the n d-dimensional population
-    polynomial equations.
-    *Optional. Default: 100*
+        The maximum number of iterations in the Newton-Raphson cycle used to solve the n d-dimensional population polynomial equations.
+        *Optional. Default: 100*
