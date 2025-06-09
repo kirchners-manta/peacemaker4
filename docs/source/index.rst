@@ -3,7 +3,7 @@
    :align: center
 
 
-Peacemaker 4 - Documentation!
+Peacemaker 4 - Documentation
 =============================
 
 Peacemaker uses the laws of statistical thermodynamics to calculate the thermodynamic properties 

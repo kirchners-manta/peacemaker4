@@ -40,3 +40,15 @@ To compile Peacemaker, follow these steps:
 
       ninja -C build test
       build/test/tester
+
+A run time optimized binary called **peacemaker** is created in the build directory.
+In case of errors, you can adjust the ``meson.build`` to suit your system configuration.
+We recommend the following compiler flags for optimal performance:
+* ``-O3`` highest optimization level that guarantees standard compliance
+* ``-fopenmp``OpenMP parallelization
+* ``-flto``link-time optimization
+
+.. note::
+   Older versions of gfortran are subject to a bug which prevents OpenMP parallelization.
+   If you receive the error message ``Attempting to allocate already allocated variable *ib* ``, 
+   compile without OpenMP support, or upgrade to a newer compiler version.
