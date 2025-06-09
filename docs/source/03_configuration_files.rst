@@ -110,10 +110,11 @@ shown in the example above.
     **max_deviation = A**
        The maximum relative deviation of the Gibbs energy. Used to check convergence of the QCE iteration. A QCE cycle has converged, if 
 
-       .. math::
-        
-           |\frac{G_{i} - G_{i-1}}{G_{i-1}}| < A .
+.. math::
+ 
+    |\frac{G_{i} - G_{i-1}}{G_{i-1}}| < A .
 
+.. line-block::
        where :math:`G_i` is the Gibbs energy of the i-th iteration.
        *Optional. Default: 1.0e-9*
 
