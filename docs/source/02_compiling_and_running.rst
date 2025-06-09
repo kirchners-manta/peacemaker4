@@ -75,4 +75,4 @@ threads:
 
    .. code-block:: bash
 
-      OMP\_NUM_THREADS=<number of threads> peacemaker <QCE-input file> <clusterset file> 
+      OMP_NUM_THREADS=<number of threads> peacemaker <QCE-input file> <clusterset file> 
