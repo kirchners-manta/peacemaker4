@@ -41,11 +41,11 @@ module info
         ! Prints the header that is written at the start of the program.
         subroutine print_welcome_info()
             write(*, *)
-            write(*, "(A)") "    Peacemaker 3.1.0 - a Quantum Cluster Equilibrium (QCE) code:             "
+            write(*, "(A)") "    Peacemaker 4.0 - a Quantum Cluster Equilibrium (QCE) code:             "
             write(*, *)
             write(*, "(A)") "        Copyright 2004-2006 Barbara Kirchner, University of Bonn"
             write(*, "(A)") "        Copyright 2007-2012 Barbara Kirchner, University of Leipzig          "
-            write(*, "(A)") "        Copyright 2013-2022 Barbara Kirchner, University of Bonn             "
+            write(*, "(A)") "        Copyright 2013-2025 Barbara Kirchner, University of Bonn             "
             write(*, *)
             write(*, "(A)") "        This program is free software: you can redistribute it and/or modify "
             write(*, "(A)") "        it under the terms of the GNU General Public License as published by "
