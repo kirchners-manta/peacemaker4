@@ -9,7 +9,7 @@ All output files contain the temperature in :math:`K` in column 1.
 .. line-block::
 
     **volume.dat**
-        Contains the volume and related quantities: volume :math:`V` in :math:`dm^3`, exclusion volume :math:`V_\mathrm{excl}`` in :math:`dm^3`, volumetric expansion coefficient :math:`\alpha` in :math:`K^{-1}`.
+        Contains the volume and related quantities: volume :math:`V` in :math:`dm^3`, exclusion volume :math:`V_\mathrm{excl}` in :math:`dm^3`, volumetric expansion coefficient :math:`\alpha` in :math:`K^{-1}`.
 
     **thermo0.dat**
         Contains thermodynamic quantities that do not depend on any derivative: Helmholtz free energy :math:`A` in :math:`kJ`, Gibbs free energy :math:`G` in :math:`kJ`.
