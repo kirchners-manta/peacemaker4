@@ -1,4 +1,4 @@
-Output files - desciption
+Output files - description
 ========================================================
 
 Peacemaker writes results for the best :math:`a_{mf}`, :math:`b_{xv}` parameter pair if it could be 
