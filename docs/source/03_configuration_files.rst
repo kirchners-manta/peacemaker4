@@ -34,6 +34,7 @@ Since the values can have different types, they are presented in different ways:
 In our configuration files, sometimes the user can specify if a specific value is a single value or a range of values.
 In this case, also if the user decides to give a single value, it must be enclosed in square brackets, e.g., `[1.0]`.
 The mean field parameter :math:`a_{mf}` is an example of such a value, which can be specified as a single value or as a range of values.
+
 Input files from earlier versions of Peacemaker
 ------------------------------
 
