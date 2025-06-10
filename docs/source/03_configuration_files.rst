@@ -31,6 +31,9 @@ Since the values can have different types, they are presented in different ways:
 * Arrays are enclosed in square brackets, e.g., `[1, 2, 3]`.
 * Booleans are written as `true` or `false`.
 
+In our configuration files, sometimes the user can specify if a specific value is a single value or a range of values.
+In this case, also if the user decides to give a single value, it must be enclosed in square brackets, e.g., `[1.0]`.
+The mean field parameter :math:`a_{mf}` is an example of such a value, which can be specified as a single value or as a range of values.
 Input files from earlier versions of Peacemaker
 ------------------------------
 
@@ -47,6 +50,13 @@ These scripts can be used from the command line as follows:
 
    python QCEinput2toml.py <QCE-input file> <output toml file>
    python clusterset2toml.py <clusterset file> <output toml file>
+
+.. note::
+
+    After usage double check the QCE-toml file. 
+    Brackets around single values are required for those values that can also be specified as a range of values.
+    These brackets have to be added manually.
+    (This will be fixes soon!)
 
 
 QCE input file
