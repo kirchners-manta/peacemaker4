@@ -5,6 +5,7 @@ What you need to provide in order to use Peacemaker
 - The volumes for the monomers
 - The molar amounts of the components in your system
 - The adiabatic interaction energy of the clusters 
+For units and formatting, see the section, :ref:`ClustersetFile`.
 
 What you get from Peacemaker
 ***********
@@ -26,6 +27,10 @@ What you get from Peacemaker
     :align: center
 
     Peacemaker
+
+Where to find example clustersets for QCE calculations using Peacemaker
+***********
+You can find example clustersets for QCE calculations using Peacemaker in the `Repository <https://github.com/kirchners-manta/clustersets>`_ of the Kirchner group.
 
 Where to find our Publications
 ***********

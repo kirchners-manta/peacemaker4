@@ -1,8 +1,7 @@
 Output files - description
 ========================================================
 
-Peacemaker writes results for the best :math:`a_{mf}`, :math:`b_{xv}` parameter pair if it could be 
-determined or for the first :math:`a_{mf}`, :math:`b_{xv}` pair otherwise.
+If a parameter sampling was requested, Peacemaker writes results for the best :math:`a_{mf}`, :math:`b_{xv}` parameter pair including the fit quality if it could be determined or for the first :math:`a_{mf}`, :math:`b_{xv}` pair otherwise.
 In the following, the output files are briefly described.
 All output files contain the temperature in :math:`K` in column 1.
 

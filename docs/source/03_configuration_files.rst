@@ -8,7 +8,7 @@ More information about the toml format can be found in the `TOML documentation <
 A typical toml file is structured with sections, each defined by square brackets, and key-value pairs 
 within those sections.
 The key-value pairs are separated by an equal sign, and values can be strings, numbers, arrays or boleans.
-An example of a toml file, which is actually a QCE input file, is shown below:
+An example of a toml file, which is actually a QCE input file, is shown bellow:
 
 .. code-block:: toml
 
@@ -57,7 +57,7 @@ These scripts can be used from the command line as follows:
     After usage double check the QCE-toml file. 
     Brackets around single values are required for those values that can also be specified as a range of values.
     These brackets have to be added manually.
-    (This will be fixes soon!)
+    (This will be fixed soon!)
 
 
 QCE input file
@@ -72,7 +72,7 @@ shown in the example above.
 ------------------------------
 .. line-block::
     **components = N**
-    The number of components in the system. :math:`N = 1` for a pure system, :math:`N = 1` for a binary mixture, :math:`N = 1` for a ternary mixture, etc. Note that although it is possible to run a pure system as binary system, where the amount of one of the species is set to zero, we strongly encourage you to run such calculations as a pure system. Results will be the same in either case, but slow convergence may arise for some temperatures if the amount of monomers of one component is sufficiently small.
+    The number of components in the system. :math:`N = 1` for a pure system, :math:`N = 2` for a binary mixture, :math:`N = 3` for a ternary mixture, etc. Note that although it is possible to run a pure system as binary system, where the amount of one of the species is set to zero, we strongly encourage you to run such calculations as a pure system. Results will be the same in either case, but slow convergence may arise for some temperatures if the amount of monomers of one component is sufficiently small.
     *Optional. Default: 1*
 
 [qce]
@@ -150,7 +150,7 @@ shown in the example above.
         *Optional. Default: 1.01325.0*
 
     **monomer_amounts = [N, M, ...]**
-        The molar amounts of the components in the system. The number of values must match the number of components specified in the **system** section. The values are given in units of :math:`mol` and must sum up to 1.0.
+        The molar amounts of the components in the system. The number of values must match the number of components specified in the **system** section. The values (reals) are given in units of :math:`mol`.
         *Required.*
 
 [reference]
@@ -180,7 +180,7 @@ Further details on parameter sampling are given in the last section of the docum
 This section is optional. It enables the output of additional files and is disabled by default.
 
 .. line-block::
-    **contribuions = true/false**
+    **contributions = true/false**
         Enables the output of contributions of each degree of freedom to the thermodynamic quantities. If set to true, contribution output is enabled for all possible thermodynamic quantities, which are helmholtz-contributions, internal-contributions, entropy-contributions and cv-contributions.
         *Optional.*
 
@@ -269,6 +269,8 @@ Reference data are provided by a density at :math:`298.15 K` and a temperature o
         phase_transition = 332.61
 
 
+.. _ClustersetFile:
+
 Clusterset file
 ========================
 The clusterset file is a toml file that contains the paths to the structure and frequency files 
@@ -312,6 +314,7 @@ The Keywords are explained in detail below:
 
     **composition = [N, M, ...]**
         The composition of the cluster as an array of integers, where each integer represents the number of molecules of a certain type in the cluster.
+        Monomers have a composition of [1, 0, 0, ...], [0, 1, 0, ...], etc.
         *Required.*
 
     **sigma = N**
